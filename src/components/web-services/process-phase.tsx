@@ -1,8 +1,7 @@
-
 "use client";
 
 import { useRef } from "react";
-import { motion, useScroll, useTransform, MotionValue } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 
 const steps = [
   { key: "listen", label: "Listen", title: "Listen", body: "We ask about your story, goals, and why this matters." },
@@ -18,35 +17,56 @@ export default function FynaroProcessPhase() {
     offset: ["start start", "end start"],
   });
 
-  const stepsLength = steps.length;
+  const n = steps.length; // shorter name, same meaning
 
-  // ── Top-level hook calls ──
+  // ── Core scroll transforms ─────────────────────────────────────
   const glowHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
-  const opacity0 = useTransform(scrollYProgress, [0 / stepsLength, 0.5 / stepsLength, 1 / stepsLength], [0, 1, 0]);
-  const opacity1 = useTransform(scrollYProgress, [1 / stepsLength, 1.5 / stepsLength, 2 / stepsLength], [0, 1, 0]);
-  const opacity2 = useTransform(scrollYProgress, [2 / stepsLength, 2.5 / stepsLength, 3 / stepsLength], [0, 1, 0]);
-  const opacity3 = useTransform(scrollYProgress, [3 / stepsLength, 3.5 / stepsLength, 4 / stepsLength], [0, 1, 0]);
+  // Card / main content animations — one per step
+  const opacity0 = useTransform(scrollYProgress, [0/n, 0.5/n, 1/n], [0, 1, 0]);
+  const opacity1 = useTransform(scrollYProgress, [1/n, 1.5/n, 2/n], [0, 1, 0]);
+  const opacity2 = useTransform(scrollYProgress, [2/n, 2.5/n, 3/n], [0, 1, 0]);
+  const opacity3 = useTransform(scrollYProgress, [3/n, 3.5/n, 4/n], [0, 1, 0]);
 
-  const x0 = useTransform(scrollYProgress, [0 / stepsLength, 1 / stepsLength], [60, 0]);
-  const x1 = useTransform(scrollYProgress, [1 / stepsLength, 2 / stepsLength], [60, 0]);
-  const x2 = useTransform(scrollYProgress, [2 / stepsLength, 3 / stepsLength], [60, 0]);
-  const x3 = useTransform(scrollYProgress, [3 / stepsLength, 4 / stepsLength], [60, 0]);
+  const x0 = useTransform(scrollYProgress, [0/n, 1/n], [60, 0]);
+  const x1 = useTransform(scrollYProgress, [1/n, 2/n], [60, 0]);
+  const x2 = useTransform(scrollYProgress, [2/n, 3/n], [60, 0]);
+  const x3 = useTransform(scrollYProgress, [3/n, 4/n], [60, 0]);
 
-  const scale0 = useTransform(scrollYProgress, [0 / stepsLength, 0.5 / stepsLength, 1 / stepsLength], [0.96, 1.03, 0.97]);
-  const scale1 = useTransform(scrollYProgress, [1 / stepsLength, 1.5 / stepsLength, 2 / stepsLength], [0.96, 1.03, 0.97]);
-  const scale2 = useTransform(scrollYProgress, [2 / stepsLength, 2.5 / stepsLength, 3 / stepsLength], [0.96, 1.03, 0.97]);
-  const scale3 = useTransform(scrollYProgress, [3 / stepsLength, 3.5 / stepsLength, 4 / stepsLength], [0.96, 1.03, 0.97]);
+  const scale0 = useTransform(scrollYProgress, [0/n, 0.5/n, 1/n], [0.96, 1.03, 0.97]);
+  const scale1 = useTransform(scrollYProgress, [1/n, 1.5/n, 2/n], [0.96, 1.03, 0.97]);
+  const scale2 = useTransform(scrollYProgress, [2/n, 2.5/n, 3/n], [0.96, 1.03, 0.97]);
+  const scale3 = useTransform(scrollYProgress, [3/n, 3.5/n, 4/n], [0.96, 1.03, 0.97]);
 
   const opacities = [opacity0, opacity1, opacity2, opacity3];
-  const xs = [x0, x1, x2, x3];
-  const scales = [scale0, scale1, scale2, scale3];
+  const xs       = [x0, x1, x2, x3];
+  const scales   = [scale0, scale1, scale2, scale3];
 
-  // dots, labels
-  const dotScales = opacities.map(op => useTransform(op, [0, 1], [0.8, 1.25]));
-  const dotGlows = opacities.map(op => useTransform(op, [0, 1], [0.2, 0.85]));
-  const labelOpacities = opacities.map(op => useTransform(op, [0, 1], [0.4, 1]));
-  const labelXs = opacities.map(op => useTransform(op, [0, 1], [0, 4]));
+  // ── Derived values for dots & labels (all at top level) ────────
+  const dotScale0  = useTransform(opacity0, [0, 1], [0.8, 1.25]);
+  const dotScale1  = useTransform(opacity1, [0, 1], [0.8, 1.25]);
+  const dotScale2  = useTransform(opacity2, [0, 1], [0.8, 1.25]);
+  const dotScale3  = useTransform(opacity3, [0, 1], [0.8, 1.25]);
+
+  const dotGlow0   = useTransform(opacity0, [0, 1], [0.2, 0.85]);
+  const dotGlow1   = useTransform(opacity1, [0, 1], [0.2, 0.85]);
+  const dotGlow2   = useTransform(opacity2, [0, 1], [0.2, 0.85]);
+  const dotGlow3   = useTransform(opacity3, [0, 1], [0.2, 0.85]);
+
+  const labelOpacity0 = useTransform(opacity0, [0, 1], [0.4, 1]);
+  const labelOpacity1 = useTransform(opacity1, [0, 1], [0.4, 1]);
+  const labelOpacity2 = useTransform(opacity2, [0, 1], [0.4, 1]);
+  const labelOpacity3 = useTransform(opacity3, [0, 1], [0.4, 1]);
+
+  const labelX0 = useTransform(opacity0, [0, 1], [0, 4]);
+  const labelX1 = useTransform(opacity1, [0, 1], [0, 4]);
+  const labelX2 = useTransform(opacity2, [0, 1], [0, 4]);
+  const labelX3 = useTransform(opacity3, [0, 1], [0, 4]);
+
+  const dotScales      = [dotScale0, dotScale1, dotScale2, dotScale3];
+  const dotGlows       = [dotGlow0, dotGlow1, dotGlow2, dotGlow3];
+  const labelOpacities = [labelOpacity0, labelOpacity1, labelOpacity2, labelOpacity3];
+  const labelXs        = [labelX0, labelX1, labelX2, labelX3];
 
   return (
     <section ref={sectionRef} className="relative h-[220vh] bg-[#050507] text-white">
@@ -119,7 +139,11 @@ export default function FynaroProcessPhase() {
                 {steps.map((step, index) => (
                   <motion.div
                     key={step.key}
-                    style={{ opacity: opacities[index], x: xs[index], scale: scales[index] }}
+                    style={{
+                      opacity: opacities[index],
+                      x: xs[index],
+                      scale: scales[index],
+                    }}
                     className="absolute inset-0"
                   >
                     <div
@@ -138,8 +162,12 @@ export default function FynaroProcessPhase() {
                         <p className="text-[11px] uppercase tracking-[0.22em] text-white/60">
                           Step {index + 1} • {step.label}
                         </p>
-                        <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight">{step.title}</h3>
-                        <p className="text-sm sm:text-base text-white/75 max-w-lg leading-relaxed">{step.body}</p>
+                        <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight">
+                          {step.title}
+                        </h3>
+                        <p className="text-sm sm:text-base text-white/75 max-w-lg leading-relaxed">
+                          {step.body}
+                        </p>
                       </div>
 
                       <div className="relative z-10 text-[11px] sm:text-xs text-white/40 mt-4">
