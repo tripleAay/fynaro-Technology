@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useRef, useMemo } from "react";
+import { useRef } from "react";
 import { motion, useScroll, useTransform, MotionValue } from "framer-motion";
 
 const steps = [
@@ -9,52 +10,6 @@ const steps = [
   { key: "build", label: "Build", title: "Build", body: "Design, prototype, and develop with tight feedback loops." },
   { key: "launch", label: "Launch", title: "Launch", body: "We ship, test, and help you show up like you’ve been here before." },
 ];
-
-// Custom hook to generate transforms safely
-function useStepTransforms(scrollYProgress: MotionValue<number>, stepsLength: number) {
-  const opacities = useMemo(() =>
-    Array.from({ length: stepsLength }).map((_, i) =>
-      useTransform(scrollYProgress, [i / stepsLength, (i + 0.5) / stepsLength, (i + 1) / stepsLength], [0, 1, 0])
-    ),
-    [scrollYProgress, stepsLength]
-  );
-
-  const xs = useMemo(() =>
-    Array.from({ length: stepsLength }).map((_, i) =>
-      useTransform(scrollYProgress, [i / stepsLength, (i + 1) / stepsLength], [60, 0])
-    ),
-    [scrollYProgress, stepsLength]
-  );
-
-  const scales = useMemo(() =>
-    Array.from({ length: stepsLength }).map((_, i) =>
-      useTransform(scrollYProgress, [i / stepsLength, (i + 0.5) / stepsLength, (i + 1) / stepsLength], [0.96, 1.03, 0.97])
-    ),
-    [scrollYProgress, stepsLength]
-  );
-
-  const dotScales = useMemo(() =>
-    opacities.map(op => useTransform(op, [0, 1], [0.8, 1.25])),
-    [opacities]
-  );
-
-  const dotGlows = useMemo(() =>
-    opacities.map(op => useTransform(op, [0, 1], [0.2, 0.85])),
-    [opacities]
-  );
-
-  const labelOpacities = useMemo(() =>
-    opacities.map(op => useTransform(op, [0, 1], [0.4, 1])),
-    [opacities]
-  );
-
-  const labelXs = useMemo(() =>
-    opacities.map(op => useTransform(op, [0, 1], [0, 4])),
-    [opacities]
-  );
-
-  return { opacities, xs, scales, dotScales, dotGlows, labelOpacities, labelXs };
-}
 
 export default function FynaroProcessPhase() {
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -65,10 +20,33 @@ export default function FynaroProcessPhase() {
 
   const stepsLength = steps.length;
 
-  const { opacities, xs, scales, dotScales, dotGlows, labelOpacities, labelXs } =
-    useStepTransforms(scrollYProgress, stepsLength);
-
+  // ── Top-level hook calls ──
   const glowHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+
+  const opacity0 = useTransform(scrollYProgress, [0 / stepsLength, 0.5 / stepsLength, 1 / stepsLength], [0, 1, 0]);
+  const opacity1 = useTransform(scrollYProgress, [1 / stepsLength, 1.5 / stepsLength, 2 / stepsLength], [0, 1, 0]);
+  const opacity2 = useTransform(scrollYProgress, [2 / stepsLength, 2.5 / stepsLength, 3 / stepsLength], [0, 1, 0]);
+  const opacity3 = useTransform(scrollYProgress, [3 / stepsLength, 3.5 / stepsLength, 4 / stepsLength], [0, 1, 0]);
+
+  const x0 = useTransform(scrollYProgress, [0 / stepsLength, 1 / stepsLength], [60, 0]);
+  const x1 = useTransform(scrollYProgress, [1 / stepsLength, 2 / stepsLength], [60, 0]);
+  const x2 = useTransform(scrollYProgress, [2 / stepsLength, 3 / stepsLength], [60, 0]);
+  const x3 = useTransform(scrollYProgress, [3 / stepsLength, 4 / stepsLength], [60, 0]);
+
+  const scale0 = useTransform(scrollYProgress, [0 / stepsLength, 0.5 / stepsLength, 1 / stepsLength], [0.96, 1.03, 0.97]);
+  const scale1 = useTransform(scrollYProgress, [1 / stepsLength, 1.5 / stepsLength, 2 / stepsLength], [0.96, 1.03, 0.97]);
+  const scale2 = useTransform(scrollYProgress, [2 / stepsLength, 2.5 / stepsLength, 3 / stepsLength], [0.96, 1.03, 0.97]);
+  const scale3 = useTransform(scrollYProgress, [3 / stepsLength, 3.5 / stepsLength, 4 / stepsLength], [0.96, 1.03, 0.97]);
+
+  const opacities = [opacity0, opacity1, opacity2, opacity3];
+  const xs = [x0, x1, x2, x3];
+  const scales = [scale0, scale1, scale2, scale3];
+
+  // dots, labels
+  const dotScales = opacities.map(op => useTransform(op, [0, 1], [0.8, 1.25]));
+  const dotGlows = opacities.map(op => useTransform(op, [0, 1], [0.2, 0.85]));
+  const labelOpacities = opacities.map(op => useTransform(op, [0, 1], [0.4, 1]));
+  const labelXs = opacities.map(op => useTransform(op, [0, 1], [0, 4]));
 
   return (
     <section ref={sectionRef} className="relative h-[220vh] bg-[#050507] text-white">
