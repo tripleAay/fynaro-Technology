@@ -17,56 +17,40 @@ export default function FynaroProcessPhase() {
     offset: ["start start", "end start"],
   });
 
-  const n = steps.length; // shorter name, same meaning
+  const n = steps.length;
 
-  // ── Core scroll transforms ─────────────────────────────────────
+  // ── Glow line height ──
   const glowHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
-  // Card / main content animations — one per step
-  const opacity0 = useTransform(scrollYProgress, [0/n, 0.5/n, 1/n], [0, 1, 0]);
-  const opacity1 = useTransform(scrollYProgress, [1/n, 1.5/n, 2/n], [0, 1, 0]);
-  const opacity2 = useTransform(scrollYProgress, [2/n, 2.5/n, 3/n], [0, 1, 0]);
-  const opacity3 = useTransform(scrollYProgress, [3/n, 3.5/n, 4/n], [0, 1, 0]);
+  // ── Arrays of transforms for each step (top-level only) ──
+  const opacities = steps.map((_, index) =>
+    useTransform(scrollYProgress, [index / n, (index + 0.5) / n, (index + 1) / n], [0, 1, 0])
+  );
 
-  const x0 = useTransform(scrollYProgress, [0/n, 1/n], [60, 0]);
-  const x1 = useTransform(scrollYProgress, [1/n, 2/n], [60, 0]);
-  const x2 = useTransform(scrollYProgress, [2/n, 3/n], [60, 0]);
-  const x3 = useTransform(scrollYProgress, [3/n, 4/n], [60, 0]);
+  const xs = steps.map((_, index) =>
+    useTransform(scrollYProgress, [index / n, (index + 1) / n], [60, 0])
+  );
 
-  const scale0 = useTransform(scrollYProgress, [0/n, 0.5/n, 1/n], [0.96, 1.03, 0.97]);
-  const scale1 = useTransform(scrollYProgress, [1/n, 1.5/n, 2/n], [0.96, 1.03, 0.97]);
-  const scale2 = useTransform(scrollYProgress, [2/n, 2.5/n, 3/n], [0.96, 1.03, 0.97]);
-  const scale3 = useTransform(scrollYProgress, [3/n, 3.5/n, 4/n], [0.96, 1.03, 0.97]);
+  const scales = steps.map((_, index) =>
+    useTransform(scrollYProgress, [index / n, (index + 0.5) / n, (index + 1) / n], [0.96, 1.03, 0.97])
+  );
 
-  const opacities = [opacity0, opacity1, opacity2, opacity3];
-  const xs       = [x0, x1, x2, x3];
-  const scales   = [scale0, scale1, scale2, scale3];
+  // ── Derived dot/label transforms ──
+  const dotScales = opacities.map((opacity) =>
+    useTransform(opacity, [0, 1], [0.8, 1.25])
+  );
 
-  // ── Derived values for dots & labels (all at top level) ────────
-  const dotScale0  = useTransform(opacity0, [0, 1], [0.8, 1.25]);
-  const dotScale1  = useTransform(opacity1, [0, 1], [0.8, 1.25]);
-  const dotScale2  = useTransform(opacity2, [0, 1], [0.8, 1.25]);
-  const dotScale3  = useTransform(opacity3, [0, 1], [0.8, 1.25]);
+  const dotGlows = opacities.map((opacity) =>
+    useTransform(opacity, [0, 1], [0.2, 0.85])
+  );
 
-  const dotGlow0   = useTransform(opacity0, [0, 1], [0.2, 0.85]);
-  const dotGlow1   = useTransform(opacity1, [0, 1], [0.2, 0.85]);
-  const dotGlow2   = useTransform(opacity2, [0, 1], [0.2, 0.85]);
-  const dotGlow3   = useTransform(opacity3, [0, 1], [0.2, 0.85]);
+  const labelOpacities = opacities.map((opacity) =>
+    useTransform(opacity, [0, 1], [0.4, 1])
+  );
 
-  const labelOpacity0 = useTransform(opacity0, [0, 1], [0.4, 1]);
-  const labelOpacity1 = useTransform(opacity1, [0, 1], [0.4, 1]);
-  const labelOpacity2 = useTransform(opacity2, [0, 1], [0.4, 1]);
-  const labelOpacity3 = useTransform(opacity3, [0, 1], [0.4, 1]);
-
-  const labelX0 = useTransform(opacity0, [0, 1], [0, 4]);
-  const labelX1 = useTransform(opacity1, [0, 1], [0, 4]);
-  const labelX2 = useTransform(opacity2, [0, 1], [0, 4]);
-  const labelX3 = useTransform(opacity3, [0, 1], [0, 4]);
-
-  const dotScales      = [dotScale0, dotScale1, dotScale2, dotScale3];
-  const dotGlows       = [dotGlow0, dotGlow1, dotGlow2, dotGlow3];
-  const labelOpacities = [labelOpacity0, labelOpacity1, labelOpacity2, labelOpacity3];
-  const labelXs        = [labelX0, labelX1, labelX2, labelX3];
+  const labelXs = opacities.map((opacity) =>
+    useTransform(opacity, [0, 1], [0, 4])
+  );
 
   return (
     <section ref={sectionRef} className="relative h-[220vh] bg-[#050507] text-white">
