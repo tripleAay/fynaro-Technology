@@ -1,11 +1,10 @@
-// src/components/dashboard components/productDetailModal.tsx
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { DetailedProduct } from "@/components/dashboard components/productTile"; // correct import
+import { DetailedProduct } from "@/components/dashboard components/productTile";
 
 // ----- Props -----
 interface ProductDetailModalProps {
@@ -16,8 +15,8 @@ interface ProductDetailModalProps {
 }
 
 // ----- Stars Renderer -----
-const renderStars = (rating: number): JSX.Element => {
-  const stars: JSX.Element[] = [];
+const renderStars = (rating: number) => {          // ← removed : JSX.Element
+  const stars: React.ReactNode[] = [];            // ← React.ReactNode[]
   const full = Math.floor(rating);
   const half = rating - full >= 0.5;
 
@@ -135,9 +134,9 @@ export default function ProductDetailModal({
                 </h2>
 
                 <div className="flex items-center gap-2 mb-3">
-                  {renderStars(product.rating)}
+                  {renderStars(product.rating ?? 0)}   {/* ← added ?? 0 for safety */}
                   <span className="text-xs text-gray-500">
-                    {product.reviewsCount.toLocaleString()} ratings
+                    {(product.reviewsCount ?? 0).toLocaleString()} ratings
                   </span>
                 </div>
 
@@ -170,7 +169,7 @@ export default function ProductDetailModal({
             </div>
 
             {/* Thumbnails */}
-            {product.images.length > 1 && (
+            {product.images?.length > 1 && (
               <div className="mt-4 md:mt-5 flex gap-2.5 sm:gap-3 justify-center flex-wrap">
                 {product.images.map((img, i) => {
                   const isActive = i === activeIndex;

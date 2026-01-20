@@ -5,9 +5,8 @@ import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { useCart, type Product } from "@/contexts/cartContext";
 import { Star, Heart } from "lucide-react";
-import ProductDetailModal, {
-  type ProductForModal,
-} from "@/components/dashboard components/productDetailModal";
+import ProductDetailModal from "@/components/dashboard components/productDetailModal";
+import { DetailedProduct } from "@/components/dashboard components/productTile";
 import { useFynaroToast } from "@/components/dashboard components/common/fynaroToast";
 import { useWishlist } from "@/contexts/wishlistContext";
 
@@ -113,9 +112,10 @@ export default function ProductTileGrid() {
 
   const [activeIndex, setActiveIndex] = useState(0);
   const stripRef = useRef<HTMLDivElement | null>(null);
+  
+  // ──── FIXED LINE ────
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Typed ref setter (safe, no any)
   const setCardRef = (index: number) => (el: HTMLDivElement | null) => {
     cardRefs.current[index] = el;
   };
@@ -137,8 +137,7 @@ export default function ProductTileGrid() {
 
   /* ───────── Add to Cart ───────── */
 
-  const handleAddToCart = (product: ExtendedProduct | ProductForModal) => {
-    // Safe price handling (no any)
+  const handleAddToCart = (product: ExtendedProduct | DetailedProduct) => {
     const priceStr =
       typeof product.price === "string"
         ? product.price
@@ -236,7 +235,6 @@ export default function ProductTileGrid() {
               </h2>
             </div>
 
-            {/* Typed subtitle */}
             <motion.span
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -254,7 +252,6 @@ export default function ProductTileGrid() {
 
           {/* Horizontal luxury strip */}
           <div className="relative">
-            {/* Thin top/bottom gold lines */}
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#c8a96a] to-transparent opacity-80" />
             <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#c8a96a] to-transparent opacity-80" />
 
@@ -297,14 +294,12 @@ export default function ProductTileGrid() {
                         className="object-contain transition-transform duration-700 ease-out group-hover:scale-105"
                       />
 
-                      {/* Tag */}
                       {product.tag && (
                         <div className="absolute top-3 left-3 rounded-full bg-black/70 border border-[#c8a96a]/70 px-3 py-1 text-[10px] sm:text-[11px] font-medium tracking-wide">
                           {product.tag}
                         </div>
                       )}
 
-                      {/* Wishlist button */}
                       <motion.button
                         type="button"
                         whileTap={{ scale: 0.9 }}
@@ -318,7 +313,6 @@ export default function ProductTileGrid() {
                         />
                       </motion.button>
 
-                      {/* Spark ring on add-to-cart */}
                       {sparkId === product.id && (
                         <motion.span
                           className="pointer-events-none absolute inset-3 rounded-[20px] border-2 border-[#f5e4b5]"
@@ -374,7 +368,6 @@ export default function ProductTileGrid() {
               })}
             </div>
 
-            {/* Mobile navigation dots */}
             {hotProducts.length > 1 && (
               <div className="mt-3 flex items-center justify-center gap-3 sm:hidden">
                 {hotProducts.map((_, idx) => {
@@ -407,12 +400,11 @@ export default function ProductTileGrid() {
         </div>
       </section>
 
-      {/* Shared Product Modal */}
       <ProductDetailModal
-        product={selected as ProductForModal | null}
+        product={selected as DetailedProduct | null}
         open={Boolean(selected)}
         onClose={() => setSelected(null)}
-        onAddToCart={(p: ProductForModal) => {
+        onAddToCart={(p: DetailedProduct) => {
           handleAddToCart(p);
           setSelected(null);
         }}
