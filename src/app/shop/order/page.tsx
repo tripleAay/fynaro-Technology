@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -223,7 +222,6 @@ export default function OrderPage() {
   const filteredOrders = useMemo(() => {
     let result = [...ORDERS];
 
-    // tab filter
     if (activeFilter === "Active") {
       result = result.filter((o) =>
         ["Processing", "In-Transit", "Pending"].includes(o.status)
@@ -234,7 +232,6 @@ export default function OrderPage() {
       result = result.filter((o) => o.status === "Cancelled");
     }
 
-    // search filter
     if (query.trim()) {
       const q = query.toLowerCase();
       result = result.filter(

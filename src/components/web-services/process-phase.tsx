@@ -1,34 +1,60 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef, useMemo } from "react";
+import { motion, useScroll, useTransform, MotionValue } from "framer-motion";
 
 const steps = [
-  {
-    key: "listen",
-    label: "Listen",
-    title: "Listen",
-    body: "We ask about your story, goals, and why this matters.",
-  },
-  {
-    key: "frame",
-    label: "Frame",
-    title: "Frame",
-    body: "We lock the angle, tone, and how your website should feel.",
-  },
-  {
-    key: "build",
-    label: "Build",
-    title: "Build",
-    body: "Design, prototype, and develop with tight feedback loops.",
-  },
-  {
-    key: "launch",
-    label: "Launch",
-    title: "Launch",
-    body: "We ship, test, and help you show up like you’ve been here before.",
-  },
+  { key: "listen", label: "Listen", title: "Listen", body: "We ask about your story, goals, and why this matters." },
+  { key: "frame", label: "Frame", title: "Frame", body: "We lock the angle, tone, and how your website should feel." },
+  { key: "build", label: "Build", title: "Build", body: "Design, prototype, and develop with tight feedback loops." },
+  { key: "launch", label: "Launch", title: "Launch", body: "We ship, test, and help you show up like you’ve been here before." },
 ];
+
+// Custom hook to generate transforms safely
+function useStepTransforms(scrollYProgress: MotionValue<number>, stepsLength: number) {
+  const opacities = useMemo(() =>
+    Array.from({ length: stepsLength }).map((_, i) =>
+      useTransform(scrollYProgress, [i / stepsLength, (i + 0.5) / stepsLength, (i + 1) / stepsLength], [0, 1, 0])
+    ),
+    [scrollYProgress, stepsLength]
+  );
+
+  const xs = useMemo(() =>
+    Array.from({ length: stepsLength }).map((_, i) =>
+      useTransform(scrollYProgress, [i / stepsLength, (i + 1) / stepsLength], [60, 0])
+    ),
+    [scrollYProgress, stepsLength]
+  );
+
+  const scales = useMemo(() =>
+    Array.from({ length: stepsLength }).map((_, i) =>
+      useTransform(scrollYProgress, [i / stepsLength, (i + 0.5) / stepsLength, (i + 1) / stepsLength], [0.96, 1.03, 0.97])
+    ),
+    [scrollYProgress, stepsLength]
+  );
+
+  const dotScales = useMemo(() =>
+    opacities.map(op => useTransform(op, [0, 1], [0.8, 1.25])),
+    [opacities]
+  );
+
+  const dotGlows = useMemo(() =>
+    opacities.map(op => useTransform(op, [0, 1], [0.2, 0.85])),
+    [opacities]
+  );
+
+  const labelOpacities = useMemo(() =>
+    opacities.map(op => useTransform(op, [0, 1], [0.4, 1])),
+    [opacities]
+  );
+
+  const labelXs = useMemo(() =>
+    opacities.map(op => useTransform(op, [0, 1], [0, 4])),
+    [opacities]
+  );
+
+  return { opacities, xs, scales, dotScales, dotGlows, labelOpacities, labelXs };
+}
 
 export default function FynaroProcessPhase() {
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -39,31 +65,8 @@ export default function FynaroProcessPhase() {
 
   const stepsLength = steps.length;
 
-  // ── DYNAMIC HOOKS FOR TRANSFORMS ──
-  const opacities = steps.map((_, i) =>
-    useTransform(
-      scrollYProgress,
-      [i / stepsLength, (i + 0.5) / stepsLength, (i + 1) / stepsLength],
-      [0, 1, 0]
-    )
-  );
-
-  const xs = steps.map((_, i) =>
-    useTransform(scrollYProgress, [i / stepsLength, (i + 1) / stepsLength], [60, 0])
-  );
-
-  const scales = steps.map((_, i) =>
-    useTransform(
-      scrollYProgress,
-      [i / stepsLength, (i + 0.5) / stepsLength, (i + 1) / stepsLength],
-      [0.96, 1.03, 0.97]
-    )
-  );
-
-  const dotScales = opacities.map(op => useTransform(op, [0, 1], [0.8, 1.25]));
-  const dotGlows = opacities.map(op => useTransform(op, [0, 1], [0.2, 0.85]));
-  const labelOpacities = opacities.map(op => useTransform(op, [0, 1], [0.4, 1]));
-  const labelXs = opacities.map(op => useTransform(op, [0, 1], [0, 4]));
+  const { opacities, xs, scales, dotScales, dotGlows, labelOpacities, labelXs } =
+    useStepTransforms(scrollYProgress, stepsLength);
 
   const glowHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
@@ -124,9 +127,7 @@ export default function FynaroProcessPhase() {
                         <span className="text-xs font-medium tracking-[0.22em] uppercase text-white/70">
                           {index + 1 < 10 ? `0${index + 1}` : index + 1}
                         </span>
-                        <span className="text-sm sm:text-base font-semibold">
-                          {step.label}
-                        </span>
+                        <span className="text-sm sm:text-base font-semibold">{step.label}</span>
                       </motion.div>
                     </motion.div>
                   ))}
@@ -140,19 +141,15 @@ export default function FynaroProcessPhase() {
                 {steps.map((step, index) => (
                   <motion.div
                     key={step.key}
-                    style={{
-                      opacity: opacities[index],
-                      x: xs[index],
-                      scale: scales[index],
-                    }}
+                    style={{ opacity: opacities[index], x: xs[index], scale: scales[index] }}
                     className="absolute inset-0"
                   >
                     <div
                       className="group relative h-full w-full rounded-[26px] border border-white/10
-                                  bg-[radial-gradient(circle_at_top,#171720,#050508_75%)]
-                                  shadow-[0_26px_90px_rgba(0,0,0,0.9)] overflow-hidden
-                                  px-6 py-6 sm:px-8 sm:py-7 flex flex-col justify-between
-                                  backdrop-blur-xl"
+                                 bg-[radial-gradient(circle_at_top,#171720,#050508_75%)]
+                                 shadow-[0_26px_90px_rgba(0,0,0,0.9)] overflow-hidden
+                                 px-6 py-6 sm:px-8 sm:py-7 flex flex-col justify-between
+                                 backdrop-blur-xl"
                     >
                       {/* Subtle glow sweep on hover */}
                       <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-600">
@@ -163,12 +160,8 @@ export default function FynaroProcessPhase() {
                         <p className="text-[11px] uppercase tracking-[0.22em] text-white/60">
                           Step {index + 1} • {step.label}
                         </p>
-                        <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight">
-                          {step.title}
-                        </h3>
-                        <p className="text-sm sm:text-base text-white/75 max-w-lg leading-relaxed">
-                          {step.body}
-                        </p>
+                        <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight">{step.title}</h3>
+                        <p className="text-sm sm:text-base text-white/75 max-w-lg leading-relaxed">{step.body}</p>
                       </div>
 
                       <div className="relative z-10 text-[11px] sm:text-xs text-white/40 mt-4">
