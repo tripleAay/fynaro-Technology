@@ -163,7 +163,7 @@ export default function SignupPage() {
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="e.g. Bam Sun"
+                    placeholder="e.g. Alex Morgan"
                     className="w-full rounded-2xl border border-neutral-200 bg-white px-9 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#111014] focus:border-[#111014] transition-all"
                   />
                 </div>
@@ -186,7 +186,7 @@ export default function SignupPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@brand.com"
+                    placeholder="you@email.com"
                     className="w-full rounded-2xl border border-neutral-200 bg-white px-9 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#111014] focus:border-[#111014] transition-all"
                   />
                 </div>
