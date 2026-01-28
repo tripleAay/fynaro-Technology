@@ -229,6 +229,7 @@ const ProductTileGrid: React.FC = () => {
               </div>
 
               {/* Content */}
+              {/* Content */}
               <div className="flex flex-1 flex-col px-3.5 pt-2.5 pb-3 sm:px-4 sm:pt-3.5 sm:pb-4">
                 <h3 className="text-[12px] sm:text-[13px] font-medium text-neutral-900 leading-snug line-clamp-2 min-h-[2.2em]">
                   {product.name}
@@ -237,7 +238,27 @@ const ProductTileGrid: React.FC = () => {
                   {renderStars(product.rating)}
                   <span className="text-gray-500 hidden sm:inline">{product.reviewsCount.toLocaleString()} ratings</span>
                 </div>
+
+                {/* Buttons */}
+                <div className="mt-3 flex items-center gap-2">
+                  <motion.button
+                    whileTap={{ scale: 0.96 }}
+                    onClick={() => handleAddToCart(product)}
+                    className="flex-1 rounded-full bg-[#111014] text-white text-[11px] sm:text-xs font-semibold py-2 sm:py-2.5 tracking-wide hover:bg-[#1b1813] transition-colors"
+                  >
+                    Add to Cart
+                  </motion.button>
+
+                  <motion.button
+                    whileTap={{ scale: 0.96 }}
+                    onClick={() => setSelected(product)}
+                    className="flex-1 rounded-full border border-[#c8a96a]/70 text-[#f5e4b5] text-[11px] sm:text-xs font-medium py-2 sm:py-2.5 hover:bg-[#1b1813] hover:border-[#f0d48b] transition-all"
+                  >
+                    View Details
+                  </motion.button>
+                </div>
               </div>
+
             </motion.article>
           );
         })}

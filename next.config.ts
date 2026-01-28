@@ -7,13 +7,10 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
 
-  // Optional: if you are using images from external URLs
+  // Allow images from external URLs
   images: {
-    domains: ['example.com'], // replace with your image domains
+    domains: ['flagcdn.com'], // add any other external hosts you use
   },
-
-  // Optional: for TypeScript strictness settings
- 
 };
 
 module.exports = nextConfig;
