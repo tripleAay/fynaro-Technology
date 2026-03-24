@@ -34,7 +34,7 @@ export default function FynaroAboutHero() {
             </p>
             <p>
               We combine design precision with technical excellence to deliver 
-              products that don’t just look good — they <span className="text-white">perform</span>.
+              products that don’t just look good, they <span className="text-white">perform</span>.
             </p>
           </div>
 
