@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Lightbulb, Target, Brain, BarChart2, Compass } from "lucide-react";
-import Header from "../../components/header";
+import Header from "../../components/dashboard components/homeHeader";
 import Footer from "../../components/footer";
 
 const services = [

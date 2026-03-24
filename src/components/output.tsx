@@ -28,7 +28,7 @@ export default function Output() {
               <div className="font-mono text-xs tracking-[4px] text-white/50 mb-6">
                 05 — OUTPUT
               </div>
-              <h2 className="heading-font text-6xl md:text-7xl font-semibold leading-[1.08] tracking-[-1.6px] text-white">
+              <h2 className="heading-font text-2xl md:text-7xl font-semibold leading-[1.08] tracking-[-1.6px] text-[#d6cc6d]">
                 Fynaro shows up<br />through what it builds.
               </h2>
             </div>
