@@ -7,6 +7,7 @@ import Services from "../components/services";
 import Portfolio from "../components/portfolio";
 import Testimonials from "../components/testimonials";
 import CallToAction from "../components/calltoaction";
+import VideoShowcase from "../components/mid-footer";
 import Footer from "../components/footer";
 
 export default function Page() {
@@ -14,12 +15,14 @@ export default function Page() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
       <HomeHeader />
       <HeroSlider />
+      <Portfolio />
       <WhyFynaro />
       <Services />
-      <Portfolio />
+      
       <Testimonials />
       
       <CallToAction />
+      <VideoShowcase />
       <Footer />
     </div>
   );

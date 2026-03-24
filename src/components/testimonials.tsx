@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
 
 const testimonials = [
   {
@@ -11,169 +10,133 @@ const testimonials = [
     name: "Chidera Nwoye",
     text: "Fynaro brought clarity to our idea and translated it into a design that feels intentional and confident.",
     image: "/clients/chidera.jpg",
-    logo: "/logos/giftwave.svg",
   },
   {
     id: 2,
     name: "Okoye C. B.",
     text: "The website feels structured and easy to understand. Clients now trust us before even speaking to us.",
     image: "/clients/okoye.jpg",
-    logo: "/logos/eliteprints.svg",
   },
   {
     id: 3,
     name: "Bamigbade Akintunde",
     text: "Fynaro approached the project with patience and clear thinking. The result feels solid and well thought-out.",
     image: "/clients/akintunde.jpg",
-    logo: "/logos/starlight.svg",
   },
   {
     id: 4,
     name: "Tunde Adebayo",
     text: "Our brand presence improved immediately. Everything now looks deliberate and professionally arranged.",
     image: "/clients/tunde.jpg",
-    logo: "/logos/sparktech.svg",
   },
   {
     id: 5,
     name: "Daniel Okafor",
     text: "There was a clear process from start to finish. No confusion, just steady progress and strong results.",
     image: "/clients/daniel.jpg",
-    logo: "/logos/novacore.svg",
   },
   {
     id: 6,
     name: "Sarah Adeyemi",
-    text: "The attention to spacing, flow, and structure made the entire site feel premium without overdoing it.",
+    text: "The attention to spacing and flow made everything feel premium without trying too hard.",
     image: "/clients/sarah.jpg",
-    logo: "/logos/zenith.svg",
   },
   {
     id: 7,
     name: "Ibrahim Sadiq",
-    text: "The final design feels calm, focused, and professional. It reflects our values properly.",
+    text: "The final design feels calm and focused. It reflects our brand in a way we couldn’t achieve before.",
     image: "/clients/ibrahim.jpg",
-    logo: "/logos/fluxa.svg",
   },
   {
     id: 8,
     name: "Kemi Ogunleye",
-    text: "This is the first time our website truly represents who we are as a brand.",
+    text: "This is the first time our website truly feels like us. Everything just makes sense now.",
     image: "/clients/kemi.jpg",
-    logo: "/logos/orion.svg",
+  },
+  {
+    id: 9,
+    name: "Emeka Obi",
+    text: "Working with Fynaro brought a level of clarity we didn’t know we were missing.",
+    image: "/clients/emeka.jpg",
+  },
+  {
+    id: 10,
+    name: "Aisha Bello",
+    text: "Everything feels simpler, cleaner, and easier to navigate. Our users noticed the difference immediately.",
+    image: "/clients/aisha.jpg",
   },
 ];
 
 export default function Testimonials() {
   const [index, setIndex] = useState(0);
 
-  // Auto-rotate every 8s, stepping by 2 (shows pairs)
   useEffect(() => {
     const timer = setInterval(() => {
-      setIndex((prev) => (prev + 2) % testimonials.length);
-    }, 8000);
+      setIndex((prev) => (prev + 1) % testimonials.length);
+    }, 5000);
     return () => clearInterval(timer);
   }, []);
 
-  const visible = [
-    testimonials[index % testimonials.length],
-    testimonials[(index + 1) % testimonials.length],
-  ];
-
   return (
-    <section className="relative w-full bg-[#BFBDC1] text-white py-28 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
+    <section style={{backgroundImage: `url('/images/gustavo-zambelli-0g21m6BJdfc-unsplash (1).jpg')`,}} className="w-full py-24 bg-white ">
+      <div className="max-w-5xl mx-auto px-6">
         {/* Header */}
-        <div className="mb-20 max-w-3xl mx-auto text-center">
-          <h2 className="text-black text-4xl md:text-5xl font-bold tracking-tight mb-6">
-            Trusted by brands who value depth, not noise.
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-black mb-4">
+            What clients are saying
           </h2>
-          <p className="text-black text-lg md:text-xl leading-relaxed">
-            These are not compliments — they’re outcomes of deliberate thinking,
-            strong narrative, and intentional design.
+          <p className="text-gray-500 text-lg">
+            Real experiences from people we’ve worked with.
           </p>
         </div>
 
-        {/* Testimonials */}
-        <AnimatePresence mode="wait">
+        {/* Slider */}
+        <div className="relative overflow-hidden">
           <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -40 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12"
+            animate={{ x: `-${index * 100}%` }}
+            transition={{ duration: 0.7, ease: "easeInOut" }}
+            className="flex"
           >
-            {visible.map((item) => (
-              <motion.div
+            {testimonials.map((item) => (
+              <div
                 key={item.id}
-                whileHover={{ y: -8, transition: { duration: 0.3 } }}
-                className="relative bg-black rounded-3xl p-8 md:p-10 border border-white/10 shadow-2xl shadow-black/30 flex flex-col"
+                className="min-w-full px-4 flex justify-center"
               >
-                <Quote className="absolute top-6 right-6 w-12 h-12 md:w-14 md:h-14 text-white/15" />
+                <div className="max-w-2xl w-full text-center">
+                  <p className="text-xl md:text-2xl leading-relaxed text-gray-800 font-light mb-8">
+                    “{item.text}”
+                  </p>
 
-                <p className="text-lg md:text-xl leading-relaxed text-gray-100 mb-10 md:mb-12 font-light">
-                  “{item.text}”
-                </p>
-
-                <div className="mt-auto flex items-center justify-between gap-6">
-                  {/* Person */}
-                  <div className="flex items-center gap-4">
-                    <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-2xl overflow-hidden ring-2 ring-white/10 flex-shrink-0">
+                  <div className="flex items-center justify-center gap-4">
+                    <div className="relative w-12 h-12 rounded-full overflow-hidden ring-1 ring-gray-200">
                       <Image
                         src={item.image}
                         alt={item.name}
                         fill
                         className="object-cover"
-                        sizes="(max-width: 768px) 64px, 80px"
                       />
                     </div>
-                    <p className="font-semibold text-base md:text-lg">
+                    <p className="text-sm font-medium text-black">
                       {item.name}
                     </p>
                   </div>
-
-                  {/* Brand Logo */}
-                  <div className="relative h-9 md:h-10 w-28 md:w-32 opacity-80">
-                    <Image
-                      src={item.logo}
-                      alt={`${item.name} brand logo`}
-                      fill
-                      className="object-contain"
-                      sizes="(max-width: 768px) 112px, 128px"
-                    />
-                  </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </motion.div>
-        </AnimatePresence>
+        </div>
 
-        {/* Controls */}
-        <div className="flex justify-center items-center gap-12 mt-16">
-          <button
-            onClick={() =>
-              setIndex(
-                (prev) => (prev - 2 + testimonials.length) % testimonials.length
-              )
-            }
-            className="flex items-center gap-3 text-black hover:text-white transition-colors text-lg font-medium"
-            aria-label="Previous pair"
-          >
-            <ChevronLeft className="w-6 h-6" />
-            Previous
-          </button>
-
-          <button
-            onClick={() =>
-              setIndex((prev) => (prev + 2) % testimonials.length)
-            }
-            className="flex items-center gap-3 text-black hover:text-white transition-colors text-lg font-medium"
-            aria-label="Next pair"
-          >
-            Next
-            <ChevronRight className="w-6 h-6" />
-          </button>
+        {/* Dots */}
+        <div className="flex justify-center gap-3 mt-10">
+          {testimonials.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setIndex(i)}
+              className={`h-2 rounded-full transition-all duration-300 ${
+                i === index ? "w-6 bg-black" : "w-2 bg-gray-300"
+              }`}
+            />
+          ))}
         </div>
       </div>
     </section>

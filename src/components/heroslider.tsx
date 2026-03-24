@@ -17,7 +17,7 @@ const slides = [
   },
   {
     id: 2,
-    image: "/images/desk.jpg",
+    image: "/images/tommaso-teloni-Ti5BtG1NSpQ-unsplash.jpg",
     title: "Web Experiences That Convert",
     text: "From portfolio sites to full-scale platforms, Fynaro builds digital spaces that feel premium and perform flawlessly.",
   },
