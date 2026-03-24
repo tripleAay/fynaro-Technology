@@ -8,13 +8,13 @@ const services = [
     id: 1,
     icon: <Code2 className="w-10 h-10 text-green-400" />,
     title: "Web Development & Tech",
-    desc: "Modern, fast, and scalable digital solutions built with precision — from portfolio sites to full platforms.",
+    desc: "Modern, fast, and scalable digital solutions built with precision from portfolio sites to full platforms.",
   },
   {
     id: 2,
     icon: <Brush className="w-10 h-10 text-pink-400" />,
     title: "Branding & Visual Identity",
-    desc: "We craft powerful brand systems — logos, colors, and design languages that make your business unforgettable.",
+    desc: "We craft powerful brand systems logos, colors, and design languages that make your business unforgettable.",
   },
   {
     id: 3,
@@ -26,7 +26,7 @@ const services = [
 
 export default function Services() {
   return (
-    <section className="relative w-full py-24 bg-[#04030F] text-white">
+    <section  style={{backgroundImage: `url('/images/jonatan-pie-h8nxGssjQXs-unsplash.jpg')`}} className="relative w-full py-24 bg-[#04030F] text-white">
       <div className="max-w-6xl mx-auto px-6 text-center">
 
         {/* 🔥 HEADER */}
@@ -47,7 +47,7 @@ export default function Services() {
           viewport={{ once: true }}
           className="text-gray-400 max-w-xl mx-auto mb-16 leading-relaxed"
         >
-          Fynaro turns ideas into powerful experiences — blending design,
+          Fynaro turns ideas into powerful experiences; blending design,
           technology, and culture to help brands grow with clarity and impact.
         </motion.p>
 

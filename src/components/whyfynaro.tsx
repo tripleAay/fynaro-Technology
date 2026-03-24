@@ -28,7 +28,7 @@ const features = [
 
 export default function WhyFynaro() {
   return (
-    <section className="bg-white py-24">
+    <section style={{backgroundImage: `url('/images/clay-banks-u27Rrbs9Dwc-unsplash.jpg')`,}} className="bg-white py-24">
       <div className="max-w-7xl mx-auto px-6 text-center">
         <motion.h2
           initial={{ opacity: 0, y: 30 }}
@@ -42,7 +42,7 @@ export default function WhyFynaro() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.8 }}
-          className="text-gray-600 max-w-2xl mx-auto mb-16"
+          className="text-white max-w-2xl mx-auto mb-16"
         >
           Fynaro exists to push the boundaries of creativity and technology. Here’s why we stand out:
         </motion.p>

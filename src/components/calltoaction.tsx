@@ -61,7 +61,7 @@ export default function CallToAction() {
           transition={{ delay: 0.2, duration: 0.9 }}
           className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-12 leading-relaxed"
         >
-          Ready to transform your vision into a powerful digital presence? Share your details — let’s create something extraordinary together.
+          Ready to transform your vision into a powerful digital presence? Share your details, let’s create something extraordinary together.
         </motion.p>
 
         <motion.form
@@ -137,7 +137,7 @@ export default function CallToAction() {
           transition={{ delay: 0.6, duration: 1 }}
           className="mt-6 text-sm text-gray-500"
         >
-          We respect your privacy — your info stays safe with us.
+          We respect your privacy, your info stays safe with us.
         </motion.p>
       </div>
     </section>

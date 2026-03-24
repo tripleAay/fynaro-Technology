@@ -40,7 +40,7 @@ export default function LearningCurve() {
             transition={{ delay: 0.2 }}
             className="max-w-md lg:text-right"
           >
-            <p className="text-[22px] leading-tight text-white/80 font-light">
+            <p className="text-[22px] leading-tight text-[#d6cc6d] font-light">
               Fynaro doesn’t assume.<br />
               It observes.<br />
               Breaks things down.<br />
@@ -59,7 +59,7 @@ export default function LearningCurve() {
         >
           <p className="text-4xl md:text-5xl leading-[1.15] tracking-[-1px] font-light text-white/90">
             No attachment to first ideas.<br />
-            <span className="text-[#00d4ff] font-medium">Only to what works.</span>
+            <span className="text-[#d6cc6d] font-medium">Only to what works.</span>
           </p>
         </motion.div>
 
@@ -94,7 +94,7 @@ export default function LearningCurve() {
                 {item.number}
               </div>
               
-              <div className="text-2xl font-medium text-white mb-6 group-hover:text-[#00d4ff] transition-colors">
+              <div className="text-2xl font-medium text-white mb-6 group-hover:text-[#d6cc6d] transition-colors">
                 {item.label}
               </div>
               

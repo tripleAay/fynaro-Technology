@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 export default function FynaroAboutHero() {
   return (
-    <section className="relative min-h-screen w-full bg-[#050506] flex items-center overflow-hidden">
+    <section className="relative mt-15 min-h-screen w-full bg-[#050506] flex items-center overflow-hidden">
       
       {/* Subtle background texture */}
       <div className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] bg-[length:50px_50px]" />
@@ -19,12 +19,7 @@ export default function FynaroAboutHero() {
           transition={{ duration: 1 }}
           className="space-y-10"
         >
-          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md">
-            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-            <p className="text-xs tracking-[0.125em] uppercase font-mono text-white/60">
-              FYNARO TECH
-            </p>
-          </div>
+          
 
           <h1 className="text-2xl sm:text-6xl lg:text-7xl font-semibold leading-[1.05] tracking-[-1.5px] text-white">
             We build clean,<br />

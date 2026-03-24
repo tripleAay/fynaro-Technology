@@ -36,7 +36,7 @@ export default function Output() {
             <div className="space-y-8 text-[21px] leading-tight text-white/75 font-light max-w-md">
               <p>Interfaces that think.</p>
               <p>Systems that hold.</p>
-              <p>Designed for real conditions — not controlled environments.</p>
+              <p>Designed for real conditions, not controlled environments.</p>
             </div>
           </motion.div>
 
@@ -53,7 +53,7 @@ export default function Output() {
               {/* Placeholder for your actual UI/product screenshots */}
               <div className="h-full w-full bg-gradient-to-br from-zinc-900 to-black flex items-center justify-center">
                 <div className="text-center">
-                  <div className="text-[#00d4ff] text-6xl mb-8 opacity-75">◉</div>
+                  <div className="text-[#d6cc6d] text-6xl mb-8 opacity-75">◉</div>
                   <p className="font-mono tracking-widest text-sm text-white/60">PRODUCT VISUALS GO HERE</p>
                   <p className="text-white/40 text-xs mt-4">High-fidelity interfaces • Real builds</p>
                 </div>

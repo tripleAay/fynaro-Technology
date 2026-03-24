@@ -39,7 +39,7 @@ export default function ForwardState() {
           <div className="space-y-6 text-3xl md:text-4xl leading-tight text-white/75 font-light max-w-2xl mx-auto">
             <p>Learning. Adjusting. Refining.</p>
             <p className="text-white">No fixed version.</p>
-            <p className="text-[#00d4ff] font-medium">Only progression.</p>
+            <p className="text-[#d6cc6d] font-medium">Only progression.</p>
           </div>
 
           {/* Final Call */}

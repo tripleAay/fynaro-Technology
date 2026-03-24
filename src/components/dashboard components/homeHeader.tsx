@@ -31,9 +31,7 @@ export default function HomeHeader() {
             Projects
           </Link>
 
-          <Link href="/blog" className="whitespace-nowrap hover:text-neutral-300">
-            Blog
-          </Link>
+          
         </nav>
 
         {/* ⚡ ACTIONS */}

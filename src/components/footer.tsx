@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="relative w-full bg-black text-gray-300 pt-16 pb-10 px-6 md:px-10 border-t border-gray-900/50">
+    <footer className="relative w-full bg-[#000000] text-gray-300 pt-16 pb-10 px-6 md:px-10 border-t border-gray-900/50">
       <div className="max-w-7xl mx-auto flex flex-col items-center text-center">
         {/* Single Center Block */}
         <div className="max-w-xl w-full flex flex-col items-center">

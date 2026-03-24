@@ -64,7 +64,7 @@ export default function PortfolioShowcase() {
   }, [activeProject]);
 
   return (
-    <section className="w-full bg-[#050506] py-32 text-white">
+    <section className="w-full  bg-[#050506] py-32 text-white">
       <div className="max-w-6xl mx-auto px-6 flex flex-col items-center">
 
         {/* 🔥 HEADER */}

@@ -72,7 +72,7 @@ export default function OriginField() {
         >
           <p className="inline-block text-2xl md:text-3xl font-medium text-white/90 border-t border-b border-white/10 py-4 px-10 tracking-tight">
             Not noise.<br />
-            <span className="text-[#00d4ff]">Rhythm.</span>
+            <span className="text-[#d6cc6d]">Rhythm.</span>
           </p>
         </motion.div>
       </div>
