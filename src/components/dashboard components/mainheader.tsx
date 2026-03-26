@@ -17,6 +17,7 @@ import {
 } from "react-icons/fi";
 import { useCart } from "../../contexts/cartContext";
 import NotificationPanel from "@/components/dashboard components/notificationPanel";
+import Image from "next/image";
 
 type CartItem = {
   id: number | string;
@@ -94,14 +95,17 @@ export default function Header({
       <header className="fixed top-0 left-0 w-full z-40 bg-black/95 backdrop-blur-xl border-b border-white/10 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 h-16 flex items-center justify-between">
 
-          {/* 🔥 BRAND */}
-           <Link
-          href="/"
-          className="text-lg sm:text-xl font-semibold tracking-[0.12em]"
-        >
-          FYNARO
-          <span className="ml-1 text-[#d6cc6d] font-medium">TECH</span>
-        </Link>
+          {/* 🔥 FYNARO TECH LOGO - Clean & Professional */}
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/images/fynaro-tech logo.png"
+              alt="Fynaro Tech Logo"
+              width={220}
+              height={80}
+              className="h-9 w-auto"           // Keeps it small and balanced
+              priority
+            />
+          </Link>
 
           {/* ACTIONS */}
           <div className="flex items-center gap-3 sm:gap-4">

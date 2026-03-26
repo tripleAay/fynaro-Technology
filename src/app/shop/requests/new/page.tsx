@@ -2,7 +2,8 @@
 
 import { useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
-import { FiSend, FiLink } from "react-icons/fi";
+import { FiSend, FiLink, FiArrowLeft } from "react-icons/fi";
+import Link from "next/link";
 
 import Header from "@/components/dashboard components/mainheader";
 import { useFynaroToast } from "@/components/dashboard components/common/fynaroToast";
@@ -28,7 +29,6 @@ export default function VIPProjectRequestPage() {
         projectName: title || "New Fynaro Project Request",
       });
       setSubmitting(false);
-      // Optional: reset form after success
       setTitle("");
       setBrandName("");
       setBrief("");
@@ -40,12 +40,36 @@ export default function VIPProjectRequestPage() {
     <main className="min-h-screen bg-gradient-to-b from-[#050506] to-[#111015] text-white flex flex-col">
       <Header />
 
-      <div className="flex flex-col mt-10 justify-center items-center flex-1 px-5 py-20 max-w-2xl mx-auto space-y-10 text-center">
+      {/* Breadcrumb + Back Button */}
+      <div className="max-w-2xl mt-20 mx-auto w-full px-5 pt-8 pb-4">
+        <div className="flex items-center gap-3 text-sm">
+          <Link
+            href="/shop" // Change this to wherever you want the back button to go
+            className="flex items-center gap-1.5 text-white/70 hover:text-[#d6cc6d] transition-colors"
+          >
+            <FiArrowLeft className="text-lg" />
+            Back
+          </Link>
+
+          <span className="text-white/40">•</span>
+
+          <div className="flex items-center gap-2 text-white/60">
+            <Link href="/shop" className="hover:text-[#d6cc6d] transition-colors">
+              Dashboard
+            </Link>
+            <span className="text-white/40">›</span>
+            <span className="text-[#d6cc6d] font-medium">Project Request</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex flex-col justify-center items-center flex-1 px-5 py-10 max-w-2xl mx-auto space-y-10">
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-4xl sm:text-5xl font-semibold tracking-tight"
+          className="text-4xl sm:text-5xl font-semibold tracking-tight text-center"
         >
           Ready when you are
         </motion.h1>
@@ -54,7 +78,7 @@ export default function VIPProjectRequestPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.6 }}
-          className="text-neutral-400 text-sm sm:text-base max-w-lg"
+          className="text-neutral-400 text-sm sm:text-base max-w-lg text-center"
         >
           Submit your project request. Your proposal will be reviewed before
           details like pricing and scope are shared.
@@ -65,7 +89,7 @@ export default function VIPProjectRequestPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
           onSubmit={handleSubmit}
-          className="w-full bg-[#0c0b10] rounded-3xl p-6 flex flex-col gap-4 shadow-[0_18px_55px_rgba(0,0,0,0.75)]"
+          className="w-full bg-[#0c0b10] rounded-3xl p-8 flex flex-col gap-6 shadow-[0_18px_55px_rgba(0,0,0,0.75)] border border-white/5"
         >
           <InputField
             label="Project title"
@@ -102,10 +126,10 @@ export default function VIPProjectRequestPage() {
             type="submit"
             whileTap={{ scale: 0.96 }}
             disabled={submitting}
-            className="mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-[#c8a96a] text-black px-8 py-3 font-semibold text-sm shadow-lg hover:bg-[#d2b86a] disabled:opacity-70 transition-colors"
+            className="mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-[#d6cc6d] text-black px-10 py-3.5 font-semibold text-sm shadow-lg hover:bg-[#e0d47a] disabled:opacity-70 transition-all active:scale-95"
           >
             {submitting ? (
-              <span className="h-3 w-3 rounded-full border-2 border-black border-t-transparent animate-spin" />
+              <span className="h-4 w-4 rounded-full border-2 border-black border-t-transparent animate-spin" />
             ) : (
               <>
                 Send Request <FiSend />
@@ -113,7 +137,7 @@ export default function VIPProjectRequestPage() {
             )}
           </motion.button>
 
-          <p className="text-[10px] text-neutral-500 mt-2">
+          <p className="text-[10px] text-neutral-500 text-center">
             No pressure. Only when you’re ready.
           </p>
         </motion.form>
@@ -124,7 +148,7 @@ export default function VIPProjectRequestPage() {
   );
 }
 
-/* ── Reusable Input Field ──────────────────────────────────────────────── */
+/* ── Reusable Components ──────────────────────────────────────────────── */
 
 interface InputFieldProps {
   label: string;
@@ -145,23 +169,21 @@ function InputField({
 }: InputFieldProps) {
   return (
     <div>
-      <label className="block text-xs text-neutral-300 mb-1">{label}</label>
-      <div className="flex items-center gap-2 rounded-2xl bg-black/30 border border-neutral-800 px-3 py-2.5">
-        {icon && <span className="text-neutral-500">{icon}</span>}
+      <label className="block text-xs text-neutral-300 mb-1.5">{label}</label>
+      <div className="flex items-center gap-3 rounded-2xl bg-black/40 border border-white/10 focus-within:border-[#d6cc6d] px-4 py-3 transition-colors">
+        {icon && <span className="text-[#d6cc6d]">{icon}</span>}
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           required={required}
-          className="w-full bg-transparent text-white text-sm placeholder:text-neutral-500 outline-none"
+          className="w-full bg-transparent text-white placeholder:text-neutral-500 outline-none text-sm"
         />
       </div>
     </div>
   );
 }
-
-/* ── Reusable TextArea Field ───────────────────────────────────────────── */
 
 interface TextAreaFieldProps {
   label: string;
@@ -180,14 +202,14 @@ function TextAreaField({
 }: TextAreaFieldProps) {
   return (
     <div>
-      <label className="block text-xs text-neutral-300 mb-1">{label}</label>
+      <label className="block text-xs text-neutral-300 mb-1.5">{label}</label>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        rows={4}
+        rows={5}
         required={required}
-        className="w-full rounded-2xl bg-black/30 border border-neutral-800 px-3 py-2.5 text-white text-sm placeholder:text-neutral-500 outline-none resize-none"
+        className="w-full rounded-2xl bg-black/40 border border-white/10 focus-within:border-[#d6cc6d] px-4 py-3 text-white placeholder:text-neutral-500 outline-none resize-none text-sm transition-colors"
       />
     </div>
   );

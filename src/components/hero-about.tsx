@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 export default function FynaroAboutHero() {
   return (
-    <section className="relative mt-15 min-h-screen w-full bg-[#050506] flex items-center overflow-hidden">
+    <section className="relative min-h-screen w-full bg-[#050506] flex items-center overflow-hidden">
       
       {/* Subtle background texture */}
       <div className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] bg-[length:50px_50px]" />
@@ -17,16 +17,24 @@ export default function FynaroAboutHero() {
           initial={{ opacity: 0, y: 60 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
-          className="space-y-10"
+          className="space-y-12"
         >
           
+          {/* New Bold Statement */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <p className="text-[#d6cc6d] mt-30 text-sm font-mono tracking-[4px] uppercase mb-3">
+              THE BEGINNING
+            </p>
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-[-2px] text-white">
+              Passion<br />Led Us Here
+            </h1>
+          </motion.div>
 
-          <h1 className="text-2xl sm:text-6xl lg:text-7xl font-semibold leading-[1.05] tracking-[-1.5px] text-white">
-            We build clean,<br />
-            powerful digital<br />
-            experiences.
-          </h1>
-
+          {/* Main Description */}
           <div className="max-w-lg space-y-6 text-[17px] leading-relaxed text-white/70">
             <p>
               Fynaro Tech is a modern digital studio crafting high-performance 
@@ -34,7 +42,7 @@ export default function FynaroAboutHero() {
             </p>
             <p>
               We combine design precision with technical excellence to deliver 
-              products that don’t just look good, they <span className="text-white">perform</span>.
+              products that don’t just look good — they <span className="text-white font-medium">perform</span>.
             </p>
           </div>
 
@@ -84,7 +92,7 @@ export default function FynaroAboutHero() {
 
       </div>
 
-      {/* SCROLL PROMPT - Fixed with proper distance */}
+      {/* SCROLL PROMPT */}
       <div className="absolute bottom-12 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center text-white/40 text-xs tracking-widest z-20">
         SCROLL TO DISCOVER
         <motion.div 
