@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.101.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.22",
     "gsap": "^3.13.0",
