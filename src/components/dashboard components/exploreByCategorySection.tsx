@@ -38,6 +38,7 @@ const defaultIcons: Record<string, ReactNode> = {
 
 // 🔗 Route mapping (adjust to your actual routes)
 const categoryRoutes: Record<string, string> = {
+  // Existing
   "brand-print": "/shop",
   "Brand & Print Studio": "/shop",
 
@@ -49,6 +50,16 @@ const categoryRoutes: Record<string, string> = {
 
   "fynaro-credits": "/shop/credits",
   "Fynaro Credits": "/shop/credits",
+
+  // ✅ ADD THESE (your actual categories)
+  "web-services": "/shop/web-services",
+  "Web Services": "/shop/web-services",
+
+  "printed-products": "/shop/printed-products",
+  "Printed Products": "/shop/printed-products",
+
+  "brand-design": "/shop/branding-services",
+  "Brand Design": "/shop/branding-services",
 };
 
 function getCategoryPath(cat: Category): string {
@@ -64,7 +75,7 @@ function getCategoryPath(cat: Category): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 
-  return `/${slug}`;
+  return `/shop/${slug}`; // ✅ FIXED HERE
 }
 
 // ✅ Keys for mapping active state from outside

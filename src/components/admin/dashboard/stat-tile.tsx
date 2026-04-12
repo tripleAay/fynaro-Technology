@@ -9,22 +9,27 @@ type StatTileProps = {
   icon: LucideIcon;
 };
 
-export default function StatTile({ title, count, icon: Icon }: StatTileProps) {
+export default function StatTile({
+  title,
+  count,
+  icon: Icon,
+}: StatTileProps) {
   return (
     <motion.div
       whileHover={{ y: -4 }}
-      className="min-w-0 rounded-2xl border border-white/10 bg-zinc-900/70 p-6 shadow-md backdrop-blur-md transition-all"
+      transition={{ duration: 0.2 }}
+      className="w-full min-w-0 rounded-2xl border border-black/10 bg-white p-5 shadow-sm"
     >
       <div className="flex items-center justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-sm text-white/60">{title}</p>
-          <h2 className="mt-2 truncate text-2xl font-semibold text-white">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-slate-500">{title}</p>
+          <h2 className="mt-2 truncate text-2xl font-semibold text-slate-900">
             {count}
           </h2>
         </div>
 
-        <div className="shrink-0 rounded-xl bg-[#d6cc6d]/20 p-3">
-          <Icon className="h-6 w-6 text-[#d6cc6d]" />
+        <div className="shrink-0 rounded-2xl bg-[#d6cc6d]/15 p-3">
+          <Icon className="h-5 w-5 text-[#8f8440]" />
         </div>
       </div>
     </motion.div>

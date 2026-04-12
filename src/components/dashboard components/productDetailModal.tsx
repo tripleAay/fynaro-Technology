@@ -3,10 +3,10 @@
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DetailedProduct } from "@/components/dashboard components/productTile";
+import ProductReviewPanel from "@/components/dashboard components/productReviewPanel";
 
-// ----- Props -----
 interface ProductDetailModalProps {
   product: DetailedProduct | null;
   open: boolean;
@@ -14,9 +14,8 @@ interface ProductDetailModalProps {
   onAddToCart?: (product: DetailedProduct) => void;
 }
 
-// ----- Stars Renderer -----
-const renderStars = (rating: number) => {          // ← removed : JSX.Element
-  const stars: React.ReactNode[] = [];            // ← React.ReactNode[]
+const renderStars = (rating: number) => {
+  const stars: React.ReactNode[] = [];
   const full = Math.floor(rating);
   const half = rating - full >= 0.5;
 
@@ -47,7 +46,6 @@ const renderStars = (rating: number) => {          // ← removed : JSX.Element
   return <div className="inline-flex items-center gap-1">{stars}</div>;
 };
 
-// ----- Modal Component -----
 export default function ProductDetailModal({
   product,
   open,
@@ -55,14 +53,33 @@ export default function ProductDetailModal({
   onAddToCart,
 }: ProductDetailModalProps) {
   const [activeIndex, setActiveIndex] = useState<number>(0);
+  const [showReviewPanel, setShowReviewPanel] = useState(false);
 
   useEffect(() => {
     setActiveIndex(0);
-  }, [product?.id]);
+    setShowReviewPanel(false);
+  }, [product?.id, open]);
+
+  const mainImage = useMemo(
+    () => product?.images?.[activeIndex] ?? product?.image ?? "",
+    [product, activeIndex]
+  );
 
   if (!product) return null;
 
-  const mainImage = product.images?.[activeIndex] ?? product.image ?? "";
+  const handleSubmitReview = (payload: {
+    name: string;
+    rating: number;
+    review: string;
+  }) => {
+    console.log("SUBMIT REVIEW:", {
+      productId: product.id,
+      productName: product.name,
+      ...payload,
+    });
+
+    setShowReviewPanel(false);
+  };
 
   return (
     <AnimatePresence>
@@ -73,7 +90,6 @@ export default function ProductDetailModal({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          {/* Backdrop */}
           <motion.button
             type="button"
             aria-label="Close product details"
@@ -84,10 +100,9 @@ export default function ProductDetailModal({
             exit={{ opacity: 0 }}
           />
 
-          {/* Card */}
           <motion.div
             layout
-            className="relative z-10 w-full max-w-lg md:max-w-3xl bg-white/96 rounded-2xl md:rounded-[1.75rem] border border-neutral-200/70 shadow-[0_22px_65px_rgba(0,0,0,0.35)] overflow-hidden p-4 sm:p-6 md:p-8"
+            className="relative z-10 w-full max-w-lg overflow-hidden rounded-2xl border border-neutral-200/70 bg-white/96 p-5 shadow-[0_22px_65px_rgba(0,0,0,0.35)] md:max-w-3xl md:rounded-[1.75rem] md:p-8"
             initial={{ opacity: 0, y: 40, scale: 0.94, filter: "blur(6px)" }}
             animate={{
               opacity: 1,
@@ -104,96 +119,127 @@ export default function ProductDetailModal({
               transition: { duration: 0.35, ease: "easeInOut" },
             }}
           >
-            {/* Close Button */}
             <button
-              className="absolute top-3 right-3 sm:top-4 sm:right-4 text-neutral-400 hover:text-neutral-800 transition"
+              className="absolute right-3 top-3 text-neutral-400 transition hover:text-neutral-800 sm:right-4 sm:top-4"
               onClick={onClose}
               aria-label="Close product details"
             >
-              <X className="w-5 h-5" />
+              <X className="h-5 w-5" />
             </button>
 
-            <div className="grid gap-5 md:gap-7 md:grid-cols-2 items-center">
-              {/* Main Image */}
-              <div className="relative w-full aspect-square rounded-xl md:rounded-2xl overflow-hidden bg-neutral-50 shadow-inner">
-                {mainImage && (
-                  <Image
-                    src={mainImage}
-                    alt={product.name}
-                    fill
-                    sizes="(max-width: 768px) 80vw, 40vw"
-                    className="object-contain"
-                  />
-                )}
-              </div>
+            <AnimatePresence mode="wait">
+              {!showReviewPanel ? (
+                <motion.div
+                  key="product-info"
+                  initial={{ opacity: 0, x: 18 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -18 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                  className="space-y-6"
+                >
+                  <div className="grid items-center gap-7 md:grid-cols-2">
+                    <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-neutral-50 shadow-inner md:rounded-2xl">
+                      {mainImage && (
+                        <Image
+                          src={mainImage}
+                          alt={product.name}
+                          fill
+                          sizes="(max-width: 768px) 80vw, 40vw"
+                          className="object-contain"
+                        />
+                      )}
+                    </div>
 
-              {/* Product Info */}
-              <div className="mt-2 md:mt-0">
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-[#111014] mb-2">
-                  {product.name}
-                </h2>
+                    <div className="space-y-5">
+                      <div className="space-y-2">
+                        <h2 className="text-xl font-semibold text-[#111014] sm:text-2xl md:text-3xl">
+                          {product.name}
+                        </h2>
 
-                <div className="flex items-center gap-2 mb-3">
-                  {renderStars(product.rating ?? 0)}   {/* ← added ?? 0 for safety */}
-                  <span className="text-xs text-gray-500">
-                    {(product.reviewsCount ?? 0).toLocaleString()} ratings
-                  </span>
-                </div>
+                        <div className="flex items-center gap-2">
+                          {renderStars(product.rating ?? 0)}
+                          <span className="text-xs text-gray-500">
+                            {(product.reviewsCount ?? 0).toLocaleString()} ratings
+                          </span>
+                        </div>
+                      </div>
 
-                <p className="text-neutral-600 mb-3 md:mb-4 leading-relaxed text-sm sm:text-[0.95rem]">
-                  {product.description}
-                </p>
+                      <p className="text-sm leading-relaxed text-neutral-600 sm:text-[0.95rem]">
+                        {product.description}
+                      </p>
 
-                <ul className="space-y-1.5 text-sm text-neutral-700 mb-4 md:mb-5">
-                  {product.specs.map((spec) => (
-                    <li key={spec.label}>
-                      <strong>{spec.label}:</strong> {spec.value}
-                    </li>
-                  ))}
-                </ul>
+                      <ul className="space-y-2 text-sm text-neutral-700">
+                        {product.specs.map((spec) => (
+                          <li key={spec.label}>
+                            <strong>{spec.label}:</strong> {spec.value}
+                          </li>
+                        ))}
+                      </ul>
 
-                <p className="text-xl sm:text-2xl font-semibold text-[#111014] mb-4">
-                  {product.price}
-                </p>
+                      <p className="text-xl font-semibold text-[#111014] sm:text-2xl">
+                        {product.price}
+                      </p>
 
-                {onAddToCart && (
-                  <motion.button
-                    whileTap={{ scale: 0.96 }}
-                    onClick={() => onAddToCart(product)}
-                    className="w-full sm:w-auto px-7 sm:px-9 py-2.5 sm:py-3 bg-[#111014] text-white rounded-full hover:bg-neutral-800 transition-all font-medium shadow-md hover:shadow-xl text-sm"
-                  >
-                    Add to Cart
-                  </motion.button>
-                )}
-              </div>
-            </div>
+                      {onAddToCart && (
+                        <motion.button
+                          whileTap={{ scale: 0.96 }}
+                          onClick={() => onAddToCart(product)}
+                          className="w-full rounded-full bg-[#111014] px-7 py-3 text-sm font-medium text-white transition-all hover:bg-neutral-800 hover:shadow-xl sm:w-auto sm:px-9"
+                        >
+                          Add to Cart
+                        </motion.button>
+                      )}
 
-            {/* Thumbnails */}
-            {product.images?.length > 1 && (
-              <div className="mt-4 md:mt-5 flex gap-2.5 sm:gap-3 justify-center flex-wrap">
-                {product.images.map((img, i) => {
-                  const isActive = i === activeIndex;
-                  return (
-                    <button
-                      key={img + i}
-                      type="button"
-                      onClick={() => setActiveIndex(i)}
-                      className={`relative w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden border transition ${
-                        isActive ? "border-[#111014]" : "border-neutral-200 hover:border-neutral-500"
-                      }`}
-                    >
-                      <Image
-                        src={img}
-                        alt={`${product.name} ${i + 1}`}
-                        fill
-                        sizes="64px"
-                        className="object-cover"
-                      />
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+                      <div className="pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setShowReviewPanel(true)}
+                          className="text-sm font-semibold tracking-[0.02em] text-[#c8a96a] underline decoration-[#d6cc6d]/50 underline-offset-4 transition hover:text-[#8f8440]"
+                        >
+                          Leave a review & rating
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {product.images?.length > 1 && (
+                    <div className="flex flex-wrap justify-center gap-2.5 pt-2 sm:gap-3">
+                      {product.images.map((img, i) => {
+                        const isActive = i === activeIndex;
+
+                        return (
+                          <button
+                            key={img + i}
+                            type="button"
+                            onClick={() => setActiveIndex(i)}
+                            className={`relative h-12 w-12 overflow-hidden rounded-lg border transition sm:h-16 sm:w-16 ${
+                              isActive
+                                ? "border-[#111014]"
+                                : "border-neutral-200 hover:border-neutral-500"
+                            }`}
+                          >
+                            <Image
+                              src={img}
+                              alt={`${product.name} ${i + 1}`}
+                              fill
+                              sizes="64px"
+                              className="object-cover"
+                            />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </motion.div>
+              ) : (
+                <ProductReviewPanel
+                  key="review-panel"
+                  productName={product.name}
+                  onBack={() => setShowReviewPanel(false)}
+                  onSubmitReview={handleSubmitReview}
+                />
+              )}
+            </AnimatePresence>
           </motion.div>
         </motion.div>
       )}
