@@ -24,15 +24,15 @@ const links = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const currentPath = pathname ?? "";
 
   const isActive = (href: string) => {
-    if (href === "/cp/admin") return pathname === href;
-    return pathname === href || pathname.startsWith(`${href}/`);
+    if (href === "/cp/admin") return currentPath === href;
+    return currentPath === href || currentPath.startsWith(`${href}/`);
   };
 
   return (
     <aside className="flex h-full w-full flex-col border-r border-black/5 bg-white">
-      
       <nav className="flex-1 space-y-2 overflow-y-auto px-4 py-5">
         {links.map((link) => {
           const Icon = link.icon;

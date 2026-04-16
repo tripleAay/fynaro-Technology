@@ -1,63 +1,132 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ProductActions from "@/components/admin/products/product-actions";
 import ProductGrid from "@/components/admin/products/product-grid";
 import type { AppProduct } from "@/types/product";
 
-const initialProducts: AppProduct[] = [
-  {
-    id: "1",
-    name: "Fynaro Limited Edition Hoodie",
-    price: "₦65,000.00",
-    category: "Merch",
-    image: "/images/hoodie.jpg",
-    images: ["/images/hoodie.jpg", "/images/hoodie-alt.png"],
-    description: "A rare drop featuring smooth fleece cotton.",
-    specs: [],
-    stock: "12 pcs",
-    status: "Active",
-    rating: 5,
-    tag: "🔥 Trending",
-    isHotStuff: true,
-  },
-  {
-    id: "2",
-    name: "Fynaro Premium Tote Bag",
-    price: "₦25,000.00",
-    category: "Accessories",
-    image: "/images/coolTee_shirt.jpg",
-    images: ["/images/coolTee_shirt.jpg"],
-    description: "A minimalist tote made from eco-friendly canvas.",
-    specs: [],
-    stock: "30 pcs",
-    status: "Draft",
-    rating: 4,
-    tag: "✨ Bestseller",
-    isHotStuff: false,
-  },
-];
-
 export default function AdminProductsPage() {
-  const [products, setProducts] = useState<AppProduct[]>(initialProducts);
+  const [products, setProducts] = useState<AppProduct[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleDelete = (id: string) => {
-    setProducts((prev) => prev.filter((product) => product.id !== id));
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch("/api/products", {
+        method: "GET",
+        cache: "no-store",
+      });
+
+      const text = await res.text();
+
+      let data: any;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error("Invalid server response");
+      }
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to fetch products");
+      }
+
+      setProducts(data.products ?? []);
+    } catch (error) {
+      console.error(error);
+      alert(error instanceof Error ? error.message : "Failed to fetch products");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleToggleHotStuff = (id: string) => {
-    setProducts((prev) =>
-      prev.map((product) =>
-        product.id === id
-          ? { ...product, isHotStuff: !product.isHotStuff }
-          : product
-      )
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const handleDelete = async (id: string | number) => {
+    const stringId = String(id);
+    const confirmed = window.confirm("Delete this product?");
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`/api/products/${stringId}`, {
+        method: "DELETE",
+      });
+
+      const text = await res.text();
+
+      let data: any;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error("Invalid server response");
+      }
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to delete product");
+      }
+
+      setProducts((prev) =>
+        prev.filter((product) => String(product.id) !== stringId)
+      );
+    } catch (error) {
+      console.error(error);
+      alert(error instanceof Error ? error.message : "Delete failed");
+    }
+  };
+
+  const handleToggleHotStuff = async (id: string | number) => {
+    const stringId = String(id);
+    const current = products.find(
+      (product) => String(product.id) === stringId
     );
+    if (!current) return;
+
+    const nextValue = !current.isHotStuff;
+
+    try {
+      const res = await fetch(`/api/products/${stringId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          isHotStuff: nextValue,
+        }),
+      });
+
+      const text = await res.text();
+
+      let data: any;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error("Invalid server response");
+      }
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to update product");
+      }
+
+      setProducts((prev) =>
+        prev.map((product) =>
+          String(product.id) === stringId
+            ? { ...product, isHotStuff: nextValue }
+            : product
+        )
+      );
+    } catch (error) {
+      console.error(error);
+      alert(error instanceof Error ? error.message : "Update failed");
+    }
   };
+
+  if (loading) {
+    return <div className="p-6 text-sm text-slate-500">Loading products...</div>;
+  }
 
   return (
     <div className="space-y-6">
-      <ProductActions />
+      <ProductActions onProductAdded={fetchProducts} />
       <ProductGrid
         products={products}
         onDelete={handleDelete}

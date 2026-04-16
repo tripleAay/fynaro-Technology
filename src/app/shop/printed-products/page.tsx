@@ -1,77 +1,84 @@
 "use client";
 
-import { useState, useEffect } from "react";
-
+import { useEffect, useState } from "react";
 import DashboardHeader from "@/components/dashboard components/mainheader";
 import DashboardBreadcrumb from "@/components/dashboard components/breadcrumb";
-import Footer from "@/components/footer";
-
+import PrintedProductsHero from "@/components/dashboard components/printed-products-hero";
+import PrintedProductsTilesSection from "@/components/dashboard components/printedProductsTilesSection";
 import HowItWorksSection from "@/components/dashboard components/howItWorksSection";
 import ProjectModeCTA from "@/components/dashboard components/projectModeCTA";
+import ExploreByCategorySection from "@/components/dashboard components/exploreByCategorySection";
+import Footer from "@/components/footer";
 
-// 🔹 Dashboard-style categories (AutoTech-flavoured)
 const dashboardCategories = [
-    {
-        id: "web-services",
-        name: "Web Services",
-        image: "/categories/web.png",
-        description:
-            "Landing pages, dashboards & booking flows for AutoTech brands.",
-        badge: "AutoTech",
-    },
-    {
-        id: "brand-design",
-        name: "Brand Design",
-        image: "/categories/design.png",
-        description: "Logos, identity systems and brand kits for serious teams.",
-        badge: "Studio",
-    },
-    {
-        id: "printed-products",
-        name: "Printed Products",
-        image: "/categories/print.png",
-        description: "Business cards, merch, packaging and rollout materials.",
-        badge: "Print",
-    },
+  {
+    id: "web-services",
+    name: "Web & Mobile App",
+    image: "/categories/web.png",
+    description:
+      "High-performance websites, mobile apps and digital product experiences crafted to position your brand with clarity, speed and premium execution.",
+    badge: "Digital Build",
+  },
+  {
+    id: "services",
+    name: "Services",
+    image: "/categories/design.png",
+    description:
+      "Explore Fynaro’s service offers, pricing and execution options across websites, design, product support and brand-focused solutions for serious businesses.",
+    badge: "Pricing & Offers",
+  },
+  {
+    id: "printed-products",
+    name: "Printed Products",
+    image: "/categories/print.png",
+    description:
+      "Premium print, packaging and branded materials designed to carry your identity beautifully into the physical world.",
+    badge: "Physical Brand",
+  },
 ];
 
-export default function ShopPage() {
-    const [activeCategoryId, setActiveCategoryId] = useState<string | number>(
-        "web-services"
-    );
+export default function PrintedProductsPage() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeCategoryId, setActiveCategoryId] = useState("printed-products");
 
-    const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setIsLoading(false), 800);
+    return () => clearTimeout(t);
+  }, []);
 
-    useEffect(() => {
-        const t = setTimeout(() => setIsLoading(false), 800);
-        return () => clearTimeout(t);
-    }, []);
+  return (
+    <div className="min-h-screen bg-[#050506] text-white">
+      <DashboardHeader />
 
-    return (
-        <div className="min-h-screen bg-[#050506] text-white">
-            {/* Header */}
-            <DashboardHeader />
-            {/* Breadcrumb */}
-            <div className="pt-20 pb-4 border-b border-white/5">
-                <DashboardBreadcrumb
-                    items={[
-                        { label: "Shop", href: "/shop" },
-                        { label: "Printed Products" },
-                    ]}
-                />
-            </div>
+      <div className="border-b border-white/5 pb-4 pt-20">
+        <DashboardBreadcrumb
+          items={[
+            { label: "Shop", href: "/shop" },
+            { label: "Printed Products" },
+          ]}
+        />
+      </div>
 
-            {/* Main Content */}
-            <main className="pt-16">
-                {/* ===================== How It Works ===================== */}
-                <HowItWorksSection isLoading={isLoading} />
+      <PrintedProductsHero />
 
-                {/* ===================== Call-to-Action ===================== */}
-                <ProjectModeCTA />
-            </main>
+      <main className="pt-6">
+        <PrintedProductsTilesSection />
 
-            {/* Footer */}
-            <Footer />
-        </div>
-    );
+        <ExploreByCategorySection
+          isLoading={isLoading}
+          categories={dashboardCategories}
+          activeCategoryId={activeCategoryId}
+          onSelectCategory={(cat) => {
+            setActiveCategoryId(String(cat.id));
+            console.log("Selected category:", cat.id);
+          }}
+        />
+
+        <HowItWorksSection isLoading={isLoading} />
+        <ProjectModeCTA />
+      </main>
+
+      <Footer />
+    </div>
+  );
 }

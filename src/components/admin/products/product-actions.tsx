@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { Plus, Upload, Boxes } from "lucide-react";
 
-export default function ProductActions() {
+type Props = {
+  onProductAdded?: () => Promise<void>;
+};
+
+export default function ProductActions({ onProductAdded }: Props) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
@@ -24,6 +28,7 @@ export default function ProductActions() {
 
         <button
           type="button"
+          onClick={onProductAdded}
           className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
         >
           <Upload className="h-4 w-4" />

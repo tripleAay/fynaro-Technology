@@ -22,18 +22,34 @@ export default function ProductCard({
     "Out of Stock": "bg-rose-50 text-rose-700 border-rose-100",
   };
 
+  const gallery =
+    product.images?.length > 0
+      ? product.images.slice(0, 4)
+      : product.image
+      ? [product.image]
+      : [];
+
   return (
     <article className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
-        <Image
-          src={product.image}
-          alt={product.name}
-          fill
-          className="object-cover"
-        />
+      <div className="relative bg-slate-100 p-3">
+        <div className="grid grid-cols-2 gap-2">
+          {gallery.map((img, index) => (
+            <div
+              key={`${img}-${index}`}
+              className="relative aspect-square overflow-hidden rounded-xl bg-slate-200"
+            >
+              <Image
+                src={img}
+                alt={`${product.name} ${index + 1}`}
+                fill
+                className="object-cover"
+              />
+            </div>
+          ))}
+        </div>
 
         {product.isHotStuff && (
-          <div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/70 px-3 py-1 text-[11px] font-medium text-white">
+          <div className="absolute left-5 top-5 inline-flex items-center gap-1 rounded-full bg-black/70 px-3 py-1 text-[11px] font-medium text-white">
             <Flame className="h-3 w-3 text-orange-400" />
             Hot Stuff
           </div>

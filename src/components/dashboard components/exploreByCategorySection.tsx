@@ -1,16 +1,13 @@
-// components/dashboard/ExploreByCategorySection.tsx
 "use client";
 
 import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
-  Car,
   Boxes,
-  Cog,
-  CreditCard,
-  PenTool,
-  Smartphone,
+  BriefcaseBusiness,
+  MonitorSmartphone,
+  Package,
 } from "lucide-react";
 
 export type Category = {
@@ -22,50 +19,39 @@ export type Category = {
 
 type ExploreByCategorySectionProps = {
   isLoading?: boolean;
-  categories: Category[]; // Added categories prop
+  categories: Category[];
   activeCategoryId?: string | number;
   onSelectCategory?: (category: Category) => void;
 };
 
-// 🎯 Icon mapping
+// ✅ Brand-correct icon mapping
 const defaultIcons: Record<string, ReactNode> = {
-  "Brand & Print Studio": <PenTool size={24} />,
-  "Web & Mobile Service": <Smartphone size={24} />,
-  "Auto Tech": <Car size={26} />,
-  "Fynaro Credits": <CreditCard size={24} />,
-  Settings: <Cog size={24} />,
+  "Web & Mobile App": <MonitorSmartphone size={24} />,
+  "Services": <BriefcaseBusiness size={24} />,
+  "Printed Products": <Package size={24} />,
+
+  "web-services": <MonitorSmartphone size={24} />,
+  services: <BriefcaseBusiness size={24} />,
+  "printed-products": <Package size={24} />,
 };
 
-// 🔗 Route mapping (adjust to your actual routes)
+// ✅ Route mapping
 const categoryRoutes: Record<string, string> = {
-  // Existing
-  "brand-print": "/shop",
-  "Brand & Print Studio": "/shop",
-
-  "web-mobile": "/shop/web-mobile",
-  "Web & Mobile Service": "/shop/web-mobile",
-
-  "auto-tech": "/shop/auto-tech",
-  "Auto Tech": "/shop/auto-tech",
-
-  "fynaro-credits": "/shop/credits",
-  "Fynaro Credits": "/shop/credits",
-
-  // ✅ ADD THESE (your actual categories)
   "web-services": "/shop/web-services",
-  "Web Services": "/shop/web-services",
+  "Web & Mobile App": "/shop/web-services",
+
+  services: "/shop/services",
+  Services: "/shop/services",
 
   "printed-products": "/shop/printed-products",
   "Printed Products": "/shop/printed-products",
-
-  "brand-design": "/shop/branding-services",
-  "Brand Design": "/shop/branding-services",
 };
 
 function getCategoryPath(cat: Category): string {
   if (typeof cat.id === "string" && categoryRoutes[cat.id]) {
     return categoryRoutes[cat.id];
   }
+
   if (categoryRoutes[cat.name]) {
     return categoryRoutes[cat.name];
   }
@@ -75,43 +61,34 @@ function getCategoryPath(cat: Category): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 
-  return `/shop/${slug}`; // ✅ FIXED HERE
+  return `/shop/${slug}`;
 }
 
-// ✅ Keys for mapping active state from outside
-const BRAND_PRINT_KEYS = [
-  "brand-print",
-  "Brand & Print Studio",
-  "Branding",
-  "branding",
-  "Print",
-  "print",
-];
-
-const WEB_MOBILE_KEYS = [
-  "web-mobile",
-  "Web & Mobile Service",
-  "Web",
+// ✅ Active keys per category
+const WEB_APP_KEYS = [
+  "web-services",
+  "Web & Mobile App",
+  "web-mobile-app",
   "web",
-  "Web Service",
-  "web-service",
-  "Mobile",
-  "mobile",
 ];
 
-const AUTO_TECH_KEYS = ["auto-tech", "Auto Tech", "autotech", "auto_tech"];
+const SERVICES_KEYS = [
+  "services",
+  "Services",
+  "pricing-offers",
+  "service",
+];
 
-const CREDITS_KEYS = [
-  "fynaro-credits",
-  "Fynaro Credits",
-  "credits",
-  "credit",
-  "fynaro_credits",
+const PRINT_KEYS = [
+  "printed-products",
+  "Printed Products",
+  "print",
+  "printed",
 ];
 
 export default function ExploreByCategorySection({
   isLoading,
-  categories, // Use categories from props
+  categories,
   activeCategoryId,
   onSelectCategory,
 }: ExploreByCategorySectionProps) {
@@ -123,13 +100,13 @@ export default function ExploreByCategorySection({
   if (isLoading) {
     return (
       <section className="mt-10 mb-6 px-4 sm:px-6 lg:px-10">
-        <div className="animate-pulse max-w-6xl mx-auto">
-          <div className="h-6 w-56 bg-neutral-800/70 rounded-full mb-4" />
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4">
-            {Array.from({ length: 4 }).map((_, i) => (
+        <div className="mx-auto max-w-6xl animate-pulse">
+          <div className="mb-4 h-6 w-56 rounded-full bg-neutral-800/70" />
+          <div className="grid grid-cols-2 gap-4 pt-4 sm:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={i}
-                className="h-32 bg-neutral-900/70 border border-neutral-800/80 rounded-xl"
+                className="h-32 rounded-xl border border-neutral-800/80 bg-neutral-900/70"
               />
             ))}
           </div>
@@ -140,38 +117,46 @@ export default function ExploreByCategorySection({
 
   return (
     <section className="mt-10 mb-6 px-4 sm:px-6 lg:px-10">
-      <div className="max-w-6xl mx-auto flex flex-col items-center text-center mb-8 sm:mb-10">
-        <div className="inline-flex items-center gap-2 rounded-full bg-neutral-900/60 border border-neutral-800 px-3 py-1 mb-3">
+      <div className="mx-auto mb-8 flex max-w-6xl flex-col items-center text-center sm:mb-10">
+        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-neutral-800 bg-neutral-900/60 px-3 py-1">
           <span className="h-1.5 w-1.5 rounded-full bg-[#c8a96a]" />
-          <span className="text-[11px] sm:text-xs font-medium text-neutral-200 tracking-tight">
-            Brand & Print · Web & Mobile · AutoTech · Credits
+          <span className="text-[11px] font-medium tracking-tight text-neutral-200 sm:text-xs">
+            Web & Mobile · Services · Printed Products
           </span>
         </div>
 
-        <h2 className="text-2xl sm:text-3xl font-semibold mb-2">
+        <h2 className="mb-2 text-2xl font-semibold sm:text-3xl">
           Explore your Fynaro workspace
         </h2>
-        <p className="text-xs sm:text-sm text-neutral-400 max-w-lg">
-          Four pillars, one ecosystem — manage your brand, web, auto services and
-          credits from a single, calm view.
+
+        <p className="max-w-lg text-xs text-neutral-400 sm:text-sm">
+          Three pillars, one ecosystem — explore digital builds, service offers
+          and printed brand materials from one refined space.
         </p>
       </div>
 
-      <div className="max-w-6xl mx-auto">
+      <div className="mx-auto max-w-6xl">
         <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
-          {categories.map((cat) => { // Use categories from props
+          {categories.map((cat) => {
             const key = cat.id;
 
-            // 🔥 Smart active state mapping
             let isActive = false;
-            if (cat.id === "brand-print") {
-              isActive = BRAND_PRINT_KEYS.includes(activeKey);
-            } else if (cat.id === "web-mobile") {
-              isActive = WEB_MOBILE_KEYS.includes(activeKey);
-            } else if (cat.id === "auto-tech") {
-              isActive = AUTO_TECH_KEYS.includes(activeKey);
-            } else if (cat.id === "fynaro-credits") {
-              isActive = CREDITS_KEYS.includes(activeKey);
+
+            if (
+              WEB_APP_KEYS.includes(String(cat.id)) ||
+              WEB_APP_KEYS.includes(cat.name)
+            ) {
+              isActive = WEB_APP_KEYS.includes(activeKey);
+            } else if (
+              SERVICES_KEYS.includes(String(cat.id)) ||
+              SERVICES_KEYS.includes(cat.name)
+            ) {
+              isActive = SERVICES_KEYS.includes(activeKey);
+            } else if (
+              PRINT_KEYS.includes(String(cat.id)) ||
+              PRINT_KEYS.includes(cat.name)
+            ) {
+              isActive = PRINT_KEYS.includes(activeKey);
             }
 
             const isLoadingThis = loadingKey === key;
@@ -183,6 +168,7 @@ export default function ExploreByCategorySection({
               setLoadingKey(key);
 
               const target = getCategoryPath(cat);
+
               setTimeout(() => {
                 router.push(target);
               }, 800);
@@ -190,7 +176,7 @@ export default function ExploreByCategorySection({
 
             return (
               <motion.button
-                key={key}
+                key={String(key)}
                 type="button"
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.97 }}
@@ -200,10 +186,9 @@ export default function ExploreByCategorySection({
                   relative overflow-hidden cursor-pointer
                   w-[46%] xs:w-[44%] sm:w-[15rem] lg:w-[15.5rem]
                   rounded-2xl border bg-gradient-to-b from-white/95 to-neutral-50
-                  dark:from-neutral-900 dark:to-neutral-950
-                  px-4 sm:px-5 py-5 sm:py-6
-                  flex flex-col items-center text-center shadow-sm
-                  transition-all duration-200
+                  px-4 py-5 text-center shadow-sm transition-all duration-200
+                  dark:from-neutral-900 dark:to-neutral-950 sm:px-5 sm:py-6
+                  flex flex-col items-center
                   ${
                     isActive
                       ? "border-[#c8a96a] shadow-[0_0_0_1px_rgba(200,169,106,0.45)]"
@@ -212,20 +197,21 @@ export default function ExploreByCategorySection({
                   ${isLoadingThis ? "opacity-80" : ""}
                 `}
               >
-                {/* subtle top glow in Fynaro gold */}
                 <div className="pointer-events-none absolute inset-x-0 -top-6 h-12 bg-gradient-to-b from-[#c8a96a]/22 to-transparent" />
 
-                <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#f3e8d0] dark:bg-[#c8a96a]/12 text-[#c8a96a]">
-                  {cat.icon ?? defaultIcons[cat.name] ?? <Boxes size={22} />}
+                <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#f3e8d0] text-[#c8a96a] dark:bg-[#c8a96a]/12">
+                  {cat.icon ??
+                    defaultIcons[String(cat.id)] ??
+                    defaultIcons[cat.name] ?? <Boxes size={22} />}
                 </div>
 
                 <h3
-                  className={`text-sm sm:text-[0.95rem] font-medium tracking-tight flex items-center justify-center gap-2
-                    ${
-                      isActive
-                        ? "text-[#c8a96a]"
-                        : "text-neutral-900 dark:text-neutral-50"
-                    }`}
+                  className={`flex items-center justify-center gap-2 text-sm font-medium tracking-tight sm:text-[0.95rem]
+                  ${
+                    isActive
+                      ? "text-[#c8a96a]"
+                      : "text-neutral-900 dark:text-neutral-50"
+                  }`}
                 >
                   {isLoadingThis && (
                     <motion.span
@@ -243,7 +229,7 @@ export default function ExploreByCategorySection({
                 </h3>
 
                 {cat.description && (
-                  <p className="mt-2 text-[11px] sm:text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2">
+                  <p className="mt-2 line-clamp-2 text-[11px] text-neutral-500 dark:text-neutral-400 sm:text-xs">
                     {cat.description}
                   </p>
                 )}

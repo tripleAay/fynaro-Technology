@@ -18,25 +18,27 @@ import ProjectModeCTA from "../../components/dashboard components/projectModeCTA
 const dashboardCategories = [
   {
     id: "web-services",
-    name: "Web Services",
+    name: "Web & Mobile App",
     image: "/categories/web.png",
     description:
-      "Landing pages, dashboards & booking flows for AutoTech brands.",
-    badge: "AutoTech",
+      "High-performance websites, mobile apps and digital product experiences crafted to position your brand with clarity, speed and premium execution.",
+    badge: "Digital Build",
   },
   {
-    id: "brand-design",
-    name: "Brand Design",
+    id: "services",
+    name: "Services",
     image: "/categories/design.png",
-    description: "Logos, identity systems and brand kits for serious teams.",
-    badge: "Studio",
+    description:
+      "Explore Fynaro’s service offers, pricing and execution options across websites, design, product support and brand-focused solutions for serious businesses.",
+    badge: "Pricing & Offers",
   },
   {
     id: "printed-products",
     name: "Printed Products",
     image: "/categories/print.png",
-    description: "Business cards, merch, packaging and rollout materials.",
-    badge: "Print",
+    description:
+      "Premium print, packaging and branded materials designed to carry your identity beautifully into the physical world.",
+    badge: "Physical Brand",
   },
 ];
 

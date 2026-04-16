@@ -5,8 +5,8 @@ import type { AppProduct } from "@/types/product";
 
 type ProductGridProps = {
   products: AppProduct[];
-  onDelete?: (id: string) => void;
-  onToggleHotStuff?: (id: string) => void;
+  onDelete?: (id: string | number) => void;
+  onToggleHotStuff?: (id: string | number) => void;
 };
 
 export default function ProductGrid({

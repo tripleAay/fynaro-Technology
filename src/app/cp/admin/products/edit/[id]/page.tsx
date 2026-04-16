@@ -1,41 +1,63 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { UploadCloud, X, Trash2, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import type { AppProduct } from "@/types/product";
 
 const MAX_IMAGES = 4;
 
-export default function EditProductPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default function EditProductPage() {
+  const params = useParams<{ id: string }>();
+  const productId = params?.id;
+
   const [form, setForm] = useState<AppProduct | null>(null);
   const [previewImages, setPreviewImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const mock: AppProduct = {
-      id: params.id,
-      name: "Fynaro Premium Hoodie",
-      price: "₦65,000",
-      category: "Apparel",
-      image: "/images/hoodie.jpg",
-      images: ["/images/hoodie.jpg"],
-      description: "Premium hoodie for bold people.",
-      specs: [],
-      rating: 5,
-      stock: "6 pcs",
-      status: "Active",
-      isHotStuff: true,
+    if (!productId) return;
+
+    const fetchProduct = async () => {
+      try {
+        const res = await fetch(`/api/products/${productId}`, {
+          method: "GET",
+          cache: "no-store",
+        });
+
+        const text = await res.text();
+
+        let data: any;
+        try {
+          data = JSON.parse(text);
+        } catch {
+          throw new Error(`Invalid server response: ${text}`);
+        }
+
+        if (!res.ok) {
+          throw new Error(data?.error || "Failed to fetch product");
+        }
+
+        const product: AppProduct = data.product;
+
+        setForm(product);
+        setPreviewImages(
+          product.images?.length
+            ? product.images
+            : product.image
+            ? [product.image]
+            : []
+        );
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    setForm(mock);
-    setPreviewImages(mock.images);
-    setLoading(false);
-  }, [params.id]);
+    fetchProduct();
+  }, [productId]);
 
   if (loading || !form) {
     return <p className="text-sm text-slate-500">Loading product...</p>;
@@ -48,7 +70,10 @@ export default function EditProductPage({
 
     setForm((prev) => ({
       ...prev!,
-      [name]: value,
+      [name]:
+        name === "rating" || name === "reviewsCount"
+          ? Number(value)
+          : value,
     }));
   };
 
@@ -65,61 +90,67 @@ export default function EditProductPage({
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
 
-    const limited = files.slice(0, MAX_IMAGES);
-    const urls = limited.map((file) => URL.createObjectURL(file));
+    const newUrls = files.map((file) => URL.createObjectURL(file));
 
-    setPreviewImages(urls);
+    setPreviewImages((prev) => {
+      const merged = [...prev, ...newUrls].slice(0, MAX_IMAGES);
 
-    setForm((prev) => ({
-      ...prev!,
-      image: urls[0],
-      images: urls,
-    }));
+      setForm((current) => ({
+        ...current!,
+        image: merged[0] ?? "",
+        images: merged,
+      }));
+
+      return merged;
+    });
+
+    e.target.value = "";
   };
 
   const removeImage = (index: number) => {
-    const updated = [...previewImages];
-    updated.splice(index, 1);
+    setPreviewImages((prev) => {
+      const updated = [...prev];
+      const removed = updated[index];
 
-    setPreviewImages(updated);
+      if (removed?.startsWith("blob:")) {
+        URL.revokeObjectURL(removed);
+      }
 
-    setForm((prev) => ({
-      ...prev!,
-      image: updated[0] ?? "",
-      images: updated,
-    }));
+      updated.splice(index, 1);
+
+      setForm((current) => ({
+        ...current!,
+        image: updated[0] ?? "",
+        images: updated,
+      }));
+
+      return updated;
+    });
   };
 
-  const handleUpdate = (e: React.FormEvent) => {
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("UPDATE PRODUCT:", form);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     console.log("DELETE PRODUCT:", form.id);
   };
 
   return (
     <div className="max-w-3xl space-y-6">
-
-      {/* 🔥 BREADCRUMB */}
       <div className="flex items-center gap-2 text-sm text-slate-500">
         <Link href="/cp/admin" className="hover:text-slate-900">
           Dashboard
         </Link>
         <ChevronRight size={14} />
-
         <Link href="/cp/admin/products" className="hover:text-slate-900">
           Products
         </Link>
         <ChevronRight size={14} />
-
-        <span className="font-medium text-slate-900">
-          Edit Product
-        </span>
+        <span className="font-medium text-slate-900">Edit Product</span>
       </div>
 
-      {/* HEADER */}
       <div>
         <p className="text-sm text-slate-500">Products</p>
         <h1 className="text-3xl font-semibold text-slate-900">
@@ -131,7 +162,6 @@ export default function EditProductPage({
         onSubmit={handleUpdate}
         className="space-y-6 rounded-2xl border border-black/5 bg-white p-6 shadow-sm"
       >
-        {/* IMAGES */}
         <div className="space-y-3">
           <label className="text-sm font-medium text-slate-700">
             Product Images
@@ -142,6 +172,7 @@ export default function EditProductPage({
             <p className="text-sm text-slate-500">Upload images</p>
             <input
               type="file"
+              accept="image/*"
               multiple
               className="hidden"
               onChange={handleImages}
@@ -150,11 +181,21 @@ export default function EditProductPage({
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {previewImages.map((img, i) => (
-              <div key={i} className="relative">
+              <div
+                key={`${img}-${i}`}
+                className="relative overflow-hidden rounded-xl border border-slate-200 bg-slate-100"
+              >
                 <img
                   src={img}
-                  className="h-28 w-full rounded-xl object-cover"
+                  alt={`Preview ${i + 1}`}
+                  className="h-28 w-full object-cover"
                 />
+
+                {i === 0 && (
+                  <div className="absolute left-2 top-2 rounded-full bg-black/75 px-2.5 py-1 text-[10px] font-medium text-white">
+                    Cover
+                  </div>
+                )}
 
                 <button
                   type="button"
@@ -168,7 +209,6 @@ export default function EditProductPage({
           </div>
         </div>
 
-        {/* NAME */}
         <div>
           <label className="text-sm font-medium">Product Name</label>
           <input
@@ -179,7 +219,6 @@ export default function EditProductPage({
           />
         </div>
 
-        {/* PRICE + CATEGORY */}
         <div className="grid grid-cols-2 gap-4">
           <input
             name="price"
@@ -189,13 +228,12 @@ export default function EditProductPage({
           />
           <input
             name="category"
-            value={form.category}
+            value={form.category ?? ""}
             onChange={handleChange}
             className="rounded-xl border px-4 py-3"
           />
         </div>
 
-        {/* DESCRIPTION */}
         <textarea
           name="description"
           value={form.description}
@@ -204,30 +242,73 @@ export default function EditProductPage({
           className="w-full rounded-xl border px-4 py-3"
         />
 
-        {/* STATUS */}
-        <select
-          name="status"
-          value={form.status}
-          onChange={handleChange}
-          className="w-full rounded-xl border px-4 py-3"
-        >
-          <option>Active</option>
-          <option>Draft</option>
-          <option>Out of Stock</option>
-        </select>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <input
+            type="number"
+            name="rating"
+            min={1}
+            max={5}
+            step={0.1}
+            value={form.rating}
+            onChange={handleChange}
+            className="rounded-xl border px-4 py-3"
+          />
+          <input
+            type="number"
+            name="reviewsCount"
+            min={0}
+            value={form.reviewsCount ?? 0}
+            onChange={handleChange}
+            className="rounded-xl border px-4 py-3"
+          />
+          <input
+            name="stock"
+            value={form.stock ?? ""}
+            onChange={handleChange}
+            className="rounded-xl border px-4 py-3"
+          />
+          <select
+            name="status"
+            value={form.status}
+            onChange={handleChange}
+            className="rounded-xl border px-4 py-3"
+          >
+            <option>Active</option>
+            <option>Draft</option>
+            <option>Out of Stock</option>
+          </select>
+        </div>
 
-        {/* HOT STUFF */}
+        <div>
+          <label className="text-sm font-medium">Tag</label>
+          <input
+            name="tag"
+            value={form.tag ?? ""}
+            onChange={handleChange}
+            className="mt-2 w-full rounded-xl border px-4 py-3"
+          />
+        </div>
+
         <label className="flex items-center gap-3 rounded-xl border p-4">
           <input
             type="checkbox"
             name="isHotStuff"
-            checked={form.isHotStuff}
+            checked={!!form.isHotStuff}
             onChange={handleCheckbox}
           />
           Feature in Hot Stuff
         </label>
 
-        {/* ACTIONS */}
+        <label className="flex items-center gap-3 rounded-xl border p-4">
+          <input
+            type="checkbox"
+            name="isFulfilled"
+            checked={!!form.isFulfilled}
+            onChange={handleCheckbox}
+          />
+          Fulfilled by Fynaro
+        </label>
+
         <div className="flex justify-between">
           <button
             type="button"

@@ -26,10 +26,11 @@ const links = [
 export default function MobileSideNav() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const currentPath = pathname ?? "";
 
   const isActive = (href: string) => {
-    if (href === "/cp/admin") return pathname === href;
-    return pathname === href || pathname.startsWith(`${href}/`);
+    if (href === "/cp/admin") return currentPath === href;
+    return currentPath === href || currentPath.startsWith(`${href}/`);
   };
 
   return (
