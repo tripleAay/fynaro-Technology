@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import {useAuth} from "@/hooks/useAuth";
 import {
   FiShoppingBag,
   FiBell,
@@ -49,9 +50,12 @@ export default function Header({
   projectRequestJustCreated = false,
 }: HeaderProps) {
   const { items } = useCart();
-
+  // ✅ FIX: Renamed destructured `loading` from useAuth to `authLoading`
+  //         to avoid collision with the local `isLocalLoading` state below.
+  const { user, isLoggedIn, loading: authLoading } = useAuth();
   const [name, setName] = useState("");
-  const [loading, setLoading] = useState(true);
+  // ✅ FIX: Renamed from `loading` / `setLoading` to avoid duplicate identifier.
+  const [isLocalLoading, setIsLocalLoading] = useState(true);
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [messagesOpen, setMessagesOpen] = useState(false);
@@ -60,7 +64,7 @@ export default function Header({
   useEffect(() => {
     if (userName) {
       setName(userName);
-      setLoading(false);
+      setIsLocalLoading(false);
       return;
     }
 
@@ -75,7 +79,7 @@ export default function Header({
       }
     }
 
-    setLoading(false);
+    setIsLocalLoading(false);
   }, [userName]);
 
   const cartCount = useMemo(() => {
@@ -165,13 +169,14 @@ export default function Header({
     },
   ];
 
-  if (loading) return <HeaderSkeleton />;
+  // ✅ FIX: Uses renamed `isLocalLoading` instead of the old `loading`
+  if (isLocalLoading) return <HeaderSkeleton />;
 
   return (
     <>
       <header className="fixed left-0 top-0 z-40 w-full border-b border-white/10 bg-black/95 text-white backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-10">
-          <Link href="/" className="flex items-center">
+          <Link href="/shop" className="flex items-center">
             <Image
               src="/images/fynaro-tech logo.png"
               alt="Fynaro Tech Logo"

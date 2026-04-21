@@ -13,19 +13,19 @@ type PayNowButtonProps = {
   serviceId: string;
   serviceTitle: string;
   amount: number;
-  customerName: string;
-  customerEmail: string;
-  customerPhone?: string;
   currency?: string;
   redirectUrl?: string;
   className?: string;
   buttonText?: string;
+  disabled?: boolean;
+
+  // optional now
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
+
   onVerified?: (payload: unknown) => void;
 };
-
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
 
 function normalizeAmount(value: number) {
   if (!Number.isFinite(value) || value <= 0) return 0;
@@ -42,54 +42,71 @@ export default function PayNowButton({
   serviceId,
   serviceTitle,
   amount,
-  customerName,
-  customerEmail,
-  customerPhone,
   currency = "NGN",
   redirectUrl = "/shop/success",
   className,
-  buttonText = "Pay Now",
+  buttonText = "Proceed to checkout",
+  disabled = false,
+  customerName,
+  customerEmail,
+  customerPhone,
   onVerified,
 }: PayNowButtonProps) {
   const [isReady, setIsReady] = useState(false);
   const [isLaunching, setIsLaunching] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const scriptAddedByThisComponent = useRef(false);
+  const mountedScriptRef = useRef(false);
 
   useEffect(() => {
-    const existing = document.querySelector(
+    const existingScript = document.querySelector(
       'script[src="https://checkout.flutterwave.com/v3.js"]'
     ) as HTMLScriptElement | null;
 
-    if (existing) {
+    if (existingScript) {
       if (window.FlutterwaveCheckout) {
         setIsReady(true);
         return;
       }
 
-      const handleExistingLoad = () => setIsReady(true);
-      existing.addEventListener("load", handleExistingLoad);
+      const handleLoad = () => setIsReady(true);
+      const handleError = () => {
+        setErrorMessage(
+          "Unable to load payment gateway. Please refresh and try again."
+        );
+        setIsReady(false);
+      };
+
+      existingScript.addEventListener("load", handleLoad);
+      existingScript.addEventListener("error", handleError);
 
       return () => {
-        existing.removeEventListener("load", handleExistingLoad);
+        existingScript.removeEventListener("load", handleLoad);
+        existingScript.removeEventListener("error", handleError);
       };
     }
 
     const script = document.createElement("script");
     script.src = "https://checkout.flutterwave.com/v3.js";
     script.async = true;
-    script.onload = () => setIsReady(true);
+
+    script.onload = () => {
+      setIsReady(true);
+      setErrorMessage("");
+    };
+
     script.onerror = () => {
-      setErrorMessage("Unable to load payment gateway. Please refresh and try again.");
+      setErrorMessage(
+        "Unable to load payment gateway. Please refresh and try again."
+      );
       setIsReady(false);
     };
 
     document.body.appendChild(script);
-    scriptAddedByThisComponent.current = true;
+    mountedScriptRef.current = true;
 
     return () => {
-      if (scriptAddedByThisComponent.current && script.parentNode) {
+      if (mountedScriptRef.current && script.parentNode) {
         script.parentNode.removeChild(script);
       }
     };
@@ -98,14 +115,23 @@ export default function PayNowButton({
   const handlePay = async () => {
     setErrorMessage("");
 
-    const cleanName = customerName.trim();
-    const cleanEmail = customerEmail.trim();
-    const cleanPhone = customerPhone?.trim() || "";
-    const normalizedAmount = normalizeAmount(amount);
     const publicKey = process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY;
+    const fallbackEmail =
+      process.env.NEXT_PUBLIC_FLUTTERWAVE_FALLBACK_EMAIL ||
+      "payments@fynarotech.com";
+
+    const cleanEmail = (customerEmail || fallbackEmail).trim();
+    const cleanName = (customerName || "Fynaro Customer").trim();
+    const cleanPhone = (customerPhone || "").trim();
+
+    const normalizedAmount = normalizeAmount(amount);
+
+    if (disabled) return;
 
     if (!isReady || !window.FlutterwaveCheckout) {
-      setErrorMessage("Payment service is still loading. Please try again in a moment.");
+      setErrorMessage(
+        "Payment service is still loading. Please try again in a moment."
+      );
       return;
     }
 
@@ -124,29 +150,17 @@ export default function PayNowButton({
       return;
     }
 
-    if (!cleanName) {
-      setErrorMessage("Please enter your full name before payment.");
-      return;
-    }
-
-    if (!cleanEmail) {
-      setErrorMessage("Please enter your email address before payment.");
-      return;
-    }
-
-    if (!isValidEmail(cleanEmail)) {
-      setErrorMessage("Please enter a valid email address.");
-      return;
-    }
-
     if (normalizedAmount <= 0) {
       setErrorMessage("Invalid payment amount.");
       return;
     }
 
-    if (isLaunching || isVerifying) {
+    if (!cleanEmail) {
+      setErrorMessage("Missing fallback checkout email.");
       return;
     }
+
+    if (isLaunching || isVerifying) return;
 
     const txRef = makeTxRef(serviceId);
 
@@ -161,12 +175,13 @@ export default function PayNowButton({
         payment_options: "card,banktransfer,ussd",
         customer: {
           email: cleanEmail,
-          phone_number: cleanPhone,
           name: cleanName,
+          phone_number: cleanPhone,
         },
         meta: {
           serviceId,
           serviceTitle,
+          source: "fynaro_checkout",
         },
         customizations: {
           title: "Fynaro Tech",
@@ -249,17 +264,17 @@ export default function PayNowButton({
     }
   };
 
-  const disabled = !isReady || isLaunching || isVerifying;
+  const isDisabled = disabled || !isReady || isLaunching || isVerifying;
 
   return (
     <div className="w-full">
       <button
         type="button"
         onClick={handlePay}
-        disabled={disabled}
+        disabled={isDisabled}
         className={
           className ||
-          "inline-flex h-12 w-full items-center justify-center rounded-full bg-[#d6cc6d] px-6 text-sm font-semibold text-black transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
+          "inline-flex h-12 w-full items-center justify-center rounded-full bg-[#d6cc6d] px-6 text-sm font-semibold text-black transition duration-200 hover:scale-[1.01] hover:brightness-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
         }
       >
         {isLaunching

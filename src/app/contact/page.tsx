@@ -2,7 +2,7 @@
 
 import { Mail, MapPin, Phone } from "lucide-react";
 import ContactForm from "@/components/contact-form";
-import Header from "@/components/dashboard components/homeHeader";
+import Header from "@/components/dashboard components/mainheader";
 
 
 const contactItems = [

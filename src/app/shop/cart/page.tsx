@@ -7,6 +7,7 @@ import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/contexts/cartContext";
 import Header from "@/components/dashboard components/mainheader";
+import PayNowButton from "@/components/dashboard components/PayNowButton";
 import {
   ArrowLeft,
   ShoppingBag,
@@ -317,102 +318,66 @@ export default function CartPage() {
             </section>
 
             {/* Right: summary */}
-            <section className="lg:sticky lg:top-24">
-              <div className="rounded-3xl border border-neutral-800 bg-gradient-to-b from-[#151515] to-[#050505] p-4 sm:p-5 md:p-6 shadow-[0_18px_45px_rgba(0,0,0,0.6)]">
-                {showSkeleton ? (
-                  <>
-                    <div className="h-4 w-28 rounded-full bg-neutral-800 mb-4 animate-pulse" />
-                    <div className="space-y-2.5">
-                      <div className="flex justify-between items-center animate-pulse">
-                        <span className="h-3 w-20 rounded-full bg-neutral-800" />
-                        <span className="h-3 w-16 rounded-full bg-neutral-800" />
-                      </div>
-                      <div className="flex justify-between items-center animate-pulse">
-                        <span className="h-3 w-28 rounded-full bg-neutral-800" />
-                        <span className="h-3 w-16 rounded-full bg-neutral-800" />
-                      </div>
-                      <div className="flex justify-between items-center animate-pulse">
-                        <span className="h-3 w-28 rounded-full bg-neutral-800" />
-                        <span className="h-3 w-10 rounded-full bg-neutral-800" />
-                      </div>
-                      <div className="border-t border-neutral-800 pt-3 mt-2 flex justify-between items-center animate-pulse">
-                        <span className="h-3.5 w-16 rounded-full bg-neutral-800" />
-                        <span className="h-4 w-20 rounded-full bg-neutral-800" />
-                      </div>
-                    </div>
+           <section className="h-fit rounded-3xl border border-neutral-800 bg-gradient-to-b from-[#101010] to-[#050505] p-4 sm:p-5 md:p-6">
+  <h2 className="mb-4 text-sm font-medium sm:text-base">
+    Order summary
+  </h2>
 
-                    <div className="mt-5 h-9 rounded-full bg-neutral-800 animate-pulse" />
-                    <div className="mt-3 h-3 w-40 rounded-full bg-neutral-900 animate-pulse" />
-                  </>
-                ) : (
-                  <>
-                    <h2 className="text-sm sm:text-base font-medium mb-4">
-                      Order summary
-                    </h2>
+  <div className="space-y-2.5 text-[12px] text-neutral-300 sm:text-sm">
+    <div className="flex justify-between">
+      <span>Subtotal</span>
+      <span>{formatNGN(subtotal)}</span>
+    </div>
 
-                    <div className="space-y-2.5 text-[12px] sm:text-sm text-neutral-300">
-                      <div className="flex justify-between">
-                        <span>Subtotal</span>
-                        <span>{formatNGN(subtotal)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Estimated VAT (7.5%)</span>
-                        <span>{formatNGN(estimatedVat)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Estimated shipping</span>
-                        <span>
-                          {estimatedShipping === 0
-                            ? "—"
-                            : formatNGN(estimatedShipping)}
-                        </span>
-                      </div>
-                      <div className="border-t border-neutral-800 pt-3 mt-2 flex justify-between items-center">
-                        <span className="text-[13px] sm:text-sm font-semibold">
-                          Total
-                        </span>
-                        <span className="text-base sm:text-lg font-semibold">
-                          {formatNGN(grandTotal)}
-                        </span>
-                      </div>
-                    </div>
+    <div className="flex justify-between">
+      <span>Estimated VAT (7.5%)</span>
+      <span>{formatNGN(estimatedVat)}</span>
+    </div>
 
-                    <p className="mt-3 text-[11px] sm:text-xs text-neutral-500">
-                      Taxes and final shipping will be confirmed at checkout.
-                    </p>
+    <div className="flex justify-between">
+      <span>Estimated shipping</span>
+      <span>
+        {estimatedShipping === 0
+          ? "—"
+          : formatNGN(estimatedShipping)}
+      </span>
+    </div>
 
-                    <button
-                      type="button"
-                      className="mt-5 w-full inline-flex items-center justify-center gap-2 rounded-full bg-white text-black text-sm sm:text-base font-medium py-2.5 sm:py-3 hover:bg-neutral-100 transition-colors"
-                    >
-                      <ShoppingBag className="w-4 h-4" />
-                      Proceed to checkout
-                    </button>
+    <div className="mt-2 flex items-center justify-between border-t border-neutral-800 pt-3">
+      <span className="text-[13px] font-semibold sm:text-sm">
+        Total
+      </span>
+      <span className="text-base font-semibold sm:text-lg">
+        {formatNGN(grandTotal)}
+      </span>
+    </div>
+  </div>
 
-                    <button
-                      type="button"
-                      className="mt-3 w-full text-[11px] sm:text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
-                      onClick={() => {
-                        // later: coupon, note, or project brief
-                      }}
-                    >
-                      Have a brand project in mind? You can mention it at
-                      checkout.
-                    </button>
-                  </>
-                )}
-              </div>
+  <p className="mt-3 text-[11px] text-neutral-500 sm:text-xs">
+    Taxes and final shipping will be confirmed at checkout.
+  </p>
 
-              {!showSkeleton && (
-                <div className="mt-4 text-[11px] sm:text-xs text-neutral-500">
-                  <p>
-                    All Fynaro pieces are made with print and branding in mind.
-                    For bulk or agency orders, we’ll confirm timelines after
-                    your checkout.
-                  </p>
-                </div>
-              )}
-            </section>
+  <PayNowButton
+    serviceId={`cart_${items.length}_${Math.round(grandTotal)}`}
+    serviceTitle={`Fynaro Cart Order (${items.length} item${items.length === 1 ? "" : "s"})`}
+    amount={grandTotal}
+    currency="NGN"
+    redirectUrl="/shop/success"
+    buttonText="Proceed to checkout"
+    className="mt-5 inline-flex h-[46px] sm:h-12 w-full items-center justify-center gap-2 rounded-full bg-white px-6 text-sm sm:text-base font-medium text-black transition duration-200 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-60"
+  />
+
+  <p className="mt-3 text-[11px] sm:text-xs text-neutral-400 text-center">
+    Have a brand project in mind? You can mention it at checkout.
+  </p>
+
+  <div className="mt-4 text-[11px] text-neutral-500 sm:text-xs">
+    <p>
+      All Fynaro pieces are made with print and branding in mind.
+      For bulk or agency orders, we’ll confirm timelines after your checkout.
+    </p>
+  </div>
+</section>
           </div>
         )}
       </div>
