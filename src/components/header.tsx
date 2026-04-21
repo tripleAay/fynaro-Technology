@@ -93,7 +93,7 @@ export default function DashboardHeader({
   return (
     <>
       {/* TOP BAR */}
-      <header className="fixed top-0 left-0 w-full z-40 bg-black/95 backdrop-blur-xl border-b border-white/10 text-white">
+      <header className="fixed top-0 left-0 w-full z-40 bg-[#d5b74e] backdrop-blur-xl border-b border-white/10 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="text-lg sm:text-xl font-semibold tracking-[0.22em] uppercase">
