@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import useLogout from "@/hooks/useLogout";
 import {useAuth} from "@/hooks/useAuth";
 import {
   FiShoppingBag,
@@ -45,6 +46,7 @@ type DrawerLink = {
   sublabel?: string;
 };
 
+
 export default function Header({
   userName,
   projectRequestJustCreated = false,
@@ -60,7 +62,7 @@ export default function Header({
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [messagesOpen, setMessagesOpen] = useState(false);
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true);
-
+const logout = useLogout();
   useEffect(() => {
     if (userName) {
       setName(userName);
@@ -320,7 +322,7 @@ export default function Header({
           </div>
 
           <button
-            onClick={() => (window.location.href = "/auth/logout")}
+             onClick={logout}
             className="mt-5 flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300 transition hover:border-[#d6cc6d]/30 hover:bg-[#d6cc6d]/10 hover:text-[#d6cc6d]"
           >
             <FiLogOut />

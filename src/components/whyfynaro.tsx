@@ -28,36 +28,44 @@ const features = [
 
 export default function WhyFynaro() {
   return (
-    <section style={{backgroundImage: `url('/images/clay-banks-u27Rrbs9Dwc-unsplash.jpg')`,}} className="bg-white py-24">
-      <div className="max-w-7xl mx-auto px-6 text-center">
+    <section
+      style={{ backgroundImage: `url('/images/clay-banks-u27Rrbs9Dwc-unsplash.jpg')` }}
+      className="bg-white py-16 md:py-20 xl:py-24"
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 text-center">
         <motion.h2
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-4xl md:text-5xl font-bold text-gray-900 mb-6"
+          className="text-3xl md:text-4xl xl:text-5xl font-bold text-gray-900 mb-4 md:mb-5"
         >
           Why Fynaro?
         </motion.h2>
+
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.8 }}
-          className="text-white max-w-2xl mx-auto mb-16"
+          className="text-white max-w-2xl mx-auto mb-10 md:mb-12 xl:mb-14 text-sm md:text-[15px] leading-6 md:leading-7"
         >
           Fynaro exists to push the boundaries of creativity and technology. Here’s why we stand out:
         </motion.p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
           {features.map((feature, idx) => (
             <motion.div
               key={idx}
               whileHover={{ y: -8, scale: 1.03 }}
               transition={{ type: "spring", stiffness: 120 }}
-              className="bg-gray-50 p-8 rounded-xl shadow-md flex flex-col items-center text-center hover:shadow-xl cursor-pointer"
+              className="bg-gray-50 p-6 md:p-7 rounded-xl shadow-md flex flex-col items-center text-center hover:shadow-xl cursor-pointer"
             >
               <div className="text-indigo-500 mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">{feature.title}</h3>
-              <p className="text-gray-600 text-sm">{feature.description}</p>
+              <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">
+                {feature.title}
+              </h3>
+              <p className="text-gray-600 text-sm leading-6 max-w-[16rem] mx-auto">
+                {feature.description}
+              </p>
             </motion.div>
           ))}
         </div>

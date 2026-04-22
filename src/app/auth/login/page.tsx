@@ -91,14 +91,21 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,#1a1a25_0,#050506_50%,#020205_100%)] flex flex-col">
+    <main className="min-h-screen flex flex-col">
       {/* Top header */}
+       <div className="absolute inset-0 pointer-events-none">
+        <img
+          src="/images/paul-earle-wVjd0eWNqI8-unsplash.jpg"
+          alt=""
+          className="h-full w-full object-cover opacity-[0.08]"
+        />
+      </div>
       <div className="w-full">
         <HomeHeader />
       </div>
 
       {/* Centered, smaller card */}
-      <div className="flex-1 flex mt-26 items-center justify-center px-4 pb-10">
+     <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-10 py-20 md:py-24 lg:py-28">
         <motion.div
           initial={{ opacity: 0, y: 16, scale: 0.99 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -289,9 +296,11 @@ export default function LoginPage() {
         </motion.div>
       </div>
 
-      <div className="w-full">
+      <div>
         <Footer />
       </div>
+
+    
     </main>
   );
 }

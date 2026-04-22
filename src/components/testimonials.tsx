@@ -78,14 +78,19 @@ export default function Testimonials() {
   }, []);
 
   return (
-    <section style={{backgroundImage: `url('/images/gustavo-zambelli-0g21m6BJdfc-unsplash (1).jpg')`,}} className="w-full py-24 bg-white ">
-      <div className="max-w-5xl mx-auto px-6">
+    <section
+      style={{
+        backgroundImage: `url('/images/gustavo-zambelli-0g21m6BJdfc-unsplash (1).jpg')`,
+      }}
+      className="w-full py-16 md:py-20 xl:py-24 bg-white"
+    >
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-10">
         {/* Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-black mb-4">
+        <div className="text-center mb-10 md:mb-12 xl:mb-14">
+          <h2 className="text-2xl md:text-3xl xl:text-4xl font-semibold tracking-tight text-black mb-3">
             What clients are saying
           </h2>
-          <p className="text-gray-500 text-lg">
+          <p className="text-gray-500 text-sm md:text-[15px]">
             Real experiences from people we’ve worked with.
           </p>
         </div>
@@ -98,17 +103,14 @@ export default function Testimonials() {
             className="flex"
           >
             {testimonials.map((item) => (
-              <div
-                key={item.id}
-                className="min-w-full px-4 flex justify-center"
-              >
-                <div className="max-w-2xl w-full text-center">
-                  <p className="text-xl md:text-2xl leading-relaxed text-gray-800 font-light mb-8">
+              <div key={item.id} className="min-w-full px-4 flex justify-center">
+                <div className="max-w-xl w-full text-center">
+                  <p className="text-lg md:text-xl leading-7 md:leading-8 text-gray-800 font-light mb-6 md:mb-7">
                     “{item.text}”
                   </p>
 
-                  <div className="flex items-center justify-center gap-4">
-                    <div className="relative w-12 h-12 rounded-full overflow-hidden ring-1 ring-gray-200">
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="relative w-10 h-10 rounded-full overflow-hidden ring-1 ring-gray-200">
                       <Image
                         src={item.image}
                         alt={item.name}
@@ -127,7 +129,7 @@ export default function Testimonials() {
         </div>
 
         {/* Dots */}
-        <div className="flex justify-center gap-3 mt-10">
+        <div className="flex justify-center gap-2 mt-8 md:mt-10">
           {testimonials.map((_, i) => (
             <button
               key={i}

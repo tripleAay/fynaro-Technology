@@ -26,16 +26,17 @@ const services = [
 
 export default function Services() {
   return (
-    <section  style={{backgroundImage: `url('/images/jonatan-pie-h8nxGssjQXs-unsplash.jpg')`}} className="relative w-full py-24 bg-[#04030F] text-white">
-      <div className="max-w-6xl mx-auto px-6 text-center">
-
-        {/* 🔥 HEADER */}
+    <section
+      style={{ backgroundImage: `url('/images/jonatan-pie-h8nxGssjQXs-unsplash.jpg')` }}
+      className="relative w-full py-16 md:py-20 xl:py-24 bg-[#04030F] text-white"
+    >
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 text-center">
         <motion.h2
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-4xl md:text-5xl font-semibold mb-4"
+          className="text-3xl md:text-4xl xl:text-5xl font-semibold mb-4"
         >
           What We Do
         </motion.h2>
@@ -45,16 +46,14 @@ export default function Services() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-gray-400 max-w-xl mx-auto mb-16 leading-relaxed"
+          className="text-gray-400 max-w-xl mx-auto mb-10 md:mb-12 xl:mb-14 leading-6 md:leading-7 text-sm md:text-[15px]"
         >
           Fynaro turns ideas into powerful experiences; blending design,
           technology, and culture to help brands grow with clarity and impact.
         </motion.p>
 
-        {/* 🔥 PERFECTLY CENTERED GRID */}
         <div className="flex justify-center">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl">
-
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 max-w-5xl w-full">
             {services.map((service, idx) => (
               <motion.div
                 key={service.id}
@@ -66,28 +65,21 @@ export default function Services() {
                   y: -10,
                   scale: 1.03,
                 }}
-                className="bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl p-8 flex flex-col items-center text-center transition-all duration-300 hover:bg-white/10"
+                className="bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl p-6 md:p-7 flex flex-col items-center text-center transition-all duration-300 hover:bg-white/10"
               >
-                {/* ICON */}
-                <motion.div
-                  whileHover={{ scale: 1.15, rotate: 6 }}
-                  className="mb-5"
-                >
+                <motion.div whileHover={{ scale: 1.15, rotate: 6 }} className="mb-4">
                   {service.icon}
                 </motion.div>
 
-                {/* TITLE */}
                 <h3 className="text-lg font-semibold mb-3">
                   {service.title}
                 </h3>
 
-                {/* DESC */}
-                <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
+                <p className="text-gray-400 text-sm leading-6 max-w-[16rem] mx-auto">
                   {service.desc}
                 </p>
               </motion.div>
             ))}
-
           </div>
         </div>
       </div>

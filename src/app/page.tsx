@@ -12,18 +12,16 @@ import Footer from "../components/footer";
 
 export default function Page() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+    <main className="min-h-screen bg-[#050506] text-white overflow-x-hidden">
       <HomeHeader />
       <HeroSlider />
-      <Portfolio />
       <WhyFynaro />
       <Services />
-      
+      <Portfolio />
       <Testimonials />
-      
       <CallToAction />
       <VideoShowcase />
       <Footer />
-    </div>
+    </main>
   );
 }
