@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import DashboardHeader from "@/components/dashboard components/mainheader";
-import WebServicesHero from "@/components/dashboard components/WebServicesHero";
+import WebServicesHero from "@/components/dashboard components/services-hero";
 import DashboardBreadcrumb from "@/components/dashboard components/breadcrumb";
 import Footer from "@/components/footer";
 import HowItWorksSection from "@/components/dashboard components/howItWorksSection";
 import ProjectModeCTA from "@/components/dashboard components/projectModeCTA";
-import ServiceTilesSection from "@/components/dashboard components/webserviceTilesSection";
+import ServiceTilesSection from "@/components/dashboard components/ServiceTilesSection";
 import ExploreByCategorySection from "@/components/dashboard components/exploreByCategorySection";
 
 const dashboardCategories = [
@@ -48,16 +48,17 @@ export default function ShopPage() {
 
   return (
     <div className="min-h-screen bg-[#050506] text-white">
+      <DashboardHeader />
+
       <div className="border-b border-white/5 px-3 pb-4 pt-30">
         <DashboardBreadcrumb
           items={[
             { label: "Shop", href: "/shop" },
-            { label: "Web Services" },
+            { label: "Services" },
           ]}
         />
       </div>
 
-      <DashboardHeader />
       <WebServicesHero />
 
       <main className="pt-4">

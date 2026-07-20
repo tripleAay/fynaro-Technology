@@ -1,4 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function POST(req: NextRequest) {
   try {
@@ -69,12 +75,75 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Save to Supabase here if you want
-    // customerEmail, customerName, customerPhone can now be fallback values
+    // Prevent duplicate orders
+    const { data: existingOrder, error: existingOrderError } = await supabase
+      .from("orders")
+      .select("id, transaction_id, tx_ref")
+      .or(`transaction_id.eq.${data.id},tx_ref.eq.${data.tx_ref}`)
+      .maybeSingle();
+
+    if (existingOrderError) {
+      return NextResponse.json(
+        { error: "Failed to check existing order" },
+        { status: 500 }
+      );
+    }
+
+    if (existingOrder) {
+      return NextResponse.json({
+        success: true,
+        message: "Payment already verified and order already exists",
+        order: existingOrder,
+        payment: {
+          id: data.id,
+          tx_ref: data.tx_ref,
+          flw_ref: data.flw_ref,
+          amount: data.amount,
+          currency: data.currency,
+          status: data.status,
+        },
+      });
+    }
+
+    const orderPayload = {
+      type: "service",
+      item_id: serviceId || null,
+      item_title: serviceTitle || null,
+      customer_email: customerEmail || data.customer?.email || null,
+      customer_name: customerName || data.customer?.name || null,
+      customer_phone: customerPhone || data.customer?.phone_number || null,
+      amount: Number(data.amount),
+      currency: String(data.currency).toUpperCase(),
+      payment_status: "paid",
+      order_status: "pending",
+      tx_ref: data.tx_ref,
+      transaction_id: String(data.id),
+      payment_provider: "flutterwave",
+      metadata: {
+        flw_ref: data.flw_ref || null,
+        charged_amount: data.charged_amount || null,
+        app_fee: data.app_fee || null,
+        processor_response: data.processor_response || null,
+      },
+    };
+
+    const { data: newOrder, error: insertError } = await supabase
+      .from("orders")
+      .insert(orderPayload)
+      .select()
+      .single();
+
+    if (insertError) {
+      return NextResponse.json(
+        { error: insertError.message || "Failed to create order" },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      message: "Payment verified successfully",
+      message: "Payment verified and order created successfully",
+      order: newOrder,
       payment: {
         id: data.id,
         tx_ref: data.tx_ref,
@@ -82,11 +151,6 @@ export async function POST(req: NextRequest) {
         amount: data.amount,
         currency: data.currency,
         status: data.status,
-        serviceId,
-        serviceTitle,
-        customerEmail: customerEmail || null,
-        customerName: customerName || null,
-        customerPhone: customerPhone || null,
       },
     });
   } catch (error) {

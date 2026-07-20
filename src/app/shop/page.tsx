@@ -1,20 +1,16 @@
-// pages/shop.tsx
 "use client";
 
 import { useState, useEffect } from "react";
-
 import DashboardHeader from "../../components/dashboard components/mainheader";
 import HeroSlider from "../../components/dashboard components/mainheroe";
 import Collections from "../../components/dashboard components/collections";
 import ProductTileGrid from "@/components/dashboard components/ProductTileGridMirror";
 import HotStuffSection from "../../components/dashboard components/hotstuffSections";
 import Footer from "../../components/footer";
-
 import ExploreByCategorySection from "@/components/dashboard components/exploreByCategorySection";
-import HowItWorksSection from "../../components/dashboard components/howItWorksSection";
+import HowItWorksSection from "@/components/dashboard components/howItWorksSection";
 import ProjectModeCTA from "../../components/dashboard components/projectModeCTA";
 
-// 🔹 Dashboard-style categories (AutoTech-flavoured)
 const dashboardCategories = [
   {
     id: "web-services",
@@ -46,10 +42,8 @@ export default function ShopPage() {
   const [activeCategoryId, setActiveCategoryId] = useState<string | number>(
     "web-services"
   );
-
   const [isLoading, setIsLoading] = useState(true);
 
-  // 🦴 simple fake loading – later you can tie this to real data fetching
   useEffect(() => {
     const t = setTimeout(() => setIsLoading(false), 800);
     return () => clearTimeout(t);
@@ -57,12 +51,9 @@ export default function ShopPage() {
 
   return (
     <div className="min-h-screen bg-[#050506] text-white">
-      {/* Fixed dashboard header */}
       <DashboardHeader />
 
-      {/* pad for fixed header */}
       <main className="pt-16">
-        {/* ===================== HERO / TOP BLOCK ===================== */}
         {isLoading ? (
           <section className="px-4 sm:px-6 lg:px-10 mt-4 animate-pulse">
             <div className="max-w-6xl mx-auto">
@@ -77,7 +68,6 @@ export default function ShopPage() {
           <HeroSlider />
         )}
 
-        {/* ===================== COLLECTIONS ===================== */}
         {isLoading ? (
           <section className="mt-10 px-4 sm:px-6 lg:px-10 animate-pulse">
             <div className="flex items-center justify-between mb-4">
@@ -101,8 +91,7 @@ export default function ShopPage() {
         ) : (
           <Collections />
         )}
-        {/* products grid tiles */}
-        {/* ===================== PRODUCT GRID ===================== */}
+
         {isLoading ? (
           <section className="mt-10 px-4 sm:px-6 lg:px-10 animate-pulse">
             <div className="flex items-center justify-between mb-4">
@@ -139,7 +128,6 @@ export default function ShopPage() {
           </section>
         )}
 
-        {/* ===================== HOT STUFF SECTION ===================== */}
         {isLoading ? (
           <section className="mt-10 px-4 sm:px-6 lg:px-10 animate-pulse">
             <div className="flex items-center justify-between mb-4">
@@ -164,7 +152,6 @@ export default function ShopPage() {
           <HotStuffSection />
         )}
 
-        {/* ===================== Dashboard Categories ===================== */}
         <ExploreByCategorySection
           isLoading={isLoading}
           categories={dashboardCategories}
@@ -175,10 +162,7 @@ export default function ShopPage() {
           }}
         />
 
-        {/* ===================== How It Works ===================== */}
         <HowItWorksSection isLoading={isLoading} />
-
-        {/* ===================== Call-to-Action ===================== */}
         <ProjectModeCTA />
       </main>
 

@@ -113,12 +113,12 @@ export default function Footer() {
                   href="mailto:hello@fynaro.com"
                   className="text-sm text-gray-300 transition-colors hover:text-[#d6cc6d]"
                 >
-                  hello@fynaro.com
+                  hello@fynarotech.com
                 </a>
               </div>
 
               <div>
-                <p className="text-sm text-gray-300">Ibadan, Nigeria</p>
+                <p className="text-sm text-gray-300">Lagos, Nigeria</p>
                 <p className="mt-1 text-sm text-gray-500">
                   Building with a global standard mindset.
                 </p>

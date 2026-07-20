@@ -17,12 +17,7 @@ const testimonials = [
     text: "The website feels structured and easy to understand. Clients now trust us before even speaking to us.",
     image: "/images/profile.png",
   },
-  {
-    id: 3,
-    name: "Bamigbade Akintunde",
-    text: "Fynaro approached the project with patience and clear thinking. The result feels solid and well thought-out.",
-    image: "/images/profile.png",
-  },
+  
   {
     id: 4,
     name: "Tunde Adebayo",
