@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { supabaseAdmin } from "@/lib/supabase/server";
@@ -205,4 +206,3 @@ export default async function OrderDetailsPage({ params }: PageProps) {
     </main>
   );
 }
-```
