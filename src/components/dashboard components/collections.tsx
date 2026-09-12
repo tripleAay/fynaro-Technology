@@ -1,98 +1,88 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import Dashhead from "../../components/dashboard components/dashNav";
-import ProductTileGrid from "../../components/dashboard components/productTile";
 import { motion } from "framer-motion";
+import { ArrowUpRight } from "lucide-react";
+import Link from "next/link";
+import FynaroWebPackages from "../../components/dashboard components/webPackages";
 
 export default function Collections() {
-  // 🔤 Typing / deleting animation state for subtitle
-  const fullText = "Explore your print & design product catalog";
-  const [displayedSubtitle, setDisplayedSubtitle] = useState("");
-  const [phase, setPhase] = useState<"typing" | "idle" | "deleting">("typing");
+return ( <main className="min-h-screen overflow-hidden bg-black text-white"> <div className="mx-auto w-full max-w-[1500px] px-5 py-6 sm:px-7 lg:px-10 lg:py-8">
+{/* Page introduction */}
+<motion.header
+initial={{ opacity: 0, y: 8 }}
+animate={{ opacity: 1, y: 0 }}
+transition={{
+duration: 0.45,
+ease: [0.22, 1, 0.36, 1],
+}}
+className="max-w-2xl"
+> <div className="flex items-center gap-2"> <span className="h-1.5 w-1.5 rounded-full bg-[#F5B400]" />
 
-  useEffect(() => {
-    let timeout: ReturnType<typeof setTimeout>;
 
-    if (phase === "typing") {
-      if (displayedSubtitle.length < fullText.length) {
-        timeout = setTimeout(() => {
-          setDisplayedSubtitle(fullText.slice(0, displayedSubtitle.length + 1));
-        }, 60); // typing speed
-      } else {
-        // Fully typed → chill for 3 mins, then start deleting
-        setPhase("idle");
-        timeout = setTimeout(() => setPhase("deleting"), 180000); // 3 minutes
-      }
-    } else if (phase === "deleting") {
-      if (displayedSubtitle.length > 0) {
-        timeout = setTimeout(() => {
-          setDisplayedSubtitle(fullText.slice(0, displayedSubtitle.length - 1));
-        }, 40); // delete speed
-      } else {
-        // erased → start typing again
-        setPhase("typing");
-      }
-    }
+        <span className="text-[9px] font-medium uppercase tracking-[0.22em] text-white/35">
+          Web & Mobile
+        </span>
+      </div>
 
-    return () => clearTimeout(timeout);
-  }, [displayedSubtitle, phase, fullText]);
+      <h1 className="mt-3 text-2xl font-semibold tracking-[-0.045em] text-white sm:text-3xl">
+        Build the digital side of your business.
+      </h1>
 
-  return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-[#000000] font-inter text-gray-800 shadow-[0_4px_20px_rgba(0,0,0,0.06)] overflow-hidden mt-10">
-      {/* Sidebar - Dashboard Navigation */}
-      <aside className="hidden lg:block w-1/4 flex-shrink-0 border-r border-gray-100 bg-[#000000] p-6">
-        <Dashhead />
-      </aside>
+      <p className="mt-2 max-w-xl text-xs leading-6 text-white/40 sm:text-sm">
+        Websites, ecommerce experiences and custom digital products
+        designed around what your business actually needs.
+      </p>
+    </motion.header>
 
-      {/* Main Content */}
-      <main className="flex-1 p-6 lg:p-10 space-y-10">
-        {/* Header */}
-        <header className="border-b border-gray-800 pb-5">
-          <div className="relative inline-block">
-            <motion.h2
-              initial={{ opacity: 0, y: 12, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{
-                duration: 0.65,
-                ease: [0.25, 1, 0.35, 1],
-              }}
-              className="text-3xl font-bold text-white"
-            >
-              Fynaro Collections
-            </motion.h2>
+    {/* Web packages */}
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        delay: 0.08,
+        duration: 0.45,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+      className="mt-2"
+    >
+      <FynaroWebPackages />
+    </motion.div>
 
-            {/* Golden animated underline */}
-            <motion.span
-              initial={{ width: 0 }}
-              animate={{ width: "100%" }}
-              transition={{ delay: 0.2, duration: 0.6, ease: "easeInOut" }}
-              className="absolute left-0 -bottom-1 h-[3px] bg-gradient-to-r from-[#F5B400] via-[#fcd98e] to-transparent rounded-full"
-            />
+    {/* Custom project CTA */}
+    <motion.div
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.45 }}
+      className="mx-auto mt-2 max-w-6xl pb-8"
+    >
+      <Link
+        href="/shop/requests/new"
+        className="group flex items-center justify-between gap-5 rounded-[1.25rem] border border-white/[0.06] bg-white/[0.025] px-5 py-4 transition-all duration-300 hover:border-white/[0.11] hover:bg-white/[0.04] sm:px-6"
+      >
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="h-1 w-1 rounded-full bg-[#F5B400]" />
+
+            <p className="text-[8px] font-medium uppercase tracking-[0.18em] text-[#F5B400]">
+              Need something different?
+            </p>
           </div>
 
-          {/* Animated subtitle: type → pause → erase → loop */}
-          <motion.p
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-            className="text-white mt-2 flex items-center gap-[3px]"
-          >
-            <span>{displayedSubtitle}</span>
-            {/* soft cursor */}
-            <motion.span
-              className="inline-block w-[2px] h-[1em] bg-white/70"
-              animate={{ opacity: [1, 0, 1] }}
-              transition={{ duration: 0.8, repeat: Infinity }}
-            />
-          </motion.p>
-        </header>
+          <p className="mt-1.5 text-[11px] leading-5 text-white/40">
+            Tell us what you&apos;re building and we&apos;ll shape the right
+            digital solution around it.
+          </p>
+        </div>
 
-        {/* Product Catalog */}
-        <section className="  shadow-sm">
-          <ProductTileGrid />
-        </section>
-      </main>
-    </div>
-  );
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F5B400] text-[#111014] transition-transform duration-300 group-hover:translate-x-1">
+          <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={1.9} />
+        </span>
+      </Link>
+    </motion.div>
+  </div>
+</main>
+
+
+);
 }

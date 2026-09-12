@@ -10,10 +10,11 @@
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",
-    "@supabase/supabase-js": "^2.103.0",
+    "@supabase/supabase-js": "^2.115.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.22",
     "gsap": "^3.13.0",
+    "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.545.0",
     "next": "^16.1.4",
     "react": "^19.2.3",
@@ -27,6 +28,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

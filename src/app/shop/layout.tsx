@@ -1,34 +1,57 @@
-"use client";
+import {
+  redirect,
+} from "next/navigation";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import {
+  getCurrentProfile,
+} from "@/lib/fynaro/auth/current-profile";
 
-export default function ShopLayout({
-  children,
-}: {
+import DashboardSidebar from "@/components/dashboard components/DashboardSidebar";
+import DashboardTopbar from "@/components/dashboard components/DashboardTopbar";
+
+type ShopLayoutProps = Readonly<{
   children: React.ReactNode;
-}) {
-  const router = useRouter();
-  const [checkingAuth, setCheckingAuth] = useState(true);
+}>;
 
-  useEffect(() => {
-    const token = localStorage.getItem("fynaro_token");
+export default async function ShopLayout({
+  children,
+}: ShopLayoutProps) {
+  // ============================================================
+  // AUTHENTICATED FYNARO PROFILE
+  // ============================================================
 
-    if (!token) {
-      router.replace("/auth/login");
-      return;
-    }
+  const profile =
+    await getCurrentProfile();
 
-    setCheckingAuth(false);
-  }, [router]);
+  // ============================================================
+  // PROTECT SHOP
+  // ============================================================
 
-  if (checkingAuth) {
-    return (
-      <main className="min-h-screen bg-[#050506] text-white flex items-center justify-center">
-        <div className="text-sm text-white/60">Checking access...</div>
-      </main>
+  if (!profile) {
+    redirect(
+      "/auth/login"
     );
   }
 
-  return <>{children}</>;
+  // ============================================================
+  // DASHBOARD
+  // ============================================================
+
+  return (
+    <div className="min-h-screen bg-white">
+      <DashboardSidebar
+        
+      />
+
+      <div className="min-h-screen lg:pl-[280px]">
+        <DashboardTopbar
+          profile={profile}
+        />
+
+        <main className="min-h-[calc(100vh-64px)]">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
 }

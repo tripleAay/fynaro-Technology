@@ -1,34 +1,46 @@
-// src/app/layout.tsx
 import type { Metadata } from "next";
-import "./globals.css";
-import { CartProvider } from "../contexts/cartContext";
-import { WishlistProvider } from "../contexts/wishlistContext"; // ✅ add this
-import { FynaroToastHost } from "@/components/dashboard components/common/fynaroToast"; // ✅ use the actual path you created
 
-export const metadata = {
+import "./globals.css";
+
+import { CartProvider } from "@/contexts/cartContext";
+import { WishlistProvider } from "@/contexts/wishlistContext";
+
+import { FynaroToastHost } from "@/components/dashboard components/common/fynaroToast";
+
+export const metadata: Metadata = {
   title: {
     default: "Fynaro Tech",
     template: "%s | Fynaro Tech",
   },
+
   description:
     "Fynaro Tech builds premium digital experiences through design, technology, and strategy.",
+
   icons: {
     icon: "/icon.png",
   },
 };
 
+type RootLayoutProps = Readonly<{
+  children: React.ReactNode;
+}>;
+
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+}: RootLayoutProps) {
   return (
-    <html lang="en">
-      <body className="bg-black">
+    <html
+      lang="en"
+      suppressHydrationWarning
+    >
+      <body
+        className="min-h-screen bg-black"
+        suppressHydrationWarning
+      >
         <CartProvider>
           <WishlistProvider>
             {children}
-            {/* 🔔 Toast container lives once here */}
+
             <FynaroToastHost />
           </WishlistProvider>
         </CartProvider>

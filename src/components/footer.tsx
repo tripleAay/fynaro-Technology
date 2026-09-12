@@ -57,11 +57,14 @@ export default function Footer() {
 
               <form className="mx-auto flex w-full max-w-md flex-col gap-3 sm:flex-row lg:mx-0">
                 <input
+                  id="newsletter-email"
+                  name="email"
                   type="email"
+                  autoComplete="email"
+                  inputMode="email"
                   placeholder="Enter your email"
-                  className="h-11 w-full rounded-xl border border-white/10 bg-[#0b0b0c] px-4 text-sm text-white placeholder:text-gray-500 outline-none transition-all duration-300 focus:border-[#d6cc6d]/50 focus:bg-[#111112]"
+                  className="h-11 w-full rounded-xl border border-white/10 bg-[#0b0b0c] px-4 text-sm ..."
                 />
-
                 <button
                   type="submit"
                   className="group inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#d6cc6d] px-5 text-sm font-medium text-black transition-all duration-300 hover:translate-y-[-1px] hover:bg-[#cbbf5f]"
