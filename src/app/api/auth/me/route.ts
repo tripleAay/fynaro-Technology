@@ -47,7 +47,7 @@ export async function GET(
 
     const response =
       await fetch(
-        `${backendUrl}/api/auth/me`,
+        `${backendUrl}/api/admin/me`,
         {
           method: "GET",
 
@@ -75,7 +75,7 @@ export async function GET(
           {
             message:
               data?.message ||
-              "Not authenticated.",
+              "Unable to verify admin access.",
           },
           {
             status:
@@ -103,8 +103,14 @@ export async function GET(
 
     return NextResponse.json(
       {
+        authenticated:
+          data.authenticated,
+
         user:
           data.user,
+
+        profile:
+          data.profile,
       },
       {
         status: 200,
@@ -112,14 +118,14 @@ export async function GET(
     );
   } catch (error) {
     console.error(
-      "GET /api/auth/me error:",
+      "GET /api/admin/me error:",
       error
     );
 
     return NextResponse.json(
       {
         message:
-          "Unable to verify session.",
+          "Unable to verify admin access.",
       },
       {
         status: 500,

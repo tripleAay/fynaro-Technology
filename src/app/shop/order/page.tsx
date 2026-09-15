@@ -1,310 +1,555 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import MainHeader from "@/components/dashboard components/mainheader";
-import { ArrowLeft, CheckCircle2, Eye } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Clock3,
+  FileText,
+  ReceiptText,
+} from "lucide-react";
+import { useMemo, useState } from "react";
 
-type RawOrder = {
+/* -------------------------------------------------------------------------- */
+/*                                    TYPES                                   */
+/* -------------------------------------------------------------------------- */
+
+type OrderStatus =
+  | "pending_payment"
+  | "processing"
+  | "active"
+  | "completed"
+  | "cancelled";
+
+type PaymentStatus =
+  | "unpaid"
+  | "part_paid"
+  | "paid";
+
+type FynaroOrder = {
   id: string;
-  item_title: string | null;
-  amount: number | string | null;
-  order_status: string | null;
-  payment_status: string | null;
-  tx_ref: string | null;
-  transaction_id: string | null;
-  created_at: string | null;
-  metadata?: {
-    quantity?: number;
-    [key: string]: unknown;
-  } | null;
+  proposalId?: string;
+  projectId?: string;
+
+  title: string;
+  service: string;
+  package?: string;
+
+  status: OrderStatus;
+  paymentStatus: PaymentStatus;
+
+  createdAt: string;
+
+  total: number;
+  paid: number;
+  balance: number;
 };
 
-type OrderItem = {
-  id: string;
-  orderNumber: string;
-  product: string;
-  amount: number;
-  quantity: number;
-  status: "Paid" | "Processing" | "Delivered";
-  date: string;
-  ref: string;
-};
+/* -------------------------------------------------------------------------- */
+/*                                    DATA                                    */
+/* -------------------------------------------------------------------------- */
 
-const formatNGN = (amount: number) =>
-  `₦${amount.toLocaleString("en-NG", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
+const orders: FynaroOrder[] = [
+  {
+    id: "ORD-0042",
+    proposalId: "PRP-0042",
+    projectId: "FYN-PRJ-0042",
 
-const statusStyles: Record<OrderItem["status"], string> = {
-  Paid: "border-emerald-400/20 bg-emerald-400/10 text-emerald-300",
-  Processing: "border-amber-400/20 bg-amber-400/10 text-amber-300",
-  Delivered: "border-sky-400/20 bg-sky-400/10 text-sky-300",
-};
+    title: "Marketplace Platform",
+    service: "Digital Product",
+    package: "Custom Product Development",
 
-function formatOrderDate(dateString: string | null) {
-  if (!dateString) return "—";
-  const date = new Date(dateString);
-  if (Number.isNaN(date.getTime())) return "—";
+    status: "active",
+    paymentStatus: "part_paid",
 
-  return date.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
+    createdAt: "Sep 10, 2026",
 
-function makeOrderNumber(order: RawOrder, index: number) {
-  if (order.transaction_id) return `FYN-${order.transaction_id}`;
-  if (order.tx_ref) return order.tx_ref.slice(0, 18).toUpperCase();
-  return `FYN-ORDER-${index + 1}`;
-}
+    total: 2450000,
+    paid: 1225000,
+    balance: 1225000,
+  },
+  {
+    id: "ORD-0034",
+    proposalId: "PRP-0034",
+    projectId: "FYN-PRJ-0034",
 
-function mapStatus(order: RawOrder): OrderItem["status"] {
-  const normalizedOrderStatus = String(order.order_status || "").toLowerCase();
-  const normalizedPaymentStatus = String(order.payment_status || "").toLowerCase();
+    title: "Business Website",
+    service: "Web Development",
+    package: "Launch",
 
-  if (normalizedOrderStatus === "completed") return "Delivered";
-  if (normalizedOrderStatus === "processing") return "Processing";
-  if (normalizedPaymentStatus === "paid") return "Paid";
+    status: "completed",
+    paymentStatus: "paid",
 
-  return "Processing";
-}
+    createdAt: "Aug 13, 2026",
+
+    total: 350000,
+    paid: 350000,
+    balance: 0,
+  },
+  {
+    id: "ORD-0031",
+    proposalId: "PRP-0031",
+
+    title: "Brand Identity System",
+    service: "Design",
+    package: "Brand Identity",
+
+    status: "pending_payment",
+    paymentStatus: "unpaid",
+
+    createdAt: "Aug 4, 2026",
+
+    total: 350000,
+    paid: 0,
+    balance: 350000,
+  },
+];
+
+/* -------------------------------------------------------------------------- */
+/*                                   FILTERS                                  */
+/* -------------------------------------------------------------------------- */
+
+const filters = [
+  {
+    label: "All",
+    value: "all",
+  },
+  {
+    label: "Active",
+    value: "active",
+  },
+  {
+    label: "Pending",
+    value: "pending",
+  },
+  {
+    label: "Completed",
+    value: "completed",
+  },
+] as const;
+
+type FilterValue =
+  (typeof filters)[number]["value"];
+
+/* -------------------------------------------------------------------------- */
+/*                                  HELPERS                                   */
+/* -------------------------------------------------------------------------- */
+
+const formatMoney = (amount: number) =>
+  new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
+    maximumFractionDigits: 0,
+  }).format(amount);
+
+/* -------------------------------------------------------------------------- */
+/*                                    PAGE                                    */
+/* -------------------------------------------------------------------------- */
 
 export default function OrdersPage() {
-  const [rawOrders, setRawOrders] = useState<RawOrder[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [activeFilter, setActiveFilter] =
+    useState<FilterValue>("all");
 
-  useEffect(() => {
-    let isMounted = true;
+  const filteredOrders = useMemo(() => {
+    if (activeFilter === "all") {
+      return orders;
+    }
 
-    const loadOrders = async () => {
-      try {
-        setIsLoading(true);
-        setErrorMessage("");
+    if (activeFilter === "pending") {
+      return orders.filter(
+        (order) =>
+          order.status === "pending_payment" ||
+          order.paymentStatus === "unpaid",
+      );
+    }
 
-        const res = await fetch("/api/orders", {
-          method: "GET",
-          cache: "no-store",
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data?.error || "Failed to load orders.");
-        }
-
-        if (isMounted) {
-          setRawOrders(Array.isArray(data?.orders) ? data.orders : []);
-        }
-      } catch (error) {
-        if (isMounted) {
-          setErrorMessage(
-            error instanceof Error ? error.message : "Unable to load orders."
-          );
-        }
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
-
-    loadOrders();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const orders = useMemo<OrderItem[]>(() => {
-    return rawOrders.map((order, index) => ({
-      id: order.id,
-      orderNumber: makeOrderNumber(order, index),
-      product: order.item_title || "Untitled order",
-      amount: Number(order.amount || 0),
-      quantity: Number(order.metadata?.quantity || 1),
-      status: mapStatus(order),
-      date: formatOrderDate(order.created_at),
-      ref: order.tx_ref || "—",
-    }));
-  }, [rawOrders]);
+    return orders.filter(
+      (order) => order.status === activeFilter,
+    );
+  }, [activeFilter]);
 
   return (
-    <main className="min-h-screen bg-[#050506] text-white">
-      <MainHeader />
+    <div className="mx-auto w-full max-w-[1420px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+      {/* HEADER */}
+      <section className="border-b border-black/[0.08] pb-8">
+        <div className="flex items-center gap-2 text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35">
+          <Link
+            href="/shop"
+            className="transition hover:text-black"
+          >
+            Dashboard
+          </Link>
 
-      <section className="relative overflow-hidden px-4 pb-10 pt-24 sm:px-6 sm:pt-28 lg:px-8">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute left-1/2 top-16 h-48 w-48 -translate-x-1/2 rounded-full bg-[#d6cc6d]/10 blur-3xl" />
+          <span>/</span>
+
+          <span>Orders</span>
         </div>
 
-        <div className="relative mx-auto max-w-7xl">
-          <div className="mb-6 flex items-center justify-between gap-4">
-            <div>
-              <Link
-                href="/shop"
-                className="inline-flex items-center gap-2 text-sm text-white/45 transition hover:text-white/80"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to shop
-              </Link>
+        <div className="mt-7">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35">
+            Orders
+          </p>
 
-              <p className="mt-4 text-[11px] uppercase tracking-[0.22em] text-white/35">
-                Orders
-              </p>
-              <h1 className="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-                Your order history
-              </h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-white/58">
-                See every order you’ve made in one place. Open any order to view
-                the complete details.
-              </p>
-            </div>
+          <h1 className="mt-3 text-[38px] font-semibold leading-[0.98] tracking-[-0.05em] sm:text-[48px]">
+            Your purchases.
+          </h1>
 
-            <div className="hidden rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 sm:block">
-              <p className="text-[10px] uppercase tracking-[0.18em] text-white/30">
-                Total orders
-              </p>
-              <p className="mt-1 text-lg font-semibold text-white">
-                {orders.length}
-              </p>
-            </div>
-          </div>
-
-          {errorMessage ? (
-            <div className="mb-6 rounded-2xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-200">
-              {errorMessage}
-            </div>
-          ) : null}
-
-          <div className="overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.03]">
-            <div className="hidden grid-cols-[1.2fr_1fr_.7fr_.8fr_.9fr_.9fr] gap-4 border-b border-white/8 px-6 py-4 text-[11px] uppercase tracking-[0.16em] text-white/35 md:grid">
-              <p>Product</p>
-              <p>Order ID</p>
-              <p>Qty</p>
-              <p>Amount</p>
-              <p>Status</p>
-              <p className="text-right">Action</p>
-            </div>
-
-            <div className="divide-y divide-white/8">
-              {isLoading ? (
-                <div className="px-6 py-10 text-sm text-white/45">
-                  Loading orders...
-                </div>
-              ) : (
-                orders.map((order) => (
-                  <div
-                    key={order.id}
-                    className="px-4 py-4 transition hover:bg-white/[0.025] sm:px-6"
-                  >
-                    <div className="space-y-3 md:hidden">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-white">
-                            {order.product}
-                          </p>
-                          <p className="mt-1 text-xs text-white/45">
-                            {order.orderNumber}
-                          </p>
-                        </div>
-
-                        <span
-                          className={`inline-flex shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-medium ${statusStyles[order.status]}`}
-                        >
-                          {order.status}
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-3 text-xs text-white/55">
-                        <div>
-                          <p className="text-white/30">Qty</p>
-                          <p className="mt-1 text-white/85">{order.quantity}</p>
-                        </div>
-                        <div>
-                          <p className="text-white/30">Amount</p>
-                          <p className="mt-1 text-white/85">
-                            {formatNGN(order.amount)}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-white/30">Date</p>
-                          <p className="mt-1 text-white/85">{order.date}</p>
-                        </div>
-                      </div>
-
-                      <Link
-                       href={`/shop/order/${order.id}`}
-                        className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 text-sm font-medium text-white transition hover:bg-white/[0.06]"
-                      >
-                        <Eye className="h-4 w-4" />
-                        View details
-                      </Link>
-                    </div>
-
-                    <div className="hidden md:grid md:grid-cols-[1.2fr_1fr_.7fr_.8fr_.9fr_.9fr] md:items-center md:gap-4">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-white">
-                          {order.product}
-                        </p>
-                        <p className="mt-1 text-xs text-white/45">{order.date}</p>
-                      </div>
-
-                      <div className="min-w-0">
-                        <p className="truncate text-sm text-[#e7db9b]">
-                          {order.orderNumber}
-                        </p>
-                        <p className="mt-1 truncate text-xs text-white/35">
-                          {order.ref}
-                        </p>
-                      </div>
-
-                      <p className="text-sm text-white/75">{order.quantity}</p>
-
-                      <p className="text-sm font-medium text-white">
-                        {formatNGN(order.amount)}
-                      </p>
-
-                      <div>
-                        <span
-                          className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-medium ${statusStyles[order.status]}`}
-                        >
-                          {order.status}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-end">
-                        <Link
-                          href={`/shop/order/${order.orderNumber}`}
-                          className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 text-sm font-medium text-white transition hover:bg-white/[0.06]"
-                        >
-                          <Eye className="h-4 w-4" />
-                          View details
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {!isLoading && orders.length === 0 ? (
-            <div className="mt-6 rounded-[28px] border border-white/10 bg-white/[0.03] px-6 py-10 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-300">
-                <CheckCircle2 className="h-6 w-6" />
-              </div>
-              <h2 className="mt-4 text-lg font-semibold text-white">
-                No orders yet
-              </h2>
-              <p className="mt-2 text-sm text-white/55">
-                Once you place an order, it will appear here.
-              </p>
-            </div>
-          ) : null}
+          <p className="mt-3 max-w-[510px] text-[11px] leading-5 text-black/42">
+            View confirmed services, payment status
+            and the projects connected to each order.
+          </p>
         </div>
       </section>
-    </main>
+
+      {/* FILTERS */}
+      <section className="flex items-center justify-between gap-4 border-b border-black/[0.08] py-4">
+        <div className="flex gap-1 overflow-x-auto">
+          {filters.map((filter) => {
+            const active =
+              activeFilter === filter.value;
+
+            return (
+              <button
+                key={filter.value}
+                type="button"
+                onClick={() =>
+                  setActiveFilter(filter.value)
+                }
+                className={[
+                  "min-w-fit rounded-full px-3 py-2 text-[9px] font-semibold transition",
+                  active
+                    ? "bg-[#111] text-white"
+                    : "text-black/35 hover:bg-[#f4f4ef] hover:text-black",
+                ].join(" ")}
+              >
+                {filter.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <p className="hidden text-[9px] text-black/25 sm:block">
+          {filteredOrders.length}{" "}
+          {filteredOrders.length === 1
+            ? "order"
+            : "orders"}
+        </p>
+      </section>
+
+      {/* ORDER LIST */}
+      <section className="py-5">
+        {filteredOrders.length > 0 ? (
+          <div className="overflow-hidden rounded-[16px] border border-black/[0.08] bg-white">
+            {filteredOrders.map((order) => (
+              <OrderRow
+                key={order.id}
+                order={order}
+              />
+            ))}
+          </div>
+        ) : (
+          <EmptyState />
+        )}
+      </section>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                 ORDER ROW                                  */
+/* -------------------------------------------------------------------------- */
+
+function OrderRow({
+  order,
+}: {
+  order: FynaroOrder;
+}) {
+  const pending =
+    order.status === "pending_payment";
+
+  const completed =
+    order.status === "completed";
+
+  return (
+    <article
+      className={[
+        "group relative border-b border-black/[0.07] last:border-b-0",
+        "transition-colors duration-200",
+        pending
+          ? "bg-[#f7f5f0] hover:bg-[#f3f0e9]"
+          : "bg-white hover:bg-[#fafaf7]",
+      ].join(" ")}
+    >
+      {pending && (
+        <span className="absolute inset-y-0 left-0 w-[2px] bg-[#c7bda8]" />
+      )}
+
+      <div className="grid gap-5 px-5 py-5 sm:px-6 lg:grid-cols-[1fr_150px_160px_auto] lg:items-center">
+        {/* MAIN */}
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className="text-[8px] font-semibold uppercase tracking-[0.15em] text-black/25">
+              {order.id}
+            </span>
+
+            <OrderStatusBadge
+              status={order.status}
+            />
+
+            <PaymentBadge
+              status={order.paymentStatus}
+            />
+          </div>
+
+          <h2 className="mt-3 text-[16px] font-semibold tracking-[-0.025em] sm:text-[18px]">
+            {order.title}
+          </h2>
+
+          <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[9px] text-black/32">
+            <span>{order.service}</span>
+
+            {order.package && (
+              <>
+                <span className="h-[3px] w-[3px] rounded-full bg-black/15" />
+
+                <span>{order.package}</span>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* TOTAL */}
+        <div>
+          <p className="text-[7px] font-semibold uppercase tracking-[0.13em] text-black/25">
+            Order total
+          </p>
+
+          <p className="mt-1.5 text-[11px] font-semibold">
+            {formatMoney(order.total)}
+          </p>
+        </div>
+
+        {/* PAYMENT */}
+        <div>
+          <p className="text-[7px] font-semibold uppercase tracking-[0.13em] text-black/25">
+            {order.balance > 0
+              ? "Balance"
+              : "Payment"}
+          </p>
+
+          <p
+            className={[
+              "mt-1.5 text-[10px] font-semibold",
+              order.balance > 0
+                ? "text-black/65"
+                : "text-[#45604b]",
+            ].join(" ")}
+          >
+            {order.balance > 0
+              ? formatMoney(order.balance)
+              : "Paid in full"}
+          </p>
+
+          <p className="mt-1 text-[8px] text-black/25">
+            {order.createdAt}
+          </p>
+        </div>
+
+        {/* ACTION */}
+        <div className="flex flex-wrap gap-2 lg:justify-end">
+          {pending ? (
+            <Link
+              href={`/shop/billing?order=${order.id}`}
+              className="group/action inline-flex h-9 items-center gap-2 rounded-full bg-[#111] px-3.5 text-[9px] font-semibold text-white transition hover:bg-black/80"
+            >
+              Make Payment
+
+              <ArrowRight
+                size={10}
+                className="transition-transform group-hover/action:translate-x-0.5"
+              />
+            </Link>
+          ) : (
+            <Link
+              href={`/shop/orders/${order.id}`}
+              className="group/action inline-flex h-9 items-center gap-2 rounded-full border border-black/[0.09] bg-white px-3.5 text-[9px] font-semibold text-black/55 transition hover:border-black/15 hover:text-black"
+            >
+              View Order
+
+              <ArrowRight
+                size={10}
+                className="transition-transform group-hover/action:translate-x-0.5"
+              />
+            </Link>
+          )}
+
+          {order.projectId && !pending && (
+            <Link
+              href={`/shop/projects/${order.projectId}`}
+              className="inline-flex h-9 items-center rounded-full px-3 text-[9px] font-semibold text-black/35 transition hover:bg-[#f4f4ef] hover:text-black"
+            >
+              Project
+            </Link>
+          )}
+        </div>
+      </div>
+
+      {/* SUBTLE PAYMENT PROGRESS */}
+      {!completed &&
+        order.total > 0 &&
+        order.paid > 0 && (
+          <div className="px-5 pb-4 sm:px-6">
+            <div className="h-[2px] overflow-hidden rounded-full bg-black/[0.05]">
+              <div
+                className="h-full rounded-full bg-black/35"
+                style={{
+                  width: `${Math.min(
+                    (order.paid / order.total) *
+                      100,
+                    100,
+                  )}%`,
+                }}
+              />
+            </div>
+          </div>
+        )}
+    </article>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              ORDER STATUS                                  */
+/* -------------------------------------------------------------------------- */
+
+function OrderStatusBadge({
+  status,
+}: {
+  status: OrderStatus;
+}) {
+  const config: Record<
+    OrderStatus,
+    {
+      label: string;
+      className: string;
+    }
+  > = {
+    pending_payment: {
+      label: "Pending Payment",
+      className:
+        "bg-[#eee9df] text-[#6d6047]",
+    },
+
+    processing: {
+      label: "Processing",
+      className:
+        "bg-[#ededeb] text-black/50",
+    },
+
+    active: {
+      label: "Active",
+      className:
+        "bg-[#e7eee8] text-[#45604b]",
+    },
+
+    completed: {
+      label: "Completed",
+      className:
+        "bg-[#e7eee8] text-[#45604b]",
+    },
+
+    cancelled: {
+      label: "Cancelled",
+      className:
+        "bg-black/[0.04] text-black/30",
+    },
+  };
+
+  const item = config[status];
+
+  return (
+    <span
+      className={[
+        "rounded-full px-2.5 py-1 text-[7px] font-semibold uppercase tracking-[0.11em]",
+        item.className,
+      ].join(" ")}
+    >
+      {item.label}
+    </span>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                             PAYMENT STATUS                                 */
+/* -------------------------------------------------------------------------- */
+
+function PaymentBadge({
+  status,
+}: {
+  status: PaymentStatus;
+}) {
+  const config: Record<
+    PaymentStatus,
+    {
+      label: string;
+      className: string;
+    }
+  > = {
+    unpaid: {
+      label: "Unpaid",
+      className:
+        "bg-[#f3e8e3] text-[#7d5b4c]",
+    },
+
+    part_paid: {
+      label: "Part Paid",
+      className:
+        "bg-[#eeeeea] text-black/50",
+    },
+
+    paid: {
+      label: "Paid",
+      className:
+        "bg-black/[0.04] text-black/40",
+    },
+  };
+
+  const item = config[status];
+
+  return (
+    <span
+      className={[
+        "rounded-full px-2.5 py-1 text-[7px] font-semibold uppercase tracking-[0.11em]",
+        item.className,
+      ].join(" ")}
+    >
+      {item.label}
+    </span>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                EMPTY STATE                                 */
+/* -------------------------------------------------------------------------- */
+
+function EmptyState() {
+  return (
+    <div className="flex min-h-[280px] flex-col items-center justify-center rounded-[16px] border border-dashed border-black/[0.1] px-6 text-center">
+      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f4f4ef]">
+        <ReceiptText
+          size={14}
+          strokeWidth={1.6}
+          className="text-black/45"
+        />
+      </span>
+
+      <h3 className="mt-4 text-[16px] font-semibold tracking-[-0.025em]">
+        No orders here.
+      </h3>
+
+      <p className="mt-2 max-w-[330px] text-[9px] leading-5 text-black/35">
+        Confirmed Fynaro services and purchases
+        will appear here.
+      </p>
+    </div>
   );
 }

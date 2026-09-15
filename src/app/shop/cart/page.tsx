@@ -1,386 +1,1710 @@
-// app/shop/cart/page.tsx (or pages/shop/cart.tsx)
 "use client";
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useCart } from "@/contexts/cartContext";
-import Header from "@/components/dashboard components/mainheader";
-import PayNowButton from "@/components/dashboard components/PayNowButton";
+
+import {
+  FormEvent,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
 import {
   ArrowLeft,
+  Check,
+  ChevronRight,
+  CircleCheck,
+  CreditCard,
+  LockKeyhole,
+  MapPin,
+  PackageCheck,
+  ShieldCheck,
   ShoppingBag,
-  Trash2,
-  Plus,
-  Minus,
+  Truck,
+  UserRound,
 } from "lucide-react";
 
-const parsePrice = (price: string): number => {
-  const numeric = price.replace(/[^\d.]/g, "");
-  return Number.parseFloat(numeric || "0");
+import {
+  useCart,
+} from "@/contexts/cartContext";
+
+import PayNowButton from "@/components/dashboard components/PayNowButton";
+
+/* -------------------------------------------------------------------------- */
+/* TYPES                                                                      */
+/* -------------------------------------------------------------------------- */
+
+type AuthUser = {
+  id?: string;
+  _id?: string;
+  email?: string | null;
+  fullName?: string | null;
+  full_name?: string | null;
+  name?: string | null;
 };
 
-const formatNGN = (amount: number) =>
-  `₦${amount.toLocaleString("en-NG", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
+type StoredProfile = {
+  phone: string;
+  company: string;
+  role: string;
+  website: string;
+  address: string;
+  city: string;
+  state: string;
+};
 
-export default function CartPage() {
-  const { items, removeFromCart, clearCart, addToCart, decrementItem } =
-    useCart();
+type CheckoutDetails = {
+  fullName: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  company: string;
+  orderNote: string;
+};
 
-  const [loading, setLoading] = useState(true);
+type CheckoutErrors =
+  Partial<
+    Record<
+      keyof CheckoutDetails,
+      string
+    >
+  >;
 
-  // simple first-load skeleton (nice with context hydration)
+const PROFILE_STORAGE_KEY =
+  "fynaro_profile_details";
+
+const CHECKOUT_STORAGE_KEY =
+  "fynaro_checkout_details";
+
+const EMPTY_PROFILE: StoredProfile = {
+  phone: "",
+  company: "",
+  role: "",
+  website: "",
+  address: "",
+  city: "",
+  state: "",
+};
+
+const EMPTY_CHECKOUT: CheckoutDetails = {
+  fullName: "",
+  email: "",
+  phone: "",
+  address: "",
+  city: "",
+  state: "",
+  company: "",
+  orderNote: "",
+};
+
+/* -------------------------------------------------------------------------- */
+/* HELPERS                                                                    */
+/* -------------------------------------------------------------------------- */
+
+function safeString(
+  value:
+    | string
+    | null
+    | undefined
+) {
+  return value?.trim() || "";
+}
+
+function parsePrice(
+  price: string
+) {
+  const numeric =
+    price.replace(
+      /[^\d.]/g,
+      ""
+    );
+
+  return Number.parseFloat(
+    numeric || "0"
+  );
+}
+
+function formatNGN(
+  amount: number
+) {
+  return new Intl.NumberFormat(
+    "en-NG",
+    {
+      style: "currency",
+      currency: "NGN",
+      maximumFractionDigits: 0,
+    }
+  ).format(amount);
+}
+
+/* -------------------------------------------------------------------------- */
+/* PAGE                                                                       */
+/* -------------------------------------------------------------------------- */
+
+export default function CheckoutPage() {
+  const {
+    items,
+  } = useCart();
+
+  const [
+    details,
+    setDetails,
+  ] =
+    useState<CheckoutDetails>(
+      EMPTY_CHECKOUT
+    );
+
+  const [
+    errors,
+    setErrors,
+  ] =
+    useState<CheckoutErrors>(
+      {}
+    );
+
+  const [
+    confirmed,
+    setConfirmed,
+  ] =
+    useState(false);
+
+  const [
+    loadingProfile,
+    setLoadingProfile,
+  ] =
+    useState(true);
+
+  const [
+    accountLoaded,
+    setAccountLoaded,
+  ] =
+    useState(false);
+
+  const [
+    profileData,
+    setProfileData,
+  ] =
+    useState<StoredProfile>(
+      EMPTY_PROFILE
+    );
+
+  /* ------------------------------------------------------------------------ */
+  /* TOTALS                                                                   */
+  /* ------------------------------------------------------------------------ */
+
+  const {
+    subtotal,
+    itemCount,
+  } = useMemo(
+    () => {
+      const subtotalValue =
+        items.reduce(
+          (
+            total,
+            item
+          ) =>
+            total +
+            parsePrice(
+              item.price
+            ) *
+              (item.quantity ??
+                1),
+          0
+        );
+
+      const countValue =
+        items.reduce(
+          (
+            total,
+            item
+          ) =>
+            total +
+            (item.quantity ??
+              1),
+          0
+        );
+
+      return {
+        subtotal:
+          subtotalValue,
+        itemCount:
+          countValue,
+      };
+    },
+    [
+      items,
+    ]
+  );
+
+  const vat =
+    subtotal * 0.075;
+
+  const shipping =
+    items.length > 0
+      ? 3500
+      : 0;
+
+  const total =
+    subtotal +
+    vat +
+    shipping;
+
+  const isEmpty =
+    items.length === 0;
+
+  /* ------------------------------------------------------------------------ */
+  /* LOAD REAL AUTH USER + PROFILE                                            */
+  /* ------------------------------------------------------------------------ */
+
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 600);
-    return () => clearTimeout(t);
+    let active = true;
+
+    async function loadCustomer() {
+      setLoadingProfile(true);
+
+      try {
+        const response =
+          await fetch(
+            "/api/auth/me",
+            {
+              method: "GET",
+              credentials:
+                "include",
+              headers: {
+                Accept:
+                  "application/json",
+              },
+              cache:
+                "no-store",
+            }
+          );
+
+        const data =
+          await response
+            .json()
+            .catch(
+              () => ({})
+            );
+
+        if (
+          !response.ok ||
+          !data?.user
+        ) {
+          throw new Error(
+            data?.message ||
+              "Unable to load signed-in customer."
+          );
+        }
+
+        const user =
+          data.user as AuthUser;
+
+        const fullName =
+          safeString(
+            user.fullName
+          ) ||
+          safeString(
+            user.full_name
+          ) ||
+          safeString(
+            user.name
+          );
+
+        const email =
+          safeString(
+            user.email
+          );
+
+        let storedProfile:
+          StoredProfile = {
+          ...EMPTY_PROFILE,
+        };
+
+        const rawProfile =
+          window.localStorage.getItem(
+            PROFILE_STORAGE_KEY
+          );
+
+        if (rawProfile) {
+          try {
+            storedProfile =
+              {
+                ...EMPTY_PROFILE,
+                ...JSON.parse(
+                  rawProfile
+                ),
+              };
+          } catch {
+            window.localStorage.removeItem(
+              PROFILE_STORAGE_KEY
+            );
+          }
+        }
+
+        let savedCheckout:
+          Partial<CheckoutDetails> =
+          {};
+
+        const rawCheckout =
+          window.sessionStorage.getItem(
+            CHECKOUT_STORAGE_KEY
+          );
+
+        if (rawCheckout) {
+          try {
+            savedCheckout =
+              JSON.parse(
+                rawCheckout
+              );
+          } catch {
+            window.sessionStorage.removeItem(
+              CHECKOUT_STORAGE_KEY
+            );
+          }
+        }
+
+        if (!active) {
+          return;
+        }
+
+        setProfileData(
+          storedProfile
+        );
+
+        setDetails({
+          /*
+           * Name + email ALWAYS come
+           * from current signed-in user.
+           */
+          fullName,
+          email,
+
+          /*
+           * Checkout input takes priority,
+           * then saved Fynaro profile.
+           */
+          phone:
+            safeString(
+              savedCheckout.phone
+            ) ||
+            safeString(
+              storedProfile.phone
+            ),
+
+          company:
+            safeString(
+              savedCheckout.company
+            ) ||
+            safeString(
+              storedProfile.company
+            ),
+
+          address:
+            safeString(
+              savedCheckout.address
+            ) ||
+            safeString(
+              storedProfile.address
+            ),
+
+          city:
+            safeString(
+              savedCheckout.city
+            ) ||
+            safeString(
+              storedProfile.city
+            ),
+
+          state:
+            safeString(
+              savedCheckout.state
+            ) ||
+            safeString(
+              storedProfile.state
+            ),
+
+          orderNote:
+            savedCheckout.orderNote ??
+            "",
+        });
+
+        setAccountLoaded(
+          true
+        );
+      } catch (
+        error
+      ) {
+        console.error(
+          "Checkout customer load error:",
+          error
+        );
+
+        if (active) {
+          setAccountLoaded(
+            false
+          );
+        }
+      } finally {
+        if (active) {
+          setLoadingProfile(
+            false
+          );
+        }
+      }
+    }
+
+    loadCustomer();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const { subtotal, itemCount } = useMemo(() => {
-    const subtotalValue = items.reduce(
-      (sum, item) => sum + parsePrice(item.price) * (item.quantity ?? 1),
-      0
-    );
-    const countValue = items.reduce(
-      (sum, item) => sum + (item.quantity ?? 1),
-      0
-    );
-    return { subtotal: subtotalValue, itemCount: countValue };
-  }, [items]);
+  /* ------------------------------------------------------------------------ */
+  /* PROFILE UPDATE EVENT                                                     */
+  /* ------------------------------------------------------------------------ */
 
-  const estimatedVat = subtotal * 0.075; // 7.5% VAT
-  const estimatedShipping = items.length > 0 ? 3500 : 0;
-  const grandTotal = subtotal + estimatedVat + estimatedShipping;
+  useEffect(() => {
+    function syncProfile() {
+      const stored =
+        window.localStorage.getItem(
+          PROFILE_STORAGE_KEY
+        );
 
-  const handleIncrease = (item: (typeof items)[number]) => {
-    addToCart({
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      image: item.image,
+      if (!stored) {
+        return;
+      }
+
+      try {
+        const parsed =
+          {
+            ...EMPTY_PROFILE,
+            ...JSON.parse(
+              stored
+            ),
+          };
+
+        setProfileData(
+          parsed
+        );
+
+        setDetails(
+          (current) => ({
+            ...current,
+
+            phone:
+              current.phone ||
+              parsed.phone,
+
+            company:
+              current.company ||
+              parsed.company,
+
+            address:
+              current.address ||
+              parsed.address,
+
+            city:
+              current.city ||
+              parsed.city,
+
+            state:
+              current.state ||
+              parsed.state,
+          })
+        );
+      } catch {
+        return;
+      }
+    }
+
+    window.addEventListener(
+      "fynaro-profile-updated",
+      syncProfile
+    );
+
+    window.addEventListener(
+      "storage",
+      syncProfile
+    );
+
+    return () => {
+      window.removeEventListener(
+        "fynaro-profile-updated",
+        syncProfile
+      );
+
+      window.removeEventListener(
+        "storage",
+        syncProfile
+      );
+    };
+  }, []);
+
+  /* ------------------------------------------------------------------------ */
+  /* SAVE TEMP CHECKOUT                                                       */
+  /* ------------------------------------------------------------------------ */
+
+  useEffect(() => {
+    if (
+      !accountLoaded
+    ) {
+      return;
+    }
+
+    window.sessionStorage.setItem(
+      CHECKOUT_STORAGE_KEY,
+      JSON.stringify(
+        details
+      )
+    );
+  }, [
+    details,
+    accountLoaded,
+  ]);
+
+  /* ------------------------------------------------------------------------ */
+  /* FIELD UPDATE                                                             */
+  /* ------------------------------------------------------------------------ */
+
+  function updateField(
+    field:
+      keyof CheckoutDetails,
+    value: string
+  ) {
+    if (
+      field ===
+        "fullName" ||
+      field ===
+        "email"
+    ) {
+      return;
+    }
+
+    setDetails(
+      (current) => ({
+        ...current,
+        [field]: value,
+      })
+    );
+
+    if (
+      errors[field]
+    ) {
+      setErrors(
+        (current) => ({
+          ...current,
+          [field]:
+            undefined,
+        })
+      );
+    }
+  }
+
+  /* ------------------------------------------------------------------------ */
+  /* VALIDATE                                                                 */
+  /* ------------------------------------------------------------------------ */
+
+  function validate() {
+    const next:
+      CheckoutErrors =
+      {};
+
+    if (
+      !details.fullName.trim()
+    ) {
+      next.fullName =
+        "Account name unavailable.";
+    }
+
+    if (
+      !details.email.trim()
+    ) {
+      next.email =
+        "Account email unavailable.";
+    }
+
+    if (
+      !details.phone.trim()
+    ) {
+      next.phone =
+        "Enter your phone number.";
+    }
+
+    if (
+      !details.address.trim()
+    ) {
+      next.address =
+        "Enter your delivery address.";
+    }
+
+    if (
+      !details.city.trim()
+    ) {
+      next.city =
+        "Enter your city.";
+    }
+
+    if (
+      !details.state.trim()
+    ) {
+      next.state =
+        "Enter your state.";
+    }
+
+    setErrors(
+      next
+    );
+
+    return (
+      Object.keys(
+        next
+      ).length === 0
+    );
+  }
+
+  function handleReview(
+    event: FormEvent
+  ) {
+    event.preventDefault();
+
+    if (!validate()) {
+      return;
+    }
+
+    setConfirmed(
+      true
+    );
+
+    window.scrollTo({
+      top: 0,
+      behavior:
+        "smooth",
     });
-  };
+  }
 
-  const handleDecrease = (item: (typeof items)[number]) => {
-    decrementItem(item.id);
-  };
+  /* ------------------------------------------------------------------------ */
+  /* LOADING                                                                  */
+  /* ------------------------------------------------------------------------ */
 
-  const isEmpty = items.length === 0;
-  const showSkeleton = !isEmpty && loading;
+  if (
+    loadingProfile
+  ) {
+    return (
+      <CheckoutLoading />
+    );
+  }
+
+  /* ------------------------------------------------------------------------ */
+  /* EMPTY CART                                                               */
+  /* ------------------------------------------------------------------------ */
+
+  if (isEmpty) {
+    return (
+      <div className="mx-auto w-full max-w-[1460px] px-4 py-8 sm:px-6 lg:px-8">
+        <div className="flex min-h-[430px] flex-col items-center justify-center rounded-[22px] border border-black/[0.08] bg-white p-8 text-center">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f2f2ed]">
+            <ShoppingBag
+              size={19}
+            />
+          </span>
+
+          <h1 className="mt-6 text-[32px] font-semibold tracking-[-0.045em]">
+            Your cart is empty.
+          </h1>
+
+          <Link
+            href="/shop"
+            className="mt-7 inline-flex h-10 items-center gap-2 rounded-full bg-[#111] px-5 text-[10px] font-semibold text-white"
+          >
+            Explore Fynaro
+
+            <ChevronRight
+              size={11}
+            />
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white pt-20 pb-16">
-      <Header />
+    <div className="mx-auto w-full max-w-[1460px] px-4 py-6 pb-14 sm:px-6 lg:px-8 lg:py-8">
+      {/* BREADCRUMB */}
 
-      <div className="max-w-6xl mt-10 mx-auto px-4 sm:px-6 lg:px-8">
-        {/* 🧭 Breadcrumb */}
-        <nav className="mb-3 sm:mb-4 text-[11px] sm:text-xs text-neutral-500">
-          <ol className="flex items-center gap-1.5 sm:gap-2">
-            <li>
-              <Link
-                href="/"
-                className="hover:text-neutral-200 transition-colors"
-              >
-                Home
-              </Link>
-            </li>
-            <li className="text-neutral-600">/</li>
-            <li>
-              <Link
-                href="/shop"
-                className="hover:text-neutral-200 transition-colors"
-              >
-                Shop
-              </Link>
-            </li>
-            <li className="text-neutral-600">/</li>
-            <li className="text-neutral-300">Cart</li>
-          </ol>
-        </nav>
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-black/[0.08] pb-5">
+        <div className="flex items-center gap-2 text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35">
+          <Link
+            href="/shop"
+          >
+            Dashboard
+          </Link>
 
-        {/* Top bar */}
-        <div className="flex items-center justify-between gap-3 mb-6 sm:mb-8">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/shop"
-              className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-neutral-300 hover:text-white transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to shop
-            </Link>
-          </div>
+          <span>/</span>
 
-          {!isEmpty && !showSkeleton && (
-            <button
-              onClick={clearCart}
-              className="text-[11px] sm:text-xs text-neutral-400 hover:text-red-300 transition-colors"
-            >
-              Clear cart
-            </button>
-          )}
+          <Link
+            href="/shop/cart"
+          >
+            Cart
+          </Link>
+
+          <span>/</span>
+
+          <span className="text-black/60">
+            Checkout
+          </span>
         </div>
 
-        {/* Heading */}
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-6 sm:mb-8">
-          <div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight">
-              Your Fynaro Cart
-            </h1>
-            <p className="mt-1 text-xs sm:text-sm text-neutral-400">
-              Review your items before you proceed to checkout.
+        <Link
+          href="/shop/cart"
+          className="inline-flex items-center gap-2 text-[10px] font-semibold text-black/40 transition hover:text-black"
+        >
+          <ArrowLeft
+            size={12}
+          />
+
+          Back to cart
+        </Link>
+      </div>
+
+      {/* HERO */}
+
+      <section className="grid gap-8 border-b border-black/[0.08] py-9 lg:grid-cols-[1.25fr_.75fr] lg:items-end lg:py-11">
+        <div>
+          <div className="mb-5 flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f2f2ed]">
+              <CreditCard
+                size={15}
+              />
+            </span>
+
+            <p className="text-[9px] font-semibold uppercase tracking-[0.19em] text-black/35">
+              Fynaro / Checkout
             </p>
           </div>
-          {!isEmpty && !showSkeleton && (
-            <div className="text-right">
-              <p className="text-xs sm:text-sm text-neutral-400">
-                Items in cart
-              </p>
-              <p className="text-sm sm:text-base font-semibold">
-                {itemCount} item{itemCount === 1 ? "" : "s"}
-              </p>
-            </div>
-          )}
+
+          <h1 className="text-[42px] font-semibold leading-[0.95] tracking-[-0.055em] sm:text-[54px] lg:text-[64px]">
+            Complete your
+            <br />
+            order.
+          </h1>
         </div>
 
-        {/* Empty state */}
-        <AnimatePresence>
-          {isEmpty && !showSkeleton && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="flex flex-col items-center justify-center text-center py-16 sm:py-20 px-4 rounded-3xl border border-neutral-800 bg-gradient-to-b from-[#101010] to-[#050505]"
+        <div>
+          <p className="max-w-[420px] text-[12px] leading-6 text-black/45">
+            Confirm your
+            information, review
+            the order and continue
+            to secure payment.
+          </p>
+
+          <div className="mt-5 flex items-center gap-2">
+            <StepBadge
+              number="01"
+              label="Details"
+              active={
+                !confirmed
+              }
+              complete={
+                confirmed
+              }
+            />
+
+            <span className="h-px w-5 bg-black/[0.1]" />
+
+            <StepBadge
+              number="02"
+              label="Payment"
+              active={
+                confirmed
+              }
+            />
+          </div>
+        </div>
+      </section>
+
+      <div className="grid gap-7 py-9 xl:grid-cols-[minmax(0,1fr)_380px] xl:items-start">
+        <main>
+          {!confirmed ? (
+            <form
+              onSubmit={
+                handleReview
+              }
             >
-              <div className="w-14 h-14 rounded-2xl bg-neutral-900 flex items-center justify-center mb-4">
-                <ShoppingBag className="w-7 h-7 text-neutral-400" />
-              </div>
-              <h2 className="text-lg sm:text-xl font-semibold mb-2">
-                Your cart is feeling shy
-              </h2>
-              <p className="text-sm text-neutral-400 max-w-md mb-6">
-                You haven’t added anything yet. Explore Fynaro tees, caps,
-                hoodies and more, then come back to seal the deal.
-              </p>
-              <Link
-                href="/shop"
-                className="inline-flex items-center gap-2 rounded-full bg-white text-black text-sm font-medium px-6 py-2.5 hover:bg-neutral-100 transition-colors"
+              {/* CUSTOMER */}
+
+              <CheckoutSection
+                icon={
+                  UserRound
+                }
+                eyebrow="Contact"
+                title="Who is placing the order?"
+                description="Your identity comes directly from the Fynaro account currently signed in."
               >
-                <ShoppingBag className="w-4 h-4" />
-                Start shopping
-              </Link>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                {!accountLoaded && (
+                  <div className="mb-5 rounded-[14px] border border-[#a94444]/15 bg-[#fbf5f5] p-4">
+                    <p className="text-[9px] font-semibold text-[#8c3c3c]">
+                      Signed-in account
+                      information could
+                      not be loaded.
+                    </p>
+                  </div>
+                )}
 
-        {/* Skeleton + Cart content */}
-        {!isEmpty && (
-          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-6 lg:gap-8">
-            {/* Left: items */}
-            <section className="rounded-3xl border border-neutral-800 bg-gradient-to-b from-[#101010] to-[#050505] p-4 sm:p-5 md:p-6">
-              <div className="flex items-center justify-between mb-4 sm:mb-5">
-                <h2 className="text-sm sm:text-base font-medium">
-                  Cart items
-                </h2>
-                <span className="text-[11px] sm:text-xs text-neutral-400">
-                  {items.length} product{items.length === 1 ? "" : "s"}
-                </span>
-              </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <AccountDetail
+                    label="Full name"
+                    value={
+                      details.fullName
+                    }
+                  />
 
-              {/* Skeleton state */}
-              {showSkeleton && (
-                <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="py-4 sm:py-5 flex gap-3 sm:gap-4 animate-pulse"
-                    >
-                      {/* Image placeholder */}
-                      <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-neutral-900/80 border border-neutral-800" />
+                  <AccountDetail
+                    label="Email address"
+                    value={
+                      details.email
+                    }
+                  />
 
-                      {/* Text placeholder */}
-                      <div className="flex-1 min-w-0 flex flex-col justify-between">
-                        <div>
-                          <div className="h-3.5 w-2/3 rounded-full bg-neutral-800 mb-2" />
-                          <div className="h-2.5 w-3/4 rounded-full bg-neutral-900" />
-                        </div>
-                        <div className="mt-3 flex items-center justify-between">
-                          <div className="h-7 w-28 rounded-full bg-neutral-900" />
-                          <div className="h-4 w-16 rounded-full bg-neutral-800" />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                  <CheckoutField
+                    label="Phone number"
+                    value={
+                      details.phone
+                    }
+                    type="tel"
+                    required
+                    error={
+                      errors.phone
+                    }
+                    placeholder="Enter phone number"
+                    dark={
+                      !profileData.phone
+                    }
+                    onChange={(
+                      value
+                    ) =>
+                      updateField(
+                        "phone",
+                        value
+                      )
+                    }
+                  />
+
+                  <CheckoutField
+                    label="Company"
+                    value={
+                      details.company
+                    }
+                    placeholder="Optional business name"
+                    dark={
+                      !profileData.company
+                    }
+                    onChange={(
+                      value
+                    ) =>
+                      updateField(
+                        "company",
+                        value
+                      )
+                    }
+                  />
                 </div>
-              )}
 
-              {/* Real cart items */}
-              {!showSkeleton && (
-                <div className="divide-y divide-neutral-800">
-                  {items.map((item) => {
-                    const qty = item.quantity ?? 1;
-                    const lineTotal = parsePrice(item.price) * qty;
+                <div className="mt-4 flex items-start gap-2 rounded-[12px] bg-[#f6f6f2] px-3 py-2.5">
+                  <CircleCheck
+                    size={13}
+                    className="mt-0.5 shrink-0 text-[#4c6a50]"
+                  />
 
-                    return (
-                      <motion.article
-                        key={item.id}
-                        layout
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -12 }}
-                        className="py-4 sm:py-5 flex gap-3 sm:gap-4"
-                      >
-                        {/* Image */}
-                        <div className="relative flex-shrink-0">
-                          <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-800">
-                            <Image
-                              src={item.image}
-                              alt={item.name}
-                              fill
-                              className="object-contain"
+                  <p className="text-[8px] leading-4 text-black/40">
+                    Name and email are
+                    tied to your signed-in
+                    account. Missing
+                    profile information
+                    appears as a dark
+                    field for completion.
+                  </p>
+                </div>
+              </CheckoutSection>
+
+              {/* DELIVERY */}
+
+              <CheckoutSection
+                icon={
+                  MapPin
+                }
+                eyebrow="Delivery"
+                title="Where should the order go?"
+                description="Your saved default address is used when available. You can change it for this order."
+              >
+                <div className="grid gap-4">
+                  <CheckoutField
+                    label="Delivery address"
+                    required
+                    value={
+                      details.address
+                    }
+                    error={
+                      errors.address
+                    }
+                    placeholder="Enter street address"
+                    dark={
+                      !profileData.address
+                    }
+                    onChange={(
+                      value
+                    ) =>
+                      updateField(
+                        "address",
+                        value
+                      )
+                    }
+                  />
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <CheckoutField
+                      label="City"
+                      required
+                      value={
+                        details.city
+                      }
+                      error={
+                        errors.city
+                      }
+                      placeholder="Enter city"
+                      dark={
+                        !profileData.city
+                      }
+                      onChange={(
+                        value
+                      ) =>
+                        updateField(
+                          "city",
+                          value
+                        )
+                      }
+                    />
+
+                    <CheckoutField
+                      label="State"
+                      required
+                      value={
+                        details.state
+                      }
+                      error={
+                        errors.state
+                      }
+                      placeholder="Enter state"
+                      dark={
+                        !profileData.state
+                      }
+                      onChange={(
+                        value
+                      ) =>
+                        updateField(
+                          "state",
+                          value
+                        )
+                      }
+                    />
+                  </div>
+                </div>
+              </CheckoutSection>
+
+              {/* NOTE */}
+
+              <CheckoutSection
+                icon={
+                  PackageCheck
+                }
+                eyebrow="Order note"
+                title="Anything we should know?"
+                description="Add branding instructions, delivery notes or anything Fynaro should confirm."
+              >
+                <textarea
+                  rows={5}
+                  value={
+                    details.orderNote
+                  }
+                  onChange={(
+                    event
+                  ) =>
+                    updateField(
+                      "orderNote",
+                      event.target
+                        .value
+                    )
+                  }
+                  placeholder="Optional instructions..."
+                  className="w-full resize-none rounded-[14px] border border-black/[0.09] bg-white px-4 py-3 text-[11px] leading-5 outline-none transition placeholder:text-black/25 focus:border-black/30"
+                />
+              </CheckoutSection>
+
+              <button
+                type="submit"
+                className="group mt-5 flex h-11 items-center gap-2 rounded-full bg-[#111] px-5 text-[10px] font-semibold text-white transition hover:bg-black/80"
+              >
+                Review and continue
+
+                <ChevronRight
+                  size={12}
+                  className="transition-transform group-hover:translate-x-0.5"
+                />
+              </button>
+            </form>
+          ) : (
+            <div>
+              <section className="overflow-hidden rounded-[20px] border border-black/[0.08] bg-white">
+                <div className="flex items-start justify-between gap-5 border-b border-black/[0.07] p-6">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#eef3ea] text-[#35573c]">
+                        <Check
+                          size={12}
+                        />
+                      </span>
+
+                      <p className="text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30">
+                        Details confirmed
+                      </p>
+                    </div>
+
+                    <h2 className="mt-4 text-[26px] font-semibold tracking-[-0.04em]">
+                      Review before
+                      payment.
+                    </h2>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setConfirmed(
+                        false
+                      )
+                    }
+                    className="text-[9px] font-semibold text-black/35 hover:text-black"
+                  >
+                    Edit details
+                  </button>
+                </div>
+
+                <div className="grid gap-px bg-black/[0.07] sm:grid-cols-2">
+                  <ReviewBlock
+                    label="Customer"
+                    value={
+                      details.fullName
+                    }
+                    secondary={
+                      details.email
+                    }
+                  />
+
+                  <ReviewBlock
+                    label="Phone"
+                    value={
+                      details.phone
+                    }
+                    secondary={
+                      details.company ||
+                      undefined
+                    }
+                  />
+
+                  <ReviewBlock
+                    label="Delivery"
+                    value={
+                      details.address
+                    }
+                    secondary={`${details.city}, ${details.state}`}
+                  />
+
+                  <ReviewBlock
+                    label="Order"
+                    value={`${itemCount} ${
+                      itemCount ===
+                      1
+                        ? "item"
+                        : "items"
+                    }`}
+                    secondary={formatNGN(
+                      total
+                    )}
+                  />
+                </div>
+              </section>
+
+              <section className="mt-4 overflow-hidden rounded-[20px] border border-black/[0.08] bg-white">
+                <div className="flex items-center justify-between border-b border-black/[0.07] p-6">
+                  <div>
+                    <p className="text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30">
+                      Payment
+                    </p>
+
+                    <h2 className="mt-2 text-[20px] font-semibold tracking-[-0.03em]">
+                      Pay securely.
+                    </h2>
+                  </div>
+
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f2f2ed]">
+                    <LockKeyhole
+                      size={14}
+                    />
+                  </span>
+                </div>
+
+                <div className="p-6">
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <p className="text-[8px] font-semibold uppercase tracking-[0.14em] text-black/30">
+                        Amount due
+                      </p>
+
+                      <p className="mt-1 text-[9px] text-black/30">
+                        NGN
+                      </p>
+                    </div>
+
+                    <p className="text-[28px] font-semibold tracking-[-0.045em]">
+                      {formatNGN(
+                        total
+                      )}
+                    </p>
+                  </div>
+
+                  <PayNowButton
+                    serviceId={`cart_${items.length}_${Math.round(
+                      total
+                    )}`}
+                    serviceTitle={`Fynaro Order - ${itemCount} ${
+                      itemCount ===
+                      1
+                        ? "item"
+                        : "items"
+                    }`}
+                    amount={
+                      total
+                    }
+                    currency="NGN"
+                    redirectUrl="/shop/success"
+                    buttonText={`Pay ${formatNGN(
+                      total
+                    )}`}
+                    className="mt-6 flex h-11 w-full items-center justify-center rounded-full bg-[#111] px-5 text-[10px] font-semibold text-white"
+                  />
+                </div>
+              </section>
+            </div>
+          )}
+        </main>
+
+        {/* SUMMARY */}
+
+        <aside className="xl:sticky xl:top-24">
+          <div className="overflow-hidden rounded-[20px] border border-black/[0.08] bg-white">
+            <div className="bg-[#111] p-6 text-white">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[8px] font-semibold uppercase tracking-[0.16em] text-white/35">
+                    Your order
+                  </p>
+
+                  <h2 className="mt-3 text-[22px] font-semibold tracking-[-0.04em]">
+                    {itemCount}{" "}
+                    {itemCount ===
+                    1
+                      ? "item"
+                      : "items"}
+                  </h2>
+                </div>
+
+                <ShoppingBag
+                  size={15}
+                  className="text-white/50"
+                />
+              </div>
+            </div>
+
+            <div className="max-h-[330px] overflow-y-auto">
+              {items.map(
+                (item) => {
+                  const quantity =
+                    item.quantity ??
+                    1;
+
+                  const lineTotal =
+                    parsePrice(
+                      item.price
+                    ) *
+                    quantity;
+
+                  return (
+                    <div
+                      key={
+                        item.id
+                      }
+                      className="flex gap-3 border-b border-black/[0.07] p-4 last:border-b-0"
+                    >
+                      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-[11px] bg-[#f4f4ef]">
+                        {item.image ? (
+                          <Image
+                            src={
+                              item.image
+                            }
+                            alt={
+                              item.name
+                            }
+                            fill
+                            sizes="56px"
+                            className="object-contain p-1"
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center">
+                            <ShoppingBag
+                              size={14}
+                              className="text-black/20"
                             />
                           </div>
-                        </div>
+                        )}
+                      </div>
 
-                        {/* Info */}
-                        <div className="flex-1 min-w-0 flex flex-col justify-between">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <h3 className="text-sm sm:text-base font-medium line-clamp-2">
-                                {item.name}
-                              </h3>
-                              <p className="mt-1 text-[11px] sm:text-xs text-neutral-400">
-                                Fynaro custom-ready piece • Perfect for branding
-                                or personal use.
-                              </p>
-                            </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="line-clamp-2 text-[10px] font-semibold leading-4">
+                          {
+                            item.name
+                          }
+                        </p>
 
-                            <div className="text-right">
-                              <p className="text-sm sm:text-base font-semibold">
-                                {item.price}
-                              </p>
-                              <p className="text-[11px] sm:text-xs text-neutral-500 mt-1">
-                                {qty}×
-                              </p>
-                            </div>
-                          </div>
+                        <p className="mt-1 text-[8px] text-black/35">
+                          Qty{" "}
+                          {
+                            quantity
+                          }
+                        </p>
+                      </div>
 
-                          <div className="mt-3 flex items-center justify-between gap-3">
-                            {/* Quantity + remove */}
-                            <div className="flex items-center gap-3">
-                              <div className="inline-flex items-center rounded-full border border-neutral-700 bg-neutral-900 px-1.5 sm:px-2.5 py-1 text-[11px] sm:text-xs text-neutral-200">
-                                <button
-                                  type="button"
-                                  onClick={() => handleDecrease(item)}
-                                  className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-transparent hover:bg-neutral-800 text-neutral-300 hover:text-white transition"
-                                  aria-label="Decrease quantity"
-                                >
-                                  <Minus className="w-3 h-3" />
-                                </button>
-
-                                <span className="mx-2 text-neutral-200 font-medium min-w-[1.5rem] text-center">
-                                  {qty}
-                                </span>
-
-                                <button
-                                  type="button"
-                                  onClick={() => handleIncrease(item)}
-                                  className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white text-black hover:bg-neutral-200 transition"
-                                  aria-label="Increase quantity"
-                                >
-                                  <Plus className="w-3 h-3" />
-                                </button>
-                              </div>
-
-                              <button
-                                type="button"
-                                onClick={() => removeFromCart(item.id)}
-                                className="inline-flex items-center gap-1 text-[11px] sm:text-xs text-neutral-400 hover:text-red-300 transition-colors"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                                Remove
-                              </button>
-                            </div>
-
-                            {/* Line total */}
-                            <p className="text-sm sm:text-base font-semibold text-neutral-100">
-                              {formatNGN(lineTotal)}
-                            </p>
-                          </div>
-                        </div>
-                      </motion.article>
-                    );
-                  })}
-                </div>
+                      <span className="shrink-0 text-[9px] font-semibold text-black/60">
+                        {formatNGN(
+                          lineTotal
+                        )}
+                      </span>
+                    </div>
+                  );
+                }
               )}
-            </section>
+            </div>
 
-            {/* Right: summary */}
-           <section className="h-fit rounded-3xl border border-neutral-800 bg-gradient-to-b from-[#101010] to-[#050505] p-4 sm:p-5 md:p-6">
-  <h2 className="mb-4 text-sm font-medium sm:text-base">
-    Order summary
-  </h2>
+            <div className="p-5">
+              <div className="space-y-3">
+                <SummaryRow
+                  label="Subtotal"
+                  value={formatNGN(
+                    subtotal
+                  )}
+                />
 
-  <div className="space-y-2.5 text-[12px] text-neutral-300 sm:text-sm">
-    <div className="flex justify-between">
-      <span>Subtotal</span>
-      <span>{formatNGN(subtotal)}</span>
-    </div>
+                <SummaryRow
+                  label="VAT"
+                  value={formatNGN(
+                    vat
+                  )}
+                  helper="7.5%"
+                />
 
-    <div className="flex justify-between">
-      <span>Estimated VAT (7.5%)</span>
-      <span>{formatNGN(estimatedVat)}</span>
-    </div>
+                <SummaryRow
+                  label="Shipping"
+                  value={formatNGN(
+                    shipping
+                  )}
+                />
+              </div>
 
-    <div className="flex justify-between">
-      <span>Estimated shipping</span>
-      <span>
-        {estimatedShipping === 0
-          ? "—"
-          : formatNGN(estimatedShipping)}
-      </span>
-    </div>
+              <div className="mt-5 border-t border-black/[0.08] pt-5">
+                <div className="flex items-end justify-between">
+                  <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-black/30">
+                    Total
+                  </span>
 
-    <div className="mt-2 flex items-center justify-between border-t border-neutral-800 pt-3">
-      <span className="text-[13px] font-semibold sm:text-sm">
-        Total
-      </span>
-      <span className="text-base font-semibold sm:text-lg">
-        {formatNGN(grandTotal)}
-      </span>
-    </div>
-  </div>
-
-  <p className="mt-3 text-[11px] text-neutral-500 sm:text-xs">
-    Taxes and final shipping will be confirmed at checkout.
-  </p>
-
-  <PayNowButton
-    serviceId={`cart_${items.length}_${Math.round(grandTotal)}`}
-    serviceTitle={`Fynaro Cart Order (${items.length} item${items.length === 1 ? "" : "s"})`}
-    amount={grandTotal}
-    currency="NGN"
-    redirectUrl="/shop/success"
-    buttonText="Proceed to checkout"
-    className="mt-5 inline-flex h-[46px] sm:h-12 w-full items-center justify-center gap-2 rounded-full bg-white px-6 text-sm sm:text-base font-medium text-black transition duration-200 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-60"
-  />
-
-  <p className="mt-3 text-[11px] sm:text-xs text-neutral-400 text-center">
-    Have a brand project in mind? You can mention it at checkout.
-  </p>
-
-  <div className="mt-4 text-[11px] text-neutral-500 sm:text-xs">
-    <p>
-      All Fynaro pieces are made with print and branding in mind.
-      For bulk or agency orders, we’ll confirm timelines after your checkout.
-    </p>
-  </div>
-</section>
+                  <span className="text-[22px] font-semibold tracking-[-0.04em]">
+                    {formatNGN(
+                      total
+                    )}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
+
+          <div className="mt-3 rounded-[18px] bg-[#f0f0eb] p-5">
+            <InfoRow
+              icon={
+                Truck
+              }
+              title="Delivery"
+              description="Final fulfilment details are confirmed after payment."
+            />
+
+            <InfoRow
+              icon={
+                ShieldCheck
+              }
+              title="Protected payment"
+              description="Payment confirmation is recorded against your Fynaro order."
+            />
+
+            <InfoRow
+              icon={
+                CircleCheck
+              }
+              title="Order confirmation"
+              description="You'll receive confirmation when payment succeeds."
+              last
+            />
+          </div>
+        </aside>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* COMPONENTS                                                                 */
+/* -------------------------------------------------------------------------- */
+
+function AccountDetail({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  const available =
+    Boolean(
+      value.trim()
+    );
+
+  return (
+    <div>
+      <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-black/35">
+        {label}
+      </p>
+
+      <div
+        className={[
+          "mt-2 flex h-11 items-center justify-between gap-3 rounded-[13px] border px-4",
+          available
+            ? "border-black/[0.08] bg-[#f3f3ef]"
+            : "border-[#111] bg-[#111] text-white",
+        ].join(
+          " "
+        )}
+      >
+        <span className="truncate text-[11px] font-semibold">
+          {available
+            ? value
+            : "Not available"}
+        </span>
+
+        {available && (
+          <span className="shrink-0 rounded-full bg-[#e5ece2] px-2 py-1 text-[6px] font-semibold uppercase tracking-[0.1em] text-[#48604b]">
+            Account
+          </span>
         )}
       </div>
-    </main>
+    </div>
+  );
+}
+
+function CheckoutField({
+  label,
+  value,
+  placeholder,
+  error,
+  required = false,
+  type = "text",
+  dark = false,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  placeholder: string;
+  error?: string;
+  required?: boolean;
+  type?:
+    | "text"
+    | "email"
+    | "tel";
+  dark?: boolean;
+  onChange: (
+    value: string
+  ) => void;
+}) {
+  return (
+    <label className="block">
+      <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-black/35">
+        {label}
+
+        {required && (
+          <span className="ml-1 text-[#997d2f]">
+            *
+          </span>
+        )}
+
+        {dark && (
+          <span className="ml-2 text-[6px] normal-case tracking-normal text-black/30">
+            Update required
+          </span>
+        )}
+      </span>
+
+      <input
+        type={type}
+        value={value}
+        required={
+          required
+        }
+        onChange={(
+          event
+        ) =>
+          onChange(
+            event.target
+              .value
+          )
+        }
+        placeholder={
+          placeholder
+        }
+        className={[
+          "mt-2 h-11 w-full rounded-[13px] border px-4 text-[11px] outline-none transition",
+
+          dark &&
+          !value.trim()
+            ? "border-[#111] bg-[#111] text-white placeholder:text-white/35 focus:bg-black"
+            : "border-black/[0.09] bg-white text-black placeholder:text-black/25 focus:border-black/30",
+
+          error
+            ? "border-[#a64242]"
+            : "",
+        ].join(
+          " "
+        )}
+      />
+
+      {error && (
+        <p className="mt-1.5 text-[8px] font-medium text-[#9b3434]">
+          {error}
+        </p>
+      )}
+    </label>
+  );
+}
+
+function CheckoutSection({
+  icon: Icon,
+  eyebrow,
+  title,
+  description,
+  children,
+}: {
+  icon: React.ElementType;
+  eyebrow: string;
+  title: string;
+  description: string;
+  children:
+    React.ReactNode;
+}) {
+  return (
+    <section className="mb-4 overflow-hidden rounded-[20px] border border-black/[0.08] bg-white">
+      <div className="grid gap-4 border-b border-black/[0.07] p-6 sm:grid-cols-[1fr_auto]">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#f2f2ed]">
+              <Icon
+                size={11}
+              />
+            </span>
+
+            <p className="text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30">
+              {eyebrow}
+            </p>
+          </div>
+
+          <h2 className="mt-4 text-[21px] font-semibold tracking-[-0.035em]">
+            {title}
+          </h2>
+        </div>
+
+        <p className="max-w-[330px] text-[9px] leading-4 text-black/38 sm:text-right">
+          {description}
+        </p>
+      </div>
+
+      <div className="p-6">
+        {children}
+      </div>
+    </section>
+  );
+}
+
+function ReviewBlock({
+  label,
+  value,
+  secondary,
+}: {
+  label: string;
+  value: string;
+  secondary?: string;
+}) {
+  return (
+    <div className="bg-white p-5">
+      <p className="text-[8px] font-semibold uppercase tracking-[0.14em] text-black/30">
+        {label}
+      </p>
+
+      <p className="mt-2 text-[11px] font-semibold">
+        {value}
+      </p>
+
+      {secondary && (
+        <p className="mt-1 text-[9px] leading-4 text-black/40">
+          {secondary}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function SummaryRow({
+  label,
+  value,
+  helper,
+}: {
+  label: string;
+  value: string;
+  helper?: string;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center gap-2">
+        <span className="text-[9px] text-black/40">
+          {label}
+        </span>
+
+        {helper && (
+          <span className="rounded-full bg-black/[0.04] px-1.5 py-0.5 text-[7px] text-black/30">
+            {helper}
+          </span>
+        )}
+      </div>
+
+      <span className="text-[9px] font-semibold text-black/60">
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function InfoRow({
+  icon: Icon,
+  title,
+  description,
+  last = false,
+}: {
+  icon: React.ElementType;
+  title: string;
+  description: string;
+  last?: boolean;
+}) {
+  return (
+    <div
+      className={[
+        "flex gap-3 py-3",
+        last
+          ? ""
+          : "border-b border-black/[0.06]",
+      ].join(
+        " "
+      )}
+    >
+      <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white">
+        <Icon
+          size={11}
+        />
+      </span>
+
+      <div>
+        <p className="text-[9px] font-semibold text-black/60">
+          {title}
+        </p>
+
+        <p className="mt-1 text-[8px] leading-4 text-black/35">
+          {description}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function StepBadge({
+  number,
+  label,
+  active = false,
+  complete = false,
+}: {
+  number: string;
+  label: string;
+  active?: boolean;
+  complete?: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <span
+        className={[
+          "flex h-6 w-6 items-center justify-center rounded-full text-[8px] font-semibold",
+          active
+            ? "bg-[#111] text-white"
+            : complete
+              ? "bg-[#e7eee3] text-[#31573a]"
+              : "bg-black/[0.04] text-black/30",
+        ].join(
+          " "
+        )}
+      >
+        {complete ? (
+          <Check
+            size={10}
+          />
+        ) : (
+          number
+        )}
+      </span>
+
+      <span className="text-[8px] font-semibold uppercase tracking-[0.12em] text-black/40">
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function CheckoutLoading() {
+  return (
+    <div className="mx-auto w-full max-w-[1460px] px-4 py-8 sm:px-6 lg:px-8">
+      <div className="animate-pulse">
+        <div className="h-3 w-40 rounded bg-black/[0.05]" />
+
+        <div className="mt-10 h-20 max-w-[500px] rounded-xl bg-black/[0.05]" />
+
+        <div className="mt-10 grid gap-7 xl:grid-cols-[1fr_380px]">
+          <div className="space-y-4">
+            <div className="h-[260px] rounded-[20px] bg-white" />
+            <div className="h-[260px] rounded-[20px] bg-white" />
+          </div>
+
+          <div className="h-[400px] rounded-[20px] bg-white" />
+        </div>
+      </div>
+    </div>
   );
 }

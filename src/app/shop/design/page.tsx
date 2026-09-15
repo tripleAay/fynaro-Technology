@@ -5,179 +5,193 @@ import {
   ArrowRight,
   ArrowUpRight,
   Boxes,
-  Brush,
   Check,
   ChevronDown,
   Component,
-  LayoutTemplate,
   MonitorSmartphone,
   Palette,
-  PenTool,
-  Shapes,
   Sparkles,
-  Type,
 } from "lucide-react";
 import { useState } from "react";
 
-const designCategories = [
+/* -------------------------------------------------------------------------- */
+/*                                  SERVICES                                  */
+/* -------------------------------------------------------------------------- */
+
+const designServices = [
   {
+    id: "brand-identity",
     number: "01",
     eyebrow: "Brand",
     title: "Brand Identity",
     description:
-      "Visual identity systems that give businesses a clearer, more recognizable and more consistent presence.",
+      "A complete visual foundation for businesses that need to look credible, consistent and recognisable.",
+    price: "₦350,000",
+    timeline: "2–4 weeks",
     icon: Palette,
-    href: "/shop/design/brand",
-    items: [
-      "Logo systems",
-      "Visual direction",
+    href: "/shop/requests/new?service=design&type=brand-identity&startingPrice=350000",
+    deliverables: [
+      "Primary logo system",
+      "Logo variations",
+      "Colour system",
+      "Typography direction",
+      "Visual language",
       "Brand guidelines",
-      "Campaign assets",
+      "Core brand assets",
     ],
+    idealFor: "Businesses, startups & rebrands",
   },
   {
+    id: "ui-ux",
     number: "02",
     eyebrow: "Digital",
     title: "UI / UX Design",
     description:
-      "Interfaces designed around real user journeys, business goals and clear interaction patterns.",
+      "Digital interfaces designed around clear user journeys, commercial goals and intuitive interaction.",
+    price: "₦500,000",
+    timeline: "3–6 weeks",
     icon: MonitorSmartphone,
-    href: "/shop/design/ui-ux",
-    items: [
-      "Website interfaces",
-      "Mobile interfaces",
-      "User journeys",
-      "Interaction design",
+    href: "/shop/requests/new?service=design&type=ui-ux&startingPrice=500000",
+    deliverables: [
+      "UX direction",
+      "User flows",
+      "Wireframes",
+      "Custom interface design",
+      "Responsive states",
+      "Interactive prototype",
+      "Developer-ready handoff",
     ],
+    idealFor: "Websites, mobile apps & SaaS",
   },
   {
+    id: "product-design",
     number: "03",
     eyebrow: "Product",
     title: "Product Design",
     description:
-      "End-to-end product thinking for platforms, dashboards, applications and software experiences.",
+      "End-to-end experience design for software products with deeper workflows, roles and product behaviour.",
+    price: "₦850,000",
+    timeline: "4–8 weeks",
     icon: Component,
-    href: "/shop/design/product",
-    items: [
-      "Product flows",
+    href: "/shop/requests/new?service=design&type=product-design&startingPrice=850000",
+    deliverables: [
+      "Product discovery",
+      "Experience architecture",
+      "Core user journeys",
       "Wireframes",
-      "Prototypes",
-      "Interface systems",
+      "High-fidelity interfaces",
+      "Interactive prototype",
+      "Product design specification",
     ],
+    idealFor: "Platforms, dashboards & SaaS",
   },
   {
+    id: "design-system",
     number: "04",
-    eyebrow: "Systems",
-    title: "Design Systems",
+    eyebrow: "System",
+    title: "Design System",
     description:
-      "Reusable visual and interface rules that keep digital products consistent as they grow.",
+      "Reusable components, visual rules and interface standards for products that need to scale consistently.",
+    price: "₦650,000",
+    timeline: "3–6 weeks",
     icon: Boxes,
-    href: "/shop/design/design-systems",
-    items: [
-      "Components",
-      "Typography",
-      "Spacing systems",
-      "Interface standards",
+    href: "/shop/requests/new?service=design&type=design-system&startingPrice=650000",
+    deliverables: [
+      "Typography system",
+      "Colour tokens",
+      "Spacing rules",
+      "Core UI components",
+      "Component states",
+      "Usage patterns",
+      "Design documentation",
     ],
+    idealFor: "Growing digital products",
   },
 ];
 
-const brandServices = [
-  "Logo identity",
-  "Typography direction",
-  "Colour systems",
-  "Brand guidelines",
-  "Social templates",
-  "Marketing assets",
-  "Campaign direction",
-  "Brand refresh",
-];
-
-const digitalServices = [
-  "Website UI design",
-  "Mobile app design",
-  "Dashboard design",
-  "SaaS interface design",
-  "Wireframing",
-  "Interactive prototypes",
-  "UX flows",
-  "Design systems",
-];
+/* -------------------------------------------------------------------------- */
+/*                                   PROCESS                                  */
+/* -------------------------------------------------------------------------- */
 
 const process = [
   {
     number: "01",
     title: "Understand",
     description:
-      "We establish the business, audience, goals, product context and what the design needs to communicate or accomplish.",
+      "Business goals, audience, product context and requirements are established.",
   },
   {
     number: "02",
     title: "Direction",
     description:
-      "Visual references, structure and creative direction are used to define a clear path before detailed design begins.",
+      "The visual or experience direction is defined before detailed design begins.",
   },
   {
     number: "03",
     title: "Design",
     description:
-      "The identity or interface system is developed around the approved direction and project requirements.",
+      "The identity, interface or product system is developed around the approved direction.",
   },
   {
     number: "04",
     title: "Refine",
     description:
-      "Feedback is reviewed and the work is refined while protecting consistency and the original design objective.",
+      "Feedback is incorporated while protecting consistency and the original objective.",
   },
   {
     number: "05",
-    title: "Systemize",
-    description:
-      "Reusable rules, components and visual decisions are organized so the work remains consistent beyond one screen or asset.",
-  },
-  {
-    number: "06",
     title: "Deliver",
     description:
-      "Final design files, guidelines, components or approved assets are prepared for implementation and continued use.",
+      "Approved assets, files, prototypes and documentation are prepared for implementation.",
   },
 ];
+
+/* -------------------------------------------------------------------------- */
+/*                                    FAQ                                     */
+/* -------------------------------------------------------------------------- */
 
 const faqs = [
   {
-    question: "Can Fynaro design without developing the product?",
+    question: "Are these fixed prices?",
     answer:
-      "Yes. Design can be handled as a standalone engagement. Fynaro can deliver approved interface files, prototypes and design systems for another development team to implement.",
+      "No. These are starting investments for defined scopes. The final quote depends on the number of screens, assets, concepts, product complexity, research requirements and delivery timeline.",
   },
   {
-    question: "Can Fynaro redesign an existing brand?",
+    question: "Can I hire Fynaro for design only?",
     answer:
-      "Yes. Existing brands can be refreshed or repositioned while retaining useful parts of the current identity where appropriate.",
+      "Yes. Fynaro can deliver the approved identity, UI files, prototypes or design system for your own development or marketing team to implement.",
   },
   {
-    question: "What is the difference between UI/UX and product design?",
+    question: "How many revisions are included?",
     answer:
-      "UI/UX focuses heavily on interface structure, user journeys and screen design. Product design extends that thinking into the broader product itself, including workflows, feature behaviour and how the experience fits together.",
+      "Standard projects include structured revision rounds during the agreed design process. Additional rounds or major changes outside the approved direction can be scoped separately.",
   },
   {
-    question: "Can branding and website design be one project?",
+    question: "Can Fynaro also develop what it designs?",
     answer:
-      "Yes. Brand identity, website design and development can be scoped together when a business needs a more complete launch or repositioning.",
+      "Yes. Brand, UI/UX and product-design work can continue into a Fynaro web, mobile or custom-product development engagement.",
   },
   {
-    question: "Do design projects use fixed packages?",
+    question: "What do I need before starting?",
     answer:
-      "Some design work can fit defined packages, while larger identity systems and product design engagements are scoped around the actual requirements.",
+      "You do not need a finished brief. Start with your business, product, target audience and what you are trying to improve or launch. Discovery helps clarify the rest.",
   },
 ];
 
+/* -------------------------------------------------------------------------- */
+/*                                    PAGE                                    */
+/* -------------------------------------------------------------------------- */
+
 export default function DesignPage() {
   return (
-    <div className="mx-auto w-full max-w-[1500px] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+    <div className="mx-auto w-full max-w-[1420px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
       {/* HERO */}
-      <section className="border-b border-black/[0.09] pb-14 lg:pb-20">
-        <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-black/35">
-          <Link href="/shop" className="transition hover:text-black">
+      <section className="border-b border-black/[0.08] pb-10 lg:pb-12">
+        <div className="flex items-center gap-2 text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35">
+          <Link
+            href="/shop"
+            className="transition hover:text-black"
+          >
             Dashboard
           </Link>
 
@@ -186,326 +200,438 @@ export default function DesignPage() {
           <span>Design</span>
         </div>
 
-        <div className="mt-10 grid gap-12 xl:grid-cols-[1.35fr_.65fr] xl:items-end">
+        <div className="mt-7 grid gap-8 xl:grid-cols-[1.3fr_.7fr] xl:items-end">
           <div>
-            <div className="mb-7 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-black/[0.1] bg-white">
-                <Palette size={17} strokeWidth={1.6} />
+            <div className="mb-5 flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f4f4ef]">
+                <Palette
+                  size={15}
+                  strokeWidth={1.6}
+                />
               </div>
 
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-black/40">
+              <p className="text-[9px] font-semibold uppercase tracking-[0.19em] text-black/35">
                 Design / 04
               </p>
             </div>
 
-            <h1 className="max-w-[900px] text-[48px] font-semibold leading-[0.92] tracking-[-0.06em] sm:text-[64px] lg:text-[82px]">
-              Design what people
+            <h1 className="max-w-[850px] text-[44px] font-semibold leading-[0.94] tracking-[-0.055em] sm:text-[58px] lg:text-[70px]">
+              Make the business
               <br />
-              see, use and remember.
+              look as serious as it is.
             </h1>
           </div>
 
-          <div className="xl:pb-2">
-            <p className="max-w-[460px] text-[14px] leading-7 text-black/50">
-              Brand identity, interfaces and product systems designed
-              to make businesses clearer, stronger and easier to use.
+          <div>
+            <p className="max-w-[420px] text-[12px] leading-6 text-black/48">
+              Brand identity, UI/UX and product design built to improve
+              recognition, usability and how your business is perceived.
             </p>
 
-            <div className="mt-7 flex flex-wrap gap-3">
+            <div className="mt-5 flex flex-wrap gap-2">
+              <a
+                href="#services"
+                className="inline-flex h-11 items-center gap-2 rounded-full bg-[#111] px-5 text-[10px] font-semibold text-white transition hover:bg-black/80"
+              >
+                View Design Services
+                <ChevronDown size={12} />
+              </a>
+
               <Link
                 href="/shop/requests/new?service=design"
-                className="inline-flex h-12 items-center gap-3 rounded-full bg-[#111] px-5 text-[12px] font-semibold text-white transition hover:bg-black/80"
+                className="inline-flex h-11 items-center gap-2 rounded-full border border-black/[0.09] px-4 text-[10px] font-semibold text-black/50 transition hover:border-black/20 hover:text-black"
               >
-                Start Design Project
-                <ArrowUpRight size={14} />
+                Request Design
+                <ArrowUpRight size={12} />
               </Link>
-
-              <a
-                href="#design-services"
-                className="inline-flex h-12 items-center gap-3 rounded-full border border-black/[0.1] bg-white px-5 text-[12px] font-semibold text-black/60 transition hover:text-black"
-              >
-                Explore services
-                <ChevronDown size={14} />
-              </a>
             </div>
           </div>
         </div>
       </section>
 
-      {/* MAIN DESIGN CATEGORIES */}
-      <section id="design-services" className="py-14 lg:py-20">
+      {/* SERVICE + PRICING */}
+      <section
+        id="services"
+        className="py-10 lg:py-12"
+      >
         <SectionHeading
-          eyebrow="Design capabilities"
-          title="Two sides of the same experience."
-          description="Your brand shapes how people recognize you. Your interface shapes how they experience you."
+          eyebrow="Design services"
+          title="Choose what you need designed."
+          description="Clear starting scopes with room to expand when the project requires more depth."
         />
 
-        <div className="mt-10 grid overflow-hidden rounded-[22px] border border-black/[0.09] bg-white lg:grid-cols-2">
-          {designCategories.map((item, index) => {
-            const Icon = item.icon;
+        <div className="mt-6 grid gap-3 lg:grid-cols-2">
+          {designServices.map((service) => {
+            const Icon = service.icon;
 
             return (
-              <Link
-                key={item.title}
-                href={item.href}
-                className={[
-                  "group flex min-h-[390px] flex-col p-7 transition hover:bg-[#f8f8f4] sm:p-9 lg:p-10",
-                  "border-b border-black/[0.08]",
-                  index % 2 === 0 ? "lg:border-r" : "",
-                  index >= 2 ? "lg:border-b-0" : "",
-                ].join(" ")}
+              <article
+                key={service.id}
+                className="
+                  group
+                  relative
+                  flex
+                  min-h-[430px]
+                  flex-col
+                  overflow-hidden
+                  rounded-[18px]
+                  border
+                  border-black/[0.08]
+                  bg-white
+                  p-6
+                  text-[#111]
+                  transition-all
+                  duration-300
+                  ease-out
+
+                  hover:-translate-y-[2px]
+                  hover:border-black/[0.14]
+                  hover:bg-[#f4f4ef]
+                  hover:shadow-[0_14px_35px_rgba(0,0,0,0.045)]
+                "
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-black/[0.09]">
-                      <Icon size={16} strokeWidth={1.6} />
-                    </div>
-
-                    <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35">
-                      {item.eyebrow}
-                    </span>
-                  </div>
-
-                  <span className="text-[11px] font-semibold text-black/25">
-                    {item.number}
-                  </span>
-                </div>
-
-                <div className="mt-10">
-                  <h3 className="text-[30px] font-semibold tracking-[-0.04em]">
-                    {item.title}
-                  </h3>
-
-                  <p className="mt-4 max-w-[430px] text-[13px] leading-6 text-black/48">
-                    {item.description}
-                  </p>
-
-                  <div className="mt-7 flex flex-wrap gap-2">
-                    {item.items.map((service) => (
-                      <span
-                        key={service}
-                        className="rounded-full border border-black/[0.08] px-3 py-1.5 text-[10px] font-medium text-black/45"
-                      >
-                        {service}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mt-auto flex items-center justify-between pt-10">
-                  <span className="text-[12px] font-semibold">
-                    Explore service
-                  </span>
-
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#111] text-white transition-transform group-hover:-translate-y-1 group-hover:translate-x-1">
-                    <ArrowUpRight size={16} />
-                  </span>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* BRAND VS DIGITAL */}
-      <section className="border-t border-black/[0.09] py-14 lg:py-20">
-        <div className="grid overflow-hidden rounded-[24px] border border-black/[0.09] lg:grid-cols-2">
-          {/* Brand */}
-          <div className="bg-[#111] p-8 text-white sm:p-10 lg:p-14">
-            <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/15">
-              <Brush size={17} strokeWidth={1.5} />
-            </div>
-
-            <p className="mt-12 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/35">
-              Brand Design
-            </p>
-
-            <h2 className="mt-4 max-w-[500px] text-[38px] font-semibold leading-[1] tracking-[-0.045em] sm:text-[46px]">
-              Build the identity people recognize.
-            </h2>
-
-            <p className="mt-6 max-w-[500px] text-[13px] leading-6 text-white/50">
-              For businesses that need a clear visual language across
-              their identity, marketing and customer-facing materials.
-            </p>
-
-            <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-5">
-              {brandServices.map((service) => (
+                {/* SOFT ACCENT LINE */}
                 <div
-                  key={service}
-                  className="flex items-center gap-3 border-t border-white/10 pt-4"
-                >
-                  <Check size={12} className="text-white/35" />
-                  <span className="text-[11px] text-white/60">
-                    {service}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <Link
-              href="/shop/design/brand"
-              className="mt-10 inline-flex h-11 items-center gap-3 rounded-full bg-white px-5 text-[12px] font-semibold text-black"
-            >
-              Explore Brand Design
-              <ArrowRight size={14} />
-            </Link>
-          </div>
-
-          {/* Digital */}
-          <div className="bg-white p-8 sm:p-10 lg:p-14">
-            <div className="flex h-11 w-11 items-center justify-center rounded-full border border-black/[0.09]">
-              <LayoutTemplate size={17} strokeWidth={1.5} />
-            </div>
-
-            <p className="mt-12 text-[10px] font-semibold uppercase tracking-[0.2em] text-black/35">
-              Digital Design
-            </p>
-
-            <h2 className="mt-4 max-w-[500px] text-[38px] font-semibold leading-[1] tracking-[-0.045em] sm:text-[46px]">
-              Design the experience people use.
-            </h2>
-
-            <p className="mt-6 max-w-[500px] text-[13px] leading-6 text-black/50">
-              For websites, applications and digital products where
-              usability, hierarchy and interaction matter as much as
-              appearance.
-            </p>
-
-            <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-5">
-              {digitalServices.map((service) => (
-                <div
-                  key={service}
-                  className="flex items-center gap-3 border-t border-black/[0.08] pt-4"
-                >
-                  <Check size={12} className="text-black/30" />
-                  <span className="text-[11px] text-black/55">
-                    {service}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <Link
-              href="/shop/design/ui-ux"
-              className="mt-10 inline-flex h-11 items-center gap-3 rounded-full bg-[#111] px-5 text-[12px] font-semibold text-white"
-            >
-              Explore Digital Design
-              <ArrowRight size={14} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* SYSTEM */}
-      <section className="border-t border-black/[0.09] py-14 lg:py-20">
-        <SectionHeading
-          eyebrow="Design system"
-          title="Good design should keep working after one screen."
-          description="Fynaro can build reusable visual rules that make future pages, features and assets feel like part of the same product."
-        />
-
-        <div className="mt-10 grid gap-px overflow-hidden rounded-[22px] border border-black/[0.09] bg-black/[0.08] sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            {
-              title: "Typography",
-              description:
-                "Type scales and hierarchy that create consistency across content.",
-              icon: Type,
-            },
-            {
-              title: "Components",
-              description:
-                "Reusable interface elements designed to behave consistently.",
-              icon: Component,
-            },
-            {
-              title: "Visual Language",
-              description:
-                "Shape, spacing, imagery and styling decisions that belong together.",
-              icon: Shapes,
-            },
-            {
-              title: "Patterns",
-              description:
-                "Repeatable interaction and layout approaches for future product growth.",
-              icon: PenTool,
-            },
-          ].map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <div
-                key={item.title}
-                className="min-h-[260px] bg-white p-7"
-              >
-                <Icon
-                  size={18}
-                  strokeWidth={1.5}
-                  className="text-black/40"
+                  className="
+                    pointer-events-none
+                    absolute
+                    inset-x-5
+                    top-0
+                    h-[2px]
+                    origin-left
+                    scale-x-0
+                    rounded-full
+                    bg-[#c9c9bd]
+                    transition-transform
+                    duration-300
+                    ease-out
+                    group-hover:scale-x-100
+                  "
                 />
 
-                <h3 className="mt-12 text-[20px] font-semibold tracking-[-0.03em]">
-                  {item.title}
-                </h3>
+                {/* TOP */}
+                <div className="relative z-10 flex items-start justify-between gap-5">
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="
+                        flex
+                        h-9
+                        w-9
+                        items-center
+                        justify-center
+                        rounded-full
+                        bg-black/[0.035]
+                        text-black/55
+                        transition-all
+                        duration-300
 
-                <p className="mt-4 text-[12px] leading-6 text-black/45">
-                  {item.description}
-                </p>
-              </div>
+                        group-hover:bg-white/80
+                        group-hover:text-black/75
+                        group-hover:shadow-[0_3px_10px_rgba(0,0,0,0.035)]
+                      "
+                    >
+                      <Icon
+                        size={14}
+                        strokeWidth={1.6}
+                      />
+                    </span>
+
+                    <div>
+                      <p
+                        className="
+                          text-[8px]
+                          font-semibold
+                          uppercase
+                          tracking-[0.16em]
+                          text-black/30
+                          transition-colors
+                          duration-300
+                          group-hover:text-black/48
+                        "
+                      >
+                        {service.eyebrow}
+                      </p>
+
+                      <p className="mt-1 text-[8px] text-black/20">
+                        {service.number}
+                      </p>
+                    </div>
+                  </div>
+
+                  <span
+                    className="
+                      flex
+                      h-8
+                      w-8
+                      items-center
+                      justify-center
+                      rounded-full
+                      border
+                      border-black/[0.07]
+                      bg-white/0
+                      text-black/25
+                      transition-all
+                      duration-300
+
+                      group-hover:border-black/[0.1]
+                      group-hover:bg-white/65
+                      group-hover:text-black/55
+                    "
+                  >
+                    <ArrowUpRight size={11} />
+                  </span>
+                </div>
+
+                {/* TITLE */}
+                <div className="relative z-10 mt-7">
+                  <h2 className="text-[25px] font-semibold tracking-[-0.04em]">
+                    {service.title}
+                  </h2>
+
+                  <p
+                    className="
+                      mt-3
+                      max-w-[470px]
+                      text-[10px]
+                      leading-5
+                      text-black/44
+                      transition-colors
+                      duration-300
+                      group-hover:text-black/52
+                    "
+                  >
+                    {service.description}
+                  </p>
+                </div>
+
+                {/* DETAILS */}
+                <div
+                  className="
+                    relative
+                    z-10
+                    mt-6
+                    grid
+                    gap-6
+                    border-t
+                    border-black/[0.07]
+                    pt-5
+                    transition-colors
+                    duration-300
+                    group-hover:border-black/[0.09]
+                    sm:grid-cols-[1fr_.75fr]
+                  "
+                >
+                  {/* INCLUDED */}
+                  <div>
+                    <p className="mb-3 text-[8px] font-semibold uppercase tracking-[0.14em] text-black/28">
+                      Included
+                    </p>
+
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {service.deliverables.map((item) => (
+                        <div
+                          key={item}
+                          className="flex items-center gap-2"
+                        >
+                          <span
+                            className="
+                              flex
+                              h-4
+                              w-4
+                              shrink-0
+                              items-center
+                              justify-center
+                              rounded-full
+                              bg-black/[0.04]
+                              text-black/40
+                              transition-all
+                              duration-300
+
+                              group-hover:bg-white/80
+                              group-hover:text-black/60
+                            "
+                          >
+                            <Check size={8} />
+                          </span>
+
+                          <span
+                            className="
+                              text-[9px]
+                              text-black/48
+                              transition-colors
+                              duration-300
+                              group-hover:text-black/56
+                            "
+                          >
+                            {item}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* BEST FOR */}
+                  <div>
+                    <p className="text-[8px] font-semibold uppercase tracking-[0.14em] text-black/28">
+                      Best for
+                    </p>
+
+                    <p className="mt-2 text-[10px] leading-5 text-black/48">
+                      {service.idealFor}
+                    </p>
+
+                    <p className="mt-4 text-[8px] font-semibold uppercase tracking-[0.14em] text-black/28">
+                      Typical timeline
+                    </p>
+
+                    <p className="mt-1.5 text-[10px] font-medium text-black/55">
+                      {service.timeline}
+                    </p>
+                  </div>
+                </div>
+
+                {/* PRICE + CTA */}
+                <div
+                  className="
+                    relative
+                    z-10
+                    mt-auto
+                    flex
+                    items-end
+                    justify-between
+                    gap-5
+                    border-t
+                    border-black/[0.07]
+                    pt-5
+                    transition-colors
+                    duration-300
+                    group-hover:border-black/[0.09]
+                  "
+                >
+                  <div>
+                    <p className="text-[8px] font-semibold uppercase tracking-[0.14em] text-black/28">
+                      Starting from
+                    </p>
+
+                    <p className="mt-1.5 text-[23px] font-semibold tracking-[-0.04em]">
+                      {service.price}
+                    </p>
+                  </div>
+
+                  <Link
+                    href={service.href}
+                    className="
+                      group/button
+                      inline-flex
+                      h-10
+                      items-center
+                      gap-2
+                      rounded-full
+                      bg-[#111]
+                      px-4
+                      text-[9px]
+                      font-semibold
+                      text-white
+                      transition-all
+                      duration-300
+
+                      hover:bg-black/80
+
+                      group-hover:shadow-[0_5px_15px_rgba(0,0,0,0.08)]
+                    "
+                  >
+                    Start Project
+
+                    <ArrowUpRight
+                      size={11}
+                      className="transition-transform duration-300 group-hover/button:-translate-y-0.5 group-hover/button:translate-x-0.5"
+                    />
+                  </Link>
+                </div>
+              </article>
             );
           })}
+        </div>
+
+        {/* PRICE NOTE */}
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p className="max-w-[680px] text-[9px] leading-4 text-black/30">
+            Starting prices are planning baselines. Final pricing is confirmed
+            after scope, deliverables, complexity and timeline are reviewed.
+          </p>
+
+          <Link
+            href="/shop/requests/new?service=design"
+            className="group flex w-fit items-center gap-1.5 text-[9px] font-semibold text-black/40 transition hover:text-black"
+          >
+            Not sure which service?
+
+            <ArrowRight
+              size={10}
+              className="transition-transform group-hover:translate-x-0.5"
+            />
+          </Link>
         </div>
       </section>
 
       {/* DESIGN + BUILD */}
-      <section className="border-t border-black/[0.09] py-14 lg:py-20">
-        <div className="grid overflow-hidden rounded-[24px] bg-[#e9e9e3] lg:grid-cols-[1.1fr_.9fr]">
-          <div className="p-8 sm:p-10 lg:p-14">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-black/35">
-              Design + Development
+      <section className="border-t border-black/[0.08] py-10 lg:py-12">
+        <div className="grid overflow-hidden rounded-[18px] bg-[#e9e9e3] lg:grid-cols-[1.1fr_.9fr]">
+          <div className="p-7 sm:p-8 lg:p-9">
+            <p className="text-[8px] font-semibold uppercase tracking-[0.17em] text-black/35">
+              Design + Engineering
             </p>
 
-            <h2 className="mt-6 max-w-[620px] text-[40px] font-semibold leading-[0.98] tracking-[-0.05em] sm:text-[50px]">
-              Design does not have to stop at the mockup.
+            <h2 className="mt-4 max-w-[550px] text-[29px] font-semibold leading-[1] tracking-[-0.04em] sm:text-[36px]">
+              The work does not have to stop at the mockup.
             </h2>
 
-            <p className="mt-6 max-w-[520px] text-[13px] leading-6 text-black/50">
-              When Fynaro is also building the website, app or product,
-              the same team can carry the design direction through into
-              implementation.
+            <p className="mt-4 max-w-[480px] text-[10px] leading-5 text-black/45">
+              When Fynaro also develops the website, application or product,
+              the same product direction can continue directly into engineering.
             </p>
+
+            <Link
+              href="/shop/requests/new?service=design-and-development"
+              className="mt-6 inline-flex h-10 items-center gap-2 rounded-full bg-[#111] px-4 text-[9px] font-semibold text-white transition hover:bg-black/80"
+            >
+              Discuss Design + Build
+              <ArrowUpRight size={11} />
+            </Link>
           </div>
 
-          <div className="border-t border-black/[0.08] p-8 sm:p-10 lg:border-l lg:border-t-0 lg:p-14">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-black/35">
-              One engagement can include
+          <div className="border-t border-black/[0.07] p-6 sm:p-8 lg:border-l lg:border-t-0">
+            <p className="text-[8px] font-semibold uppercase tracking-[0.15em] text-black/30">
+              One engagement can cover
             </p>
 
-            <div className="mt-8 space-y-3">
+            <div className="mt-5">
               {[
                 "Brand direction",
                 "UX strategy",
                 "Interface design",
                 "Responsive development",
-                "Product implementation",
+                "Product engineering",
                 "Launch support",
               ].map((item, index) => (
                 <div
                   key={item}
-                  className="flex items-center justify-between rounded-[14px] bg-white/65 px-5 py-4"
+                  className="group flex items-center justify-between border-b border-black/[0.07] py-3.5 first:pt-0 last:border-b-0"
                 >
-                  <div className="flex items-center gap-4">
-                    <span className="text-[10px] font-semibold text-black/25">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[8px] font-semibold text-black/30">
                       {String(index + 1).padStart(2, "0")}
                     </span>
 
-                    <span className="text-[12px] font-medium">
+                    <span className="text-[10px] font-medium">
                       {item}
                     </span>
                   </div>
 
-                  <ArrowRight size={13} className="text-black/30" />
+                  <ArrowRight
+                    size={10}
+                    className="text-black/25 transition-transform group-hover:translate-x-1"
+                  />
                 </div>
               ))}
             </div>
@@ -514,49 +640,60 @@ export default function DesignPage() {
       </section>
 
       {/* PROCESS */}
-      <section className="border-t border-black/[0.09] py-14 lg:py-20">
-        <SectionHeading
-          eyebrow="Process"
-          title="From direction to system."
-          description="Design moves through a defined sequence so decisions are intentional rather than a collection of disconnected visuals."
-        />
+      <section className="border-t border-black/[0.08] py-10 lg:py-12">
+        <div className="grid gap-8 lg:grid-cols-[.65fr_1.35fr]">
+          <div>
+            <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35">
+              Process
+            </p>
 
-        <div className="mt-10 border-y border-black/[0.09]">
-          {process.map((item) => (
-            <div
-              key={item.number}
-              className="grid gap-5 border-b border-black/[0.08] py-7 last:border-b-0 md:grid-cols-[100px_260px_1fr] md:items-start lg:py-8"
-            >
-              <span className="text-[11px] font-semibold text-black/25">
-                {item.number}
-              </span>
+            <h2 className="mt-3 max-w-[350px] text-[27px] font-semibold leading-[1.02] tracking-[-0.04em]">
+              Direction before decoration.
+            </h2>
 
-              <h3 className="text-[18px] font-semibold tracking-[-0.025em]">
-                {item.title}
-              </h3>
+            <p className="mt-3 max-w-[330px] text-[10px] leading-5 text-black/40">
+              Every engagement moves through a deliberate process so visual
+              decisions are tied to a clear objective.
+            </p>
+          </div>
 
-              <p className="max-w-[650px] text-[12px] leading-6 text-black/45">
-                {item.description}
-              </p>
-            </div>
-          ))}
+          <div className="border-y border-black/[0.08]">
+            {process.map((item) => (
+              <div
+                key={item.number}
+                className="grid gap-3 border-b border-black/[0.07] py-4 last:border-b-0 sm:grid-cols-[50px_130px_1fr]"
+              >
+                <span className="text-[8px] font-semibold text-black/30">
+                  {item.number}
+                </span>
+
+                <h3 className="text-[11px] font-semibold">
+                  {item.title}
+                </h3>
+
+                <p className="max-w-[540px] text-[9px] leading-5 text-black/42">
+                  {item.description}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* FAQ */}
-      <section className="border-t border-black/[0.09] py-14 lg:py-20">
-        <div className="grid gap-10 lg:grid-cols-[.65fr_1.35fr]">
+      <section className="border-t border-black/[0.08] py-10 lg:py-12">
+        <div className="grid gap-8 lg:grid-cols-[.55fr_1.45fr]">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-black/35">
+            <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35">
               Questions
             </p>
 
-            <h2 className="mt-4 text-[34px] font-semibold tracking-[-0.04em]">
+            <h2 className="mt-3 text-[27px] font-semibold tracking-[-0.035em]">
               Before we design.
             </h2>
           </div>
 
-          <div className="border-t border-black/[0.09]">
+          <div className="border-t border-black/[0.08]">
             {faqs.map((faq) => (
               <FAQItem
                 key={faq.question}
@@ -568,42 +705,41 @@ export default function DesignPage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="pb-6 pt-4 lg:pb-10">
-        <div className="relative overflow-hidden rounded-[24px] bg-[#111] p-8 text-white sm:p-10 lg:p-14">
-          <Sparkles
-            size={240}
-            strokeWidth={0.25}
-            className="absolute -right-16 -top-16 text-white/[0.07]"
-          />
-
-          <div className="relative grid gap-10 lg:grid-cols-[1.2fr_.8fr] lg:items-end">
+      {/* FINAL CTA */}
+      <section className="pb-5 pt-2">
+        <div className="rounded-[18px] bg-[#e9e9e3] p-7 sm:p-9 lg:p-10">
+          <div className="grid gap-8 lg:grid-cols-[1.25fr_.75fr] lg:items-end">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/35">
-                Design with Fynaro
-              </p>
+              <div className="flex items-center gap-2">
+                <Sparkles
+                  size={10}
+                  className="text-black/35"
+                />
 
-              <h2 className="mt-5 max-w-[720px] text-[40px] font-semibold leading-[0.98] tracking-[-0.05em] sm:text-[54px]">
-                Make the business
+                <p className="text-[8px] font-semibold uppercase tracking-[0.17em] text-black/35">
+                  Design with Fynaro
+                </p>
+              </div>
+
+              <h2 className="mt-4 max-w-[660px] text-[32px] font-semibold leading-[0.98] tracking-[-0.045em] sm:text-[42px]">
+                Make it clearer.
                 <br />
-                easier to recognize.
-                <br />
-                Easier to use.
+                Make it recognisable.
               </h2>
             </div>
 
             <div>
-              <p className="max-w-[420px] text-[13px] leading-6 text-white/50">
-                Tell us whether you're building a brand, redesigning an
-                interface or shaping a complete product experience.
+              <p className="max-w-[390px] text-[10px] leading-5 text-black/45">
+                Choose a service above or tell us what you are building.
+                We will recommend the right scope.
               </p>
 
               <Link
                 href="/shop/requests/new?service=design"
-                className="mt-7 inline-flex h-12 items-center gap-3 rounded-full bg-white px-5 text-[12px] font-semibold text-black"
+                className="mt-5 inline-flex h-11 items-center gap-2 rounded-full bg-[#111] px-5 text-[10px] font-semibold text-white transition hover:bg-black/80"
               >
                 Start Design Project
-                <ArrowRight size={14} />
+                <ArrowRight size={12} />
               </Link>
             </div>
           </div>
@@ -612,6 +748,10 @@ export default function DesignPage() {
     </div>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/*                              SECTION HEADING                               */
+/* -------------------------------------------------------------------------- */
 
 function SectionHeading({
   eyebrow,
@@ -623,23 +763,27 @@ function SectionHeading({
   description: string;
 }) {
   return (
-    <div className="grid gap-5 lg:grid-cols-2 lg:items-end">
+    <div className="grid gap-3 lg:grid-cols-2 lg:items-end">
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.19em] text-black/35">
+        <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35">
           {eyebrow}
         </p>
 
-        <h2 className="mt-3 max-w-[680px] text-[32px] font-semibold leading-[1.02] tracking-[-0.04em] sm:text-[40px]">
+        <h2 className="mt-2 max-w-[610px] text-[26px] font-semibold leading-[1.02] tracking-[-0.04em] sm:text-[31px]">
           {title}
         </h2>
       </div>
 
-      <p className="max-w-[460px] text-[12px] leading-6 text-black/45 lg:justify-self-end">
+      <p className="max-w-[390px] text-[10px] leading-5 text-black/42 lg:justify-self-end">
         {description}
       </p>
     </div>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/*                                    FAQ                                     */
+/* -------------------------------------------------------------------------- */
 
 function FAQItem({
   question,
@@ -651,31 +795,43 @@ function FAQItem({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="border-b border-black/[0.09]">
+    <div className="border-b border-black/[0.08]">
       <button
+        type="button"
+        aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
-        className="flex w-full items-center justify-between gap-6 py-6 text-left"
+        className="group flex w-full items-center justify-between gap-5 py-4 text-left"
       >
-        <span className="text-[14px] font-semibold">
+        <span className="text-[11px] font-semibold transition group-hover:text-black/65">
           {question}
         </span>
 
         <span
-          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-black/[0.1] transition-transform ${
-            open ? "rotate-180" : ""
-          }`}
+          className={[
+            "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-black/[0.08] transition-all duration-300",
+            open
+              ? "rotate-180 bg-[#e9e9e3] text-black"
+              : "group-hover:border-black/15 group-hover:bg-[#f4f4ef]",
+          ].join(" ")}
         >
-          <ChevronDown size={14} />
+          <ChevronDown size={11} />
         </span>
       </button>
 
-      {open && (
-        <div className="pb-7 pr-10">
-          <p className="max-w-[680px] text-[12px] leading-6 text-black/48">
+      <div
+        className={[
+          "grid transition-all duration-300 ease-out",
+          open
+            ? "grid-rows-[1fr] opacity-100"
+            : "grid-rows-[0fr] opacity-0",
+        ].join(" ")}
+      >
+        <div className="overflow-hidden">
+          <p className="max-w-[640px] pb-4 pr-8 text-[9px] leading-5 text-black/43">
             {answer}
           </p>
         </div>
-      )}
+      </div>
     </div>
   );
 }

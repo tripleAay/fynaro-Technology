@@ -8,170 +8,166 @@ import {
   Building2,
   Check,
   ChevronDown,
-  Database,
   LayoutDashboard,
-  LockKeyhole,
-  Network,
   PanelsTopLeft,
   ShoppingCart,
+  Sparkles,
   UsersRound,
-  Workflow,
 } from "lucide-react";
 import { useState } from "react";
+
+import PremiumProductsShowcase from "@/components/dashboard components/hotstuffSections";
+
+/* -------------------------------------------------------------------------- */
+/*                                    DATA                                    */
+/* -------------------------------------------------------------------------- */
 
 const productTypes = [
   {
     number: "01",
     title: "SaaS Platforms",
     description:
-      "Subscription-based software products designed around users, recurring workflows and scalable product architecture.",
+      "Subscription software built around recurring users, workflows and scalable product architecture.",
     icon: PanelsTopLeft,
   },
   {
     number: "02",
     title: "Marketplaces",
     description:
-      "Multi-sided platforms that connect buyers, sellers, providers or communities inside one structured digital experience.",
+      "Platforms connecting customers, sellers, providers or communities inside one structured system.",
     icon: ShoppingCart,
   },
   {
     number: "03",
     title: "Dashboards",
     description:
-      "Operational, client or administrative dashboards that bring data, actions and workflows into one interface.",
+      "Operational environments that bring business data, actions and decisions into one interface.",
     icon: LayoutDashboard,
   },
   {
     number: "04",
     title: "Client Portals",
     description:
-      "Secure digital spaces where customers can access information, manage requests, communicate and complete tasks.",
+      "Secure spaces where customers can manage accounts, requests, payments and activity.",
     icon: UsersRound,
   },
   {
     number: "05",
     title: "Internal Systems",
     description:
-      "Business software designed to replace fragmented manual processes and improve how teams operate.",
+      "Software that replaces fragmented tools and improves the way teams operate.",
     icon: Building2,
   },
   {
     number: "06",
     title: "Custom Platforms",
     description:
-      "Digital products that do not fit neatly into a standard category and require custom architecture around the business.",
+      "Purpose-built products designed around workflows that standard software cannot handle.",
     icon: Blocks,
   },
 ];
 
-const capabilities = [
+const engagementTypes = [
   {
-    title: "Authentication",
+    number: "01",
+    label: "Focused MVP",
+    title: "Start with what matters.",
     description:
-      "Secure login, account creation, password recovery and identity flows.",
-    icon: LockKeyhole,
+      "For founders and businesses launching the smallest useful version of a product.",
+    price: "₦1,500,000+",
+    meta: "Focused first release",
   },
   {
-    title: "User Roles",
+    number: "02",
+    label: "Growth Product",
+    title: "Build the operating product.",
     description:
-      "Different permissions and experiences for customers, admins, vendors, staff or other user groups.",
-    icon: UsersRound,
+      "For products with users, dashboards, payments, integrations and deeper workflows.",
+    price: "Scoped",
+    meta: "Business-ready system",
+    featured: true,
   },
   {
-    title: "Databases",
+    number: "03",
+    label: "Custom Platform",
+    title: "Engineer the larger system.",
     description:
-      "Structured storage and retrieval for users, transactions, products, content and operational data.",
-    icon: Database,
-  },
-  {
-    title: "Dashboards",
-    description:
-      "Interfaces for monitoring, managing and acting on important information.",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Integrations",
-    description:
-      "Payments, third-party APIs, email, analytics and external business services.",
-    icon: Network,
-  },
-  {
-    title: "Automation",
-    description:
-      "Custom workflows that reduce repetitive work and connect actions across the product.",
-    icon: Workflow,
+      "For SaaS, marketplaces and business-critical software with custom architecture.",
+    price: "Custom",
+    meta: "Complex digital products",
   },
 ];
 
 const process = [
   {
     number: "01",
-    title: "Product Discovery",
+    title: "Discover",
     description:
-      "We define the problem, users, business model, product goals and what the first version actually needs to accomplish.",
+      "Define the problem, users, product goals and the first useful release.",
   },
   {
     number: "02",
-    title: "Product Architecture",
+    title: "Architect",
     description:
-      "Core features, user roles, data structure, workflows and technical requirements are mapped before development begins.",
+      "Map features, workflows, data relationships and technical requirements.",
   },
   {
     number: "03",
-    title: "UX & Interface",
+    title: "Design",
     description:
-      "The product experience is designed around the key user journeys and the actions people need to complete.",
+      "Create the core journeys and interfaces around real user actions.",
   },
   {
     number: "04",
-    title: "Development",
+    title: "Engineer",
     description:
-      "Frontend, backend, database and integrations are developed into a working product.",
+      "Build the frontend, backend, database logic and required integrations.",
   },
   {
     number: "05",
-    title: "Testing",
+    title: "Launch",
     description:
-      "Critical flows are reviewed across functionality, responsiveness, permissions and product behaviour.",
-  },
-  {
-    number: "06",
-    title: "Launch & Iteration",
-    description:
-      "The first production version is deployed and the product can continue evolving through future releases.",
+      "Test the critical workflows, deploy the product and prepare for iteration.",
   },
 ];
 
 const faqItems = [
   {
-    question: "How much does a custom digital product cost?",
+    question: "How much does a digital product cost?",
     answer:
-      "Projects typically start from ₦1,500,000, but the final investment depends heavily on features, user roles, integrations, backend requirements and overall product complexity.",
+      "Focused product engagements typically begin from ₦1,500,000. Final investment depends on users, workflows, backend complexity, integrations and the size of the first release.",
   },
   {
     question: "Can Fynaro build an MVP?",
     answer:
-      "Yes. An MVP can be scoped around the smallest useful version of the product so the core idea can be launched and validated before additional features are developed.",
+      "Yes. We can identify the smallest useful version of the product, build the core experience and create a foundation for future releases.",
   },
   {
-    question: "Do I need a complete technical specification?",
+    question: "What are Fynaro Premium Products?",
     answer:
-      "No. You can begin with the business idea, problem or workflow. Product discovery is used to translate that into a clearer scope and technical direction.",
+      "Premium Products are ready-made or pre-engineered Fynaro products that can be purchased directly instead of commissioned as a fully bespoke software engagement.",
   },
   {
-    question: "Can an existing product be improved instead of rebuilt?",
+    question: "Can a premium product be customised?",
     answer:
-      "Yes. Existing systems can be reviewed for redesign, feature expansion, frontend improvement, backend work or architecture changes depending on the current product.",
+      "Where supported, branding, integrations, configuration and additional functionality can be scoped after purchase.",
   },
 ];
 
+/* -------------------------------------------------------------------------- */
+/*                                    PAGE                                    */
+/* -------------------------------------------------------------------------- */
+
 export default function DigitalProductsPage() {
   return (
-    <div className="mx-auto w-full max-w-[1500px] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+    <div className="mx-auto w-full max-w-[1420px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
       {/* HERO */}
-      <section className="border-b border-black/[0.09] pb-14 lg:pb-20">
-        <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-black/35">
-          <Link href="/shop" className="transition hover:text-black">
+      <section className="border-b border-black/[0.08] pb-10 lg:pb-12">
+        <div className="flex items-center gap-2 text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35">
+          <Link
+            href="/shop"
+            className="transition hover:text-black"
+          >
             Dashboard
           </Link>
 
@@ -180,220 +176,285 @@ export default function DigitalProductsPage() {
           <span>Digital Products</span>
         </div>
 
-        <div className="mt-10 grid gap-12 xl:grid-cols-[1.35fr_.65fr] xl:items-end">
+        <div className="mt-7 grid gap-8 xl:grid-cols-[1.3fr_.7fr] xl:items-end">
           <div>
-            <div className="mb-7 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-black/[0.1] bg-white">
-                <PanelsTopLeft size={17} strokeWidth={1.6} />
+            <div className="mb-5 flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f4f4ef]">
+                <PanelsTopLeft
+                  size={15}
+                  strokeWidth={1.6}
+                />
               </div>
 
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-black/40">
+              <p className="text-[9px] font-semibold uppercase tracking-[0.19em] text-black/35">
                 Digital Products / 03
               </p>
             </div>
 
-            <h1 className="max-w-[900px] text-[48px] font-semibold leading-[0.92] tracking-[-0.06em] sm:text-[64px] lg:text-[82px]">
-              Build something
+            <h1 className="max-w-[840px] text-[44px] font-semibold leading-[0.94] tracking-[-0.055em] sm:text-[58px] lg:text-[70px]">
+              Software shaped
               <br />
-              beyond a website.
+              around the business.
             </h1>
           </div>
 
-          <div className="xl:pb-2">
-            <p className="max-w-[460px] text-[14px] leading-7 text-black/50">
-              We design and engineer platforms, systems and software
-              around your users, workflows and business model.
+          <div>
+            <p className="max-w-[420px] text-[12px] leading-6 text-black/48">
+              SaaS platforms, dashboards, portals and operational
+              systems designed around the way your business actually works.
             </p>
 
-            <div className="mt-7 flex flex-wrap gap-3">
+            <div className="mt-5 flex flex-wrap gap-2">
               <Link
                 href="/shop/requests/new?service=digital-product"
-                className="inline-flex h-12 items-center gap-3 rounded-full bg-[#111] px-5 text-[12px] font-semibold text-white transition hover:bg-black/80"
+                className="inline-flex h-11 items-center gap-2 rounded-full bg-[#111] px-5 text-[10px] font-semibold text-white transition hover:bg-black/80"
               >
                 Discuss Your Product
-                <ArrowUpRight size={14} />
+
+                <ArrowUpRight size={12} />
               </Link>
 
               <a
-                href="#product-types"
-                className="inline-flex h-12 items-center gap-3 rounded-full border border-black/[0.1] bg-white px-5 text-[12px] font-semibold text-black/60 transition hover:text-black"
+                href="#premium-products"
+                className="inline-flex h-11 items-center gap-2 rounded-full border border-black/[0.09] px-4 text-[10px] font-semibold text-black/45 transition hover:border-black/20 hover:text-black"
               >
-                Explore what we build
-                <ChevronDown size={14} />
+                Shop ready-made
+
+                <ChevronDown size={12} />
               </a>
             </div>
           </div>
         </div>
       </section>
 
-      {/* PRODUCT TYPES */}
-      <section
-        id="product-types"
-        className="py-14 lg:py-20"
-      >
+      {/* WHAT WE BUILD */}
+      <section className="py-10 lg:py-12">
         <SectionHeading
           eyebrow="What we build"
-          title="Products built around real workflows."
-          description="Choose the closest starting point. The final product can be shaped around your exact business model and users."
+          title="Products for real workflows."
+          description="Choose the closest direction. The final system is shaped around your exact business model and users."
         />
 
-        <div className="mt-10 grid overflow-hidden rounded-[22px] border border-black/[0.09] bg-white md:grid-cols-2 xl:grid-cols-3">
-          {productTypes.map((item, index) => {
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {productTypes.map((item) => {
             const Icon = item.icon;
 
             return (
-              <div
+              <article
                 key={item.title}
-                className={[
-                  "min-h-[300px] p-7 sm:p-9",
-                  "border-b border-black/[0.08]",
-                  index % 3 !== 2 ? "xl:border-r" : "",
-                  index % 2 === 0 ? "md:border-r xl:border-r" : "",
-                  index >= 4 ? "md:border-b-0" : "",
-                  index >= 3 ? "xl:border-b-0" : "",
-                ].join(" ")}
+                className="group flex min-h-[190px] flex-col rounded-[16px] border border-black/[0.07] bg-white p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-black/18 hover:bg-[#111] hover:text-white"
               >
                 <div className="flex items-start justify-between">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-black/[0.09]">
-                    <Icon size={16} strokeWidth={1.6} />
-                  </div>
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-black/[0.035] transition group-hover:bg-white/10">
+                    <Icon
+                      size={13}
+                      strokeWidth={1.6}
+                    />
+                  </span>
 
-                  <span className="text-[11px] font-semibold text-black/25">
+                  <span className="text-[8px] font-semibold text-black/20 transition group-hover:text-white/20">
                     {item.number}
                   </span>
                 </div>
 
-                <div className="mt-12">
-                  <h3 className="text-[25px] font-semibold tracking-[-0.035em]">
+                <div className="mt-auto pt-7">
+                  <h3 className="text-[16px] font-semibold tracking-[-0.025em]">
                     {item.title}
                   </h3>
 
-                  <p className="mt-4 max-w-[420px] text-[13px] leading-6 text-black/48">
+                  <p className="mt-2 max-w-[330px] text-[10px] leading-5 text-black/42 transition group-hover:text-white/45">
                     {item.description}
                   </p>
+
+                  <div className="mt-3 flex translate-y-1 items-center gap-1.5 text-[8px] font-semibold uppercase tracking-[0.12em] text-white/35 opacity-0 transition group-hover:translate-y-0 group-hover:opacity-100">
+                    Explore
+                    <ArrowUpRight size={9} />
+                  </div>
                 </div>
-              </div>
+              </article>
             );
           })}
         </div>
       </section>
 
-      {/* INVESTMENT */}
-      <section className="border-t border-black/[0.09] py-14 lg:py-20">
-        <div className="grid overflow-hidden rounded-[24px] bg-[#111] text-white lg:grid-cols-[1.2fr_.8fr]">
-          <div className="p-8 sm:p-10 lg:p-14">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/35">
-              Project investment
-            </p>
+      {/* ENGAGEMENT */}
+      <section className="border-t border-black/[0.08] py-10 lg:py-12">
+        <SectionHeading
+          eyebrow="Engagement"
+          title="Start at the right level."
+          description="Custom software should be scoped around complexity, not squeezed into rigid packages."
+        />
 
-            <h2 className="mt-6 max-w-[630px] text-[40px] font-semibold leading-[0.98] tracking-[-0.05em] sm:text-[52px]">
-              Custom products are scoped around what they need to become.
-            </h2>
+        <div className="mt-6 grid gap-3 lg:grid-cols-3">
+          {engagementTypes.map((item) => (
+            <article
+              key={item.number}
+              className={[
+                "flex min-h-[270px] flex-col rounded-[17px] border p-5 transition",
+                item.featured
+                  ? "border-[#111] bg-[#111] text-white"
+                  : "border-black/[0.07] bg-white",
+              ].join(" ")}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <span
+                    className={[
+                      "text-[8px] font-semibold",
+                      item.featured
+                        ? "text-white/25"
+                        : "text-black/20",
+                    ].join(" ")}
+                  >
+                    {item.number}
+                  </span>
 
-            <p className="mt-6 max-w-[560px] text-[13px] leading-6 text-white/50">
-              Product builds can vary significantly depending on users,
-              workflows, backend complexity, integrations and the size
-              of the first release.
-            </p>
-          </div>
+                  <p
+                    className={[
+                      "mt-2 text-[8px] font-semibold uppercase tracking-[0.14em]",
+                      item.featured
+                        ? "text-[#d6cc6d]"
+                        : "text-black/30",
+                    ].join(" ")}
+                  >
+                    {item.label}
+                  </p>
+                </div>
 
-          <div className="flex flex-col justify-between border-t border-white/10 p-8 sm:p-10 lg:border-l lg:border-t-0 lg:p-14">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/35">
-                Projects typically start from
+                {item.featured && (
+                  <span className="rounded-full border border-white/12 px-2.5 py-1 text-[7px] font-semibold uppercase tracking-[0.12em] text-white/45">
+                    Recommended
+                  </span>
+                )}
+              </div>
+
+              <h3 className="mt-6 max-w-[300px] text-[20px] font-semibold leading-[1.05] tracking-[-0.03em]">
+                {item.title}
+              </h3>
+
+              <p
+                className={[
+                  "mt-3 max-w-[320px] text-[10px] leading-5",
+                  item.featured
+                    ? "text-white/45"
+                    : "text-black/42",
+                ].join(" ")}
+              >
+                {item.description}
               </p>
 
-              <p className="mt-4 text-[44px] font-semibold tracking-[-0.055em] sm:text-[54px]">
-                ₦1,500,000
-              </p>
+              <div
+                className={[
+                  "mt-auto flex items-end justify-between border-t pt-5",
+                  item.featured
+                    ? "border-white/10"
+                    : "border-black/[0.07]",
+                ].join(" ")}
+              >
+                <div>
+                  <p
+                    className={[
+                      "text-[7px] font-semibold uppercase tracking-[0.13em]",
+                      item.featured
+                        ? "text-white/28"
+                        : "text-black/28",
+                    ].join(" ")}
+                  >
+                    {item.meta}
+                  </p>
 
-              <p className="mt-4 max-w-[360px] text-[12px] leading-6 text-white/45">
-                Final pricing is provided after the first product scope
-                has been reviewed.
+                  <p className="mt-1.5 text-[19px] font-semibold tracking-[-0.03em]">
+                    {item.price}
+                  </p>
+                </div>
+
+                <Link
+                  href="/shop/requests/new?service=digital-product"
+                  className={[
+                    "flex h-9 w-9 items-center justify-center rounded-full transition hover:-translate-y-0.5",
+                    item.featured
+                      ? "bg-white text-black"
+                      : "bg-[#111] text-white",
+                  ].join(" ")}
+                >
+                  <ArrowUpRight size={12} />
+                </Link>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <p className="mt-4 max-w-[650px] text-[9px] leading-4 text-black/30">
+          Final investment is confirmed after users, workflows,
+          integrations, architecture and release requirements are reviewed.
+        </p>
+      </section>
+
+      {/* PREMIUM PRODUCTS */}
+      <section
+        id="premium-products"
+        className="border-t border-black/[0.08] py-10 lg:py-12"
+      >
+        <div className="mb-6 grid gap-4 lg:grid-cols-[1fr_.7fr] lg:items-end">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#d6cc6d]" />
+
+              <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35">
+                Fynaro Premium
               </p>
             </div>
 
-            <Link
-              href="/shop/requests/new?service=digital-product"
-              className="mt-10 inline-flex h-12 w-fit items-center gap-3 rounded-full bg-white px-5 text-[12px] font-semibold text-black"
-            >
-              Request Product Scope
-              <ArrowRight size={14} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* CAPABILITIES */}
-      <section className="border-t border-black/[0.09] py-14 lg:py-20">
-        <SectionHeading
-          eyebrow="Capabilities"
-          title="The systems behind the interface."
-          description="Digital products often need more than screens. These are some of the underlying capabilities Fynaro can scope into a build."
-        />
-
-        <div className="mt-10 grid gap-px overflow-hidden rounded-[22px] border border-black/[0.09] bg-black/[0.08] sm:grid-cols-2 lg:grid-cols-3">
-          {capabilities.map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <div
-                key={item.title}
-                className="min-h-[245px] bg-white p-7 sm:p-8"
-              >
-                <Icon
-                  size={18}
-                  strokeWidth={1.5}
-                  className="text-black/40"
-                />
-
-                <h3 className="mt-10 text-[20px] font-semibold tracking-[-0.03em]">
-                  {item.title}
-                </h3>
-
-                <p className="mt-3 max-w-[330px] text-[12px] leading-6 text-black/45">
-                  {item.description}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* FIT */}
-      <section className="border-t border-black/[0.09] py-14 lg:py-20">
-        <div className="grid gap-10 lg:grid-cols-[.7fr_1.3fr]">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-black/35">
-              Good fit
-            </p>
-
-            <h2 className="mt-4 max-w-[420px] text-[34px] font-semibold leading-[1.02] tracking-[-0.04em]">
-              You may need a digital product if...
+            <h2 className="mt-3 max-w-[600px] text-[27px] font-semibold leading-[1.02] tracking-[-0.04em] sm:text-[32px]">
+              Built already.
+              <br />
+              Ready to own.
             </h2>
           </div>
 
-          <div className="grid gap-px overflow-hidden rounded-[20px] border border-black/[0.09] bg-black/[0.08] sm:grid-cols-2">
-            {[
-              "Different users need different accounts or permissions.",
-              "Customers need their own dashboard or portal.",
-              "Your business relies on recurring digital workflows.",
-              "You need to manage data inside a custom interface.",
-              "Several tools need to work together through integrations.",
-              "A normal website cannot handle the core functionality.",
-              "You are creating a SaaS or subscription product.",
-              "Manual business processes need to become software.",
-            ].map((item) => (
-              <div
-                key={item}
-                className="flex min-h-[130px] gap-4 bg-white p-6"
-              >
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-black/[0.05]">
-                  <Check size={12} />
-                </div>
+          <p className="max-w-[390px] text-[10px] leading-5 text-black/42 lg:justify-self-end">
+            Selected Fynaro products that are already designed,
+            engineered and available to purchase.
+          </p>
+        </div>
 
-                <p className="text-[12px] leading-6 text-black/55">
-                  {item}
+        <PremiumProductsShowcase />
+      </section>
+
+      {/* PROCESS */}
+      <section className="border-t border-black/[0.08] py-10 lg:py-12">
+        <div className="grid gap-8 lg:grid-cols-[.7fr_1.3fr]">
+          <div>
+            <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35">
+              Process
+            </p>
+
+            <h2 className="mt-3 max-w-[360px] text-[27px] font-semibold leading-[1.02] tracking-[-0.04em]">
+              From problem to product.
+            </h2>
+
+            <p className="mt-3 max-w-[330px] text-[10px] leading-5 text-black/40">
+              Enough structure to keep the work deliberate without turning
+              the process itself into the product.
+            </p>
+          </div>
+
+          <div className="border-y border-black/[0.08]">
+            {process.map((item) => (
+              <div
+                key={item.number}
+                className="grid gap-3 border-b border-black/[0.07] py-4 last:border-b-0 sm:grid-cols-[50px_150px_1fr]"
+              >
+                <span className="text-[8px] font-semibold text-[#9a8036]">
+                  {item.number}
+                </span>
+
+                <h3 className="text-[11px] font-semibold">
+                  {item.title}
+                </h3>
+
+                <p className="max-w-[520px] text-[9px] leading-5 text-black/42">
+                  {item.description}
                 </p>
               </div>
             ))}
@@ -401,100 +462,20 @@ export default function DigitalProductsPage() {
         </div>
       </section>
 
-      {/* PROCESS */}
-      <section className="border-t border-black/[0.09] py-14 lg:py-20">
-        <SectionHeading
-          eyebrow="Product process"
-          title="From idea to working product."
-          description="The goal is to reduce uncertainty before heavy development begins, then build in a structured sequence."
-        />
-
-        <div className="mt-10 border-y border-black/[0.09]">
-          {process.map((item) => (
-            <div
-              key={item.number}
-              className="grid gap-5 border-b border-black/[0.08] py-7 last:border-b-0 md:grid-cols-[100px_260px_1fr] md:items-start lg:py-8"
-            >
-              <span className="text-[11px] font-semibold text-black/25">
-                {item.number}
-              </span>
-
-              <h3 className="text-[18px] font-semibold tracking-[-0.025em]">
-                {item.title}
-              </h3>
-
-              <p className="max-w-[650px] text-[12px] leading-6 text-black/45">
-                {item.description}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* MVP */}
-      <section className="border-t border-black/[0.09] py-14 lg:py-20">
-        <div className="grid overflow-hidden rounded-[24px] bg-[#e9e9e3] lg:grid-cols-2">
-          <div className="p-8 sm:p-10 lg:p-14">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-black/35">
-              Start smaller
-            </p>
-
-            <h2 className="mt-6 max-w-[560px] text-[38px] font-semibold leading-[1] tracking-[-0.045em] sm:text-[48px]">
-              You don't always need to build everything at once.
-            </h2>
-
-            <p className="mt-6 max-w-[500px] text-[13px] leading-6 text-black/50">
-              Complex products can begin with a focused first version.
-              We can define the minimum useful product, build the core
-              experience and create room for future releases.
-            </p>
-          </div>
-
-          <div className="border-t border-black/[0.08] p-8 sm:p-10 lg:border-l lg:border-t-0 lg:p-14">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-black/35">
-              MVP approach
-            </p>
-
-            <div className="mt-8 space-y-6">
-              {[
-                ["01", "Identify the core problem"],
-                ["02", "Prioritize essential workflows"],
-                ["03", "Build the first usable release"],
-                ["04", "Launch and learn"],
-                ["05", "Expand based on real needs"],
-              ].map(([number, title]) => (
-                <div
-                  key={number}
-                  className="flex items-center gap-5 border-b border-black/[0.08] pb-5"
-                >
-                  <span className="text-[10px] font-semibold text-black/25">
-                    {number}
-                  </span>
-
-                  <p className="text-[13px] font-medium">
-                    {title}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="border-t border-black/[0.09] py-14 lg:py-20">
-        <div className="grid gap-10 lg:grid-cols-[.65fr_1.35fr]">
+      {/* FAQ + CTA */}
+      <section className="border-t border-black/[0.08] py-10 lg:py-12">
+        <div className="grid gap-8 lg:grid-cols-[.65fr_1.35fr]">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-black/35">
+            <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35">
               Questions
             </p>
 
-            <h2 className="mt-4 text-[34px] font-semibold tracking-[-0.04em]">
-              Before we scope it.
+            <h2 className="mt-3 text-[27px] font-semibold tracking-[-0.035em]">
+              Before we build.
             </h2>
           </div>
 
-          <div className="border-t border-black/[0.09]">
+          <div className="border-t border-black/[0.08]">
             {faqItems.map((faq) => (
               <FAQItem
                 key={faq.question}
@@ -506,35 +487,41 @@ export default function DigitalProductsPage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="pb-6 pt-4 lg:pb-10">
-        <div className="rounded-[24px] bg-[#111] p-8 text-white sm:p-10 lg:p-14">
-          <div className="grid gap-10 lg:grid-cols-[1.2fr_.8fr] lg:items-end">
+      {/* FINAL CTA */}
+      <section className="pb-5">
+        <div className="rounded-[18px] bg-[#111] p-7 text-white sm:p-9 lg:p-10">
+          <div className="grid gap-7 lg:grid-cols-[1.25fr_.75fr] lg:items-end">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/35">
-                Build with Fynaro
-              </p>
+              <div className="flex items-center gap-2">
+                <Sparkles
+                  size={10}
+                  className="text-[#d6cc6d]"
+                />
 
-              <h2 className="mt-5 max-w-[720px] text-[40px] font-semibold leading-[0.98] tracking-[-0.05em] sm:text-[54px]">
-                Bring the idea.
+                <p className="text-[8px] font-semibold uppercase tracking-[0.17em] text-white/35">
+                  Build with Fynaro
+                </p>
+              </div>
+
+              <h2 className="mt-4 max-w-[680px] text-[32px] font-semibold leading-[0.98] tracking-[-0.045em] sm:text-[42px]">
+                Bring the problem.
                 <br />
-                We'll help shape the product.
+                We'll shape the product.
               </h2>
             </div>
 
             <div>
-              <p className="max-w-[420px] text-[13px] leading-6 text-white/50">
-                You do not need to arrive with architecture diagrams or
-                a technical specification. Tell us the problem, users
-                and business you're trying to build around.
+              <p className="max-w-[390px] text-[10px] leading-5 text-white/43">
+                Start with the users, workflow and business problem.
+                We will turn that into a clear product direction.
               </p>
 
               <Link
                 href="/shop/requests/new?service=digital-product"
-                className="mt-7 inline-flex h-12 items-center gap-3 rounded-full bg-white px-5 text-[12px] font-semibold text-black"
+                className="mt-5 inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 text-[10px] font-semibold text-black transition hover:bg-white/90"
               >
                 Discuss Your Product
-                <ArrowRight size={14} />
+                <ArrowRight size={12} />
               </Link>
             </div>
           </div>
@@ -543,6 +530,10 @@ export default function DigitalProductsPage() {
     </div>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/*                              SECTION HEADING                               */
+/* -------------------------------------------------------------------------- */
 
 function SectionHeading({
   eyebrow,
@@ -554,23 +545,27 @@ function SectionHeading({
   description: string;
 }) {
   return (
-    <div className="grid gap-5 lg:grid-cols-2 lg:items-end">
+    <div className="grid gap-3 lg:grid-cols-2 lg:items-end">
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.19em] text-black/35">
+        <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35">
           {eyebrow}
         </p>
 
-        <h2 className="mt-3 max-w-[680px] text-[32px] font-semibold leading-[1.02] tracking-[-0.04em] sm:text-[40px]">
+        <h2 className="mt-2 max-w-[610px] text-[26px] font-semibold leading-[1.02] tracking-[-0.04em] sm:text-[31px]">
           {title}
         </h2>
       </div>
 
-      <p className="max-w-[460px] text-[12px] leading-6 text-black/45 lg:justify-self-end">
+      <p className="max-w-[390px] text-[10px] leading-5 text-black/42 lg:justify-self-end">
         {description}
       </p>
     </div>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/*                                   FAQ                                      */
+/* -------------------------------------------------------------------------- */
 
 function FAQItem({
   question,
@@ -582,31 +577,43 @@ function FAQItem({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="border-b border-black/[0.09]">
+    <div className="border-b border-black/[0.08]">
       <button
+        type="button"
+        aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
-        className="flex w-full items-center justify-between gap-6 py-6 text-left"
+        className="group flex w-full items-center justify-between gap-5 py-4 text-left"
       >
-        <span className="text-[14px] font-semibold">
+        <span className="text-[11px] font-semibold transition group-hover:text-black/65">
           {question}
         </span>
 
         <span
-          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-black/[0.1] transition-transform ${
-            open ? "rotate-180" : ""
-          }`}
+          className={[
+            "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-black/[0.08] transition-all",
+            open
+              ? "rotate-180 bg-[#111] text-white"
+              : "group-hover:border-black/20",
+          ].join(" ")}
         >
-          <ChevronDown size={14} />
+          <ChevronDown size={11} />
         </span>
       </button>
 
-      {open && (
-        <div className="pb-7 pr-10">
-          <p className="max-w-[680px] text-[12px] leading-6 text-black/48">
+      <div
+        className={[
+          "grid transition-all duration-300 ease-out",
+          open
+            ? "grid-rows-[1fr] opacity-100"
+            : "grid-rows-[0fr] opacity-0",
+        ].join(" ")}
+      >
+        <div className="overflow-hidden">
+          <p className="max-w-[640px] pb-4 pr-8 text-[9px] leading-5 text-black/43">
             {answer}
           </p>
         </div>
-      )}
+      </div>
     </div>
   );
 }

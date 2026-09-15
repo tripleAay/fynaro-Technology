@@ -8,12 +8,15 @@ import {
   ArrowUpRight,
   CheckCircle2,
   ChevronRight,
+  CircleHelp,
   Globe2,
   Layers3,
   Palette,
   Plus,
   Smartphone,
 } from "lucide-react";
+
+import PremiumProductsShowcase from "@/components/dashboard components/hotstuffSections";
 
 type Capability = {
   number: string;
@@ -29,6 +32,43 @@ type Capability = {
     strokeWidth?: number;
   }>;
 };
+
+type BuildAction = {
+  label: string;
+  description: string;
+  href: string;
+  icon: React.ComponentType<{
+    size?: number;
+    strokeWidth?: number;
+  }>;
+};
+
+const buildActions: BuildAction[] = [
+  {
+    label: "Website",
+    description: "Business websites & commerce",
+    href: "/shop/web-development",
+    icon: Globe2,
+  },
+  {
+    label: "Mobile App",
+    description: "iOS, Android & cross-platform",
+    href: "/shop/mobile",
+    icon: Smartphone,
+  },
+  {
+    label: "Digital Product",
+    description: "Platforms, SaaS & systems",
+    href: "/shop/product",
+    icon: Layers3,
+  },
+  {
+    label: "Not sure yet",
+    description: "Tell us what you need",
+    href: "/shop/requests/new",
+    icon: CircleHelp,
+  },
+];
 
 const capabilities: Capability[] = [
   {
@@ -97,26 +137,26 @@ const capabilities: Capability[] = [
 
 const startingPoints = [
   {
+    eyebrow: "Launch",
     title: "Business Website",
-    description: "A professional digital home for your business.",
+    description:
+      "A professional online presence built around credibility and enquiries.",
     price: "From ₦350,000",
     href: "/shop/web-development/launch",
   },
   {
-    title: "Ecommerce Store",
-    description: "Sell, manage and operate online.",
+    eyebrow: "Growth",
+    title: "Commerce Website",
+    description:
+      "A more advanced web experience for selling and operating online.",
     price: "From ₦750,000",
     href: "/shop/web-development/growth",
   },
   {
-    title: "Brand Identity",
-    description: "Build a visual system your business can grow with.",
-    price: "Explore packages",
-    href: "/shop/design",
-  },
-  {
+    eyebrow: "Product",
     title: "Custom Platform",
-    description: "Build a product beyond a conventional website.",
+    description:
+      "A tailored product, portal or business system beyond a standard website.",
     price: "From ₦1,500,000",
     href: "/shop/product",
   },
@@ -145,20 +185,29 @@ const activity = [
 
 export default function FynaroDashboardPage() {
   return (
-    <div className="mx-auto w-full max-w-[1500px] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
-      {/* HERO */}
-      <section className="border-b border-black/[0.09] pb-10 lg:pb-14">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-black/35">
-          Fynaro / Client Workspace
-        </p>
+    <div className="mx-auto w-full max-w-[1460px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+      {/* ------------------------------------------------------------------ */}
+      {/* HERO                                                               */}
+      {/* ------------------------------------------------------------------ */}
 
-        <div className="mt-8 grid gap-10 xl:grid-cols-[1fr_400px] xl:items-end">
+      <section className="border-b border-black/[0.08] pb-9 lg:pb-11">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-black/35">
+            Fynaro / Client Workspace
+          </p>
+
+          <span className="text-[10px] font-medium text-black/30">
+            Your digital workspace
+          </span>
+        </div>
+
+        <div className="mt-6 grid gap-8 xl:grid-cols-[1fr_410px] xl:items-end">
           <div>
-            <p className="mb-4 text-[13px] font-medium text-black/45">
+            <p className="mb-3 text-[12px] font-medium text-black/45">
               Welcome back, Shina.
             </p>
 
-            <h1 className="max-w-[780px] text-[46px] font-semibold leading-[0.93] tracking-[-0.055em] sm:text-[60px] lg:text-[76px]">
+            <h1 className="max-w-[760px] text-[42px] font-semibold leading-[0.94] tracking-[-0.055em] sm:text-[54px] lg:text-[66px]">
               What are we
               <br />
               building?
@@ -166,216 +215,281 @@ export default function FynaroDashboardPage() {
           </div>
 
           <div className="xl:pb-1">
-            <p className="max-w-[390px] text-[14px] leading-7 text-black/50">
-              Start something new with Fynaro or continue managing
-              an existing project from your workspace.
+            <p className="max-w-[390px] text-[13px] leading-6 text-black/48">
+              Choose what you want to build, or continue where
+              you left off.
             </p>
 
-            <div className="mt-6 flex flex-wrap items-center gap-3">
+            <div className="mt-5 flex flex-wrap items-center gap-2">
               <Link
                 href="/shop/requests/new"
-                className="inline-flex h-12 items-center gap-3 rounded-full bg-[#111] px-5 text-[12px] font-semibold text-white transition hover:bg-black/80"
+                className="inline-flex h-10 items-center gap-2.5 rounded-full bg-[#111] px-4 text-[11px] font-semibold text-white transition hover:bg-black/80"
               >
-                <Plus size={15} />
+                <Plus size={14} />
                 Start a project
               </Link>
 
               <a
                 href="#capabilities"
-                className="inline-flex h-12 items-center gap-3 rounded-full px-4 text-[12px] font-semibold text-black/55 transition hover:text-black"
+                className="inline-flex h-10 items-center gap-2 rounded-full px-3 text-[11px] font-semibold text-black/45 transition hover:text-black"
               >
-                Explore our capabilities
-                <ArrowDown size={14} />
+                Explore services
+                <ArrowDown size={13} />
               </a>
             </div>
           </div>
         </div>
+
+        {/* BUILD ACTIONS */}
+
+        <div className="mt-8 grid overflow-hidden rounded-[17px] border border-black/[0.08] bg-black/[0.07] sm:grid-cols-2 xl:grid-cols-4">
+          {buildActions.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="group flex min-h-[105px] items-center gap-3 bg-white p-4 transition duration-200 hover:bg-[#f7f7f3] sm:p-5"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-black/[0.035] transition group-hover:bg-[#111] group-hover:text-white">
+                  <Icon
+                    size={15}
+                    strokeWidth={1.6}
+                  />
+                </span>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[12px] font-semibold">
+                      {item.label}
+                    </p>
+
+                    <ArrowUpRight
+                      size={12}
+                      className="text-black/25 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-black"
+                    />
+                  </div>
+
+                  <p className="mt-1.5 text-[9px] leading-4 text-black/38">
+                    {item.description}
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
       </section>
 
-      {/* CAPABILITIES */}
-      <section id="capabilities" className="py-12 lg:py-16">
-        <SectionHeading
-          eyebrow="Capabilities"
-          title="Build with Fynaro."
-          description="Choose what you're trying to create. We'll take you into the right service, scope and starting point."
+      {/* ------------------------------------------------------------------ */}
+      {/* WORKSPACE                                                          */}
+      {/* ------------------------------------------------------------------ */}
+
+      <section className="py-9 lg:py-11">
+        <SectionHeader
+          eyebrow="Your workspace"
+          title="2 active projects"
+          href="/shop/projects"
+          linkLabel="View all"
         />
 
-        <div className="mt-8 grid overflow-hidden rounded-[22px] border border-black/[0.1] bg-white lg:grid-cols-2">
-          {capabilities.map((capability, index) => (
-            <CapabilityCard
-              key={capability.title}
-              capability={capability}
-              index={index}
-            />
-          ))}
-        </div>
-      </section>
+        <div className="mt-5 grid gap-3 xl:grid-cols-[1.55fr_.75fr]">
+          {/* MAIN PROJECT */}
 
-      {/* WORKSPACE */}
-      <section className="border-t border-black/[0.09] py-12 lg:py-16">
-        <div className="flex items-end justify-between gap-6">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.19em] text-black/35">
-              Your workspace
-            </p>
-
-            <h2 className="mt-3 text-[28px] font-semibold tracking-[-0.035em]">
-              2 active projects
-            </h2>
-          </div>
-
-          <Link
-            href="/shop/projects"
-            className="flex items-center gap-2 text-[12px] font-semibold text-black/45 transition hover:text-black"
-          >
-            View all
-            <ArrowRight size={14} />
-          </Link>
-        </div>
-
-        <div className="mt-7 grid gap-4 xl:grid-cols-[1.5fr_1fr]">
-          {/* Main project */}
           <Link
             href="/shop/projects/newjersey"
-            className="group rounded-[20px] border border-black/[0.09] bg-white p-6 transition hover:border-black/20 sm:p-8"
+            className="group rounded-[18px] border border-black/[0.09] bg-white p-5 transition hover:border-black/20 sm:p-6"
           >
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-black/35">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-black/30">
                   Web Development
                 </p>
 
-                <h3 className="mt-3 text-[24px] font-semibold tracking-[-0.035em]">
+                <h3 className="mt-2 text-[21px] font-semibold tracking-[-0.035em]">
                   NewJersey.ng Website
                 </h3>
+
+                <p className="mt-1 text-[11px] text-black/40">
+                  Digital platform development
+                </p>
               </div>
 
               <StatusBadge label="Active" />
             </div>
 
-            <div className="mt-12">
-              <div className="flex items-center justify-between text-[11px]">
+            <div className="mt-8">
+              <div className="flex items-center justify-between text-[10px]">
                 <span className="text-black/40">
                   Project progress
                 </span>
-                <span className="font-semibold">68%</span>
+
+                <span className="font-semibold">
+                  68%
+                </span>
               </div>
 
-              <div className="mt-3 h-[5px] overflow-hidden rounded-full bg-black/[0.07]">
+              <div className="mt-2.5 h-[4px] overflow-hidden rounded-full bg-black/[0.07]">
                 <div className="h-full w-[68%] rounded-full bg-[#111]" />
               </div>
             </div>
 
-            <div className="mt-8 flex flex-col gap-5 border-t border-black/[0.08] pt-6 sm:flex-row sm:items-end sm:justify-between">
+            <div className="mt-6 flex flex-col gap-4 border-t border-black/[0.07] pt-5 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.15em] text-black/30">
+                <p className="text-[9px] uppercase tracking-[0.14em] text-black/30">
                   Next milestone
                 </p>
 
-                <p className="mt-2 text-[13px] font-medium">
+                <p className="mt-1.5 text-[12px] font-medium">
                   Frontend implementation
                 </p>
               </div>
 
-              <span className="flex items-center gap-2 text-[12px] font-semibold">
+              <span className="flex items-center gap-2 text-[11px] font-semibold">
                 Open project
+
                 <ArrowUpRight
-                  size={15}
-                  className="transition-transform group-hover:-translate-y-1 group-hover:translate-x-1"
+                  size={14}
+                  className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
                 />
               </span>
             </div>
           </Link>
 
-          {/* Needs attention */}
-          <div className="rounded-[20px] bg-[#111] p-6 text-white sm:p-8">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.17em] text-white/35">
-              Needs attention
-            </p>
+          {/* NEEDS ATTENTION */}
 
-            <h3 className="mt-5 max-w-[300px] text-[26px] font-semibold leading-[1.05] tracking-[-0.035em]">
-              2 things are waiting for you.
-            </h3>
+          <div className="rounded-[18px] bg-[#111] p-5 text-white sm:p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[9px] font-semibold uppercase tracking-[0.17em] text-white/35">
+                  Needs attention
+                </p>
 
-            <div className="mt-9 divide-y divide-white/10 border-y border-white/10">
-              <Link
-                href="/shop/proposals"
-                className="group flex items-center justify-between gap-4 py-5"
-              >
-                <div>
-                  <p className="text-[12px] font-medium">
-                    Proposal ready
-                  </p>
-                  <p className="mt-1 text-[11px] text-white/40">
-                    Brand Identity
-                  </p>
-                </div>
+                <h3 className="mt-3 text-[21px] font-semibold tracking-[-0.035em]">
+                  2 pending items
+                </h3>
+              </div>
 
-                <ChevronRight
-                  size={15}
-                  className="text-white/40 transition-transform group-hover:translate-x-1"
-                />
-              </Link>
-
-              <Link
-                href="/shop/projects"
-                className="group flex items-center justify-between gap-4 py-5"
-              >
-                <div>
-                  <p className="text-[12px] font-medium">
-                    Design approval
-                  </p>
-                  <p className="mt-1 text-[11px] text-white/40">
-                    NewJersey.ng
-                  </p>
-                </div>
-
-                <ChevronRight
-                  size={15}
-                  className="text-white/40 transition-transform group-hover:translate-x-1"
-                />
-              </Link>
+              <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-white text-[10px] font-bold text-black">
+                2
+              </span>
             </div>
+
+            <div className="mt-6 divide-y divide-white/10 border-y border-white/10">
+              <AttentionItem
+                href="/shop/proposals"
+                title="Proposal ready"
+                meta="Brand Identity"
+              />
+
+              <AttentionItem
+                href="/shop/projects"
+                title="Design approval"
+                meta="NewJersey.ng"
+              />
+            </div>
+
+            <Link
+              href="/shop/projects"
+              className="mt-5 inline-flex items-center gap-2 text-[10px] font-semibold text-white/50 transition hover:text-white"
+            >
+              View everything
+              <ArrowRight size={12} />
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* STARTING POINTS */}
-      <section className="border-t border-black/[0.09] py-12 lg:py-16">
+      {/* ------------------------------------------------------------------ */}
+      {/* HOT STUFF                                                          */}
+      {/* ------------------------------------------------------------------ */}
+
+      <section className="border-t border-black/[0.08] py-9 lg:py-11">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#d6cc6d]" />
+
+              <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35">
+                Hot Stuff
+              </p>
+            </div>
+
+            <h2 className="mt-2 text-[27px] font-semibold tracking-[-0.04em] sm:text-[31px]">
+              Worth a look.
+            </h2>
+          </div>
+
+          <p className="max-w-[400px] text-[11px] leading-5 text-black/42 sm:text-right">
+            Selected products and Fynaro picks available
+            right now.
+          </p>
+        </div>
+
+        <PremiumProductsShowcase />
+      </section>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* CAPABILITIES                                                       */}
+      {/* ------------------------------------------------------------------ */}
+
+      <section
+        id="capabilities"
+        className="border-t border-black/[0.08] py-9 lg:py-11"
+      >
         <SectionHeading
-          eyebrow="Popular starting points"
-          title="Start with something clear."
-          description="Common ways clients begin working with Fynaro."
+          eyebrow="Capabilities"
+          title="Build with Fynaro."
+          description="Choose what you're trying to create and we'll take you into the right scope."
         />
 
-        <div className="mt-8 border-y border-black/[0.09]">
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {capabilities.map((capability) => (
+            <CapabilityCard
+              key={capability.title}
+              capability={capability}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* POPULAR STARTING POINTS                                            */}
+      {/* ------------------------------------------------------------------ */}
+
+      <section className="border-t border-black/[0.08] py-9 lg:py-11">
+        <SectionHeading
+          eyebrow="Popular starting points"
+          title="Start with a clear scope."
+          description="Three common ways businesses begin working with Fynaro."
+        />
+
+        <div className="mt-6 grid overflow-hidden rounded-[18px] border border-black/[0.08] bg-black/[0.07] lg:grid-cols-3">
           {startingPoints.map((item) => (
             <Link
               key={item.title}
               href={item.href}
-              className="group grid gap-4 border-b border-black/[0.08] py-6 last:border-b-0 sm:grid-cols-[1fr_1fr_auto] sm:items-center lg:py-7"
+              className="group flex min-h-[175px] flex-col bg-white p-5 transition hover:bg-[#f7f7f3] sm:p-6"
             >
-              <div>
-                <h3 className="text-[17px] font-semibold tracking-[-0.02em]">
-                  {item.title}
-                </h3>
+              <p className="text-[8px] font-semibold uppercase tracking-[0.16em] text-black/28">
+                {item.eyebrow}
+              </p>
 
-                <p className="mt-1 text-[12px] leading-5 text-black/40 sm:hidden">
-                  {item.description}
-                </p>
-              </div>
+              <h3 className="mt-2 text-[16px] font-semibold tracking-[-0.025em]">
+                {item.title}
+              </h3>
 
-              <p className="hidden max-w-[330px] text-[12px] leading-5 text-black/40 sm:block">
+              <p className="mt-2 max-w-[340px] text-[10px] leading-5 text-black/40">
                 {item.description}
               </p>
 
-              <div className="flex items-center gap-5">
-                <span className="text-[12px] font-medium text-black/50">
+              <div className="mt-auto flex items-end justify-between gap-4 pt-6">
+                <span className="text-[11px] font-semibold text-black/55">
                   {item.price}
                 </span>
 
-                <span className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 transition group-hover:bg-black group-hover:text-white">
-                  <ArrowUpRight size={14} />
+                <span className="flex h-8 w-8 items-center justify-center rounded-full border border-black/10 transition-all group-hover:bg-black group-hover:text-white">
+                  <ArrowUpRight size={13} />
                 </span>
               </div>
             </Link>
@@ -383,38 +497,44 @@ export default function FynaroDashboardPage() {
         </div>
       </section>
 
-      {/* GUIDANCE CTA */}
-      <section className="py-6 lg:py-10">
-        <div className="grid overflow-hidden rounded-[24px] bg-[#e9e9e3] lg:grid-cols-[1.25fr_.75fr]">
-          <div className="p-7 sm:p-10 lg:p-14">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-black/35">
-              Not sure where to start?
+      {/* ------------------------------------------------------------------ */}
+      {/* GUIDANCE                                                           */}
+      {/* ------------------------------------------------------------------ */}
+
+      <section className="border-t border-black/[0.08] py-9 lg:py-11">
+        <div className="grid overflow-hidden rounded-[20px] bg-[#edede7] lg:grid-cols-[1.45fr_.55fr]">
+          <div className="p-6 sm:p-8 lg:p-10">
+            <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35">
+              Need direction?
             </p>
 
-            <h2 className="mt-6 max-w-[600px] text-[36px] font-semibold leading-[1] tracking-[-0.045em] sm:text-[46px]">
-              Tell us what you're trying to make happen.
+            <h2 className="mt-4 max-w-[620px] text-[30px] font-semibold leading-[1] tracking-[-0.045em] sm:text-[36px]">
+              Tell us what you&apos;re trying to make happen.
             </h2>
 
-            <p className="mt-6 max-w-[520px] text-[13px] leading-6 text-black/50">
-              You don't need to know the technical solution.
-              Describe the business, problem or idea and Fynaro will
+            <p className="mt-4 max-w-[500px] text-[12px] leading-6 text-black/48">
+              You don&apos;t need to know the technical solution.
+              Describe the business problem or idea and we&apos;ll
               help shape the right approach.
             </p>
 
             <Link
               href="/shop/requests/new"
-              className="mt-8 inline-flex h-12 items-center gap-3 rounded-full bg-[#111] px-5 text-[12px] font-semibold text-white"
+              className="mt-6 inline-flex h-10 items-center gap-2 rounded-full bg-[#111] px-4 text-[11px] font-semibold text-white transition hover:bg-black/80"
             >
               Tell us about your idea
-              <ArrowRight size={14} />
+              <ArrowRight size={13} />
             </Link>
           </div>
 
-          <div className="relative hidden border-l border-black/[0.08] lg:block">
+          <div className="relative hidden border-l border-black/[0.07] lg:block">
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="flex h-[150px] w-[150px] items-center justify-center rounded-full border border-black/[0.12]">
-                <div className="flex h-[90px] w-[90px] items-center justify-center rounded-full bg-[#111] text-white">
-                  <ArrowUpRight size={28} strokeWidth={1.2} />
+              <div className="flex h-[110px] w-[110px] items-center justify-center rounded-full border border-black/[0.1]">
+                <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full bg-[#111] text-white">
+                  <ArrowUpRight
+                    size={22}
+                    strokeWidth={1.3}
+                  />
                 </div>
               </div>
             </div>
@@ -422,39 +542,35 @@ export default function FynaroDashboardPage() {
         </div>
       </section>
 
-      {/* ACTIVITY */}
-      <section className="border-t border-black/[0.09] py-12 lg:py-16">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.19em] text-black/35">
-              Workspace
-            </p>
+      {/* ------------------------------------------------------------------ */}
+      {/* ACTIVITY                                                           */}
+      {/* ------------------------------------------------------------------ */}
 
-            <h2 className="mt-3 text-[28px] font-semibold tracking-[-0.035em]">
-              Recent activity
-            </h2>
-          </div>
-        </div>
+      <section className="border-t border-black/[0.08] py-9 lg:py-11">
+        <SectionHeader
+          eyebrow="Workspace"
+          title="Recent activity"
+        />
 
-        <div className="mt-7">
+        <div className="mt-5">
           {activity.map((item) => (
             <div
               key={`${item.title}-${item.date}`}
-              className="grid gap-2 border-t border-black/[0.08] py-5 sm:grid-cols-[90px_1fr_1fr_auto] sm:items-center"
+              className="grid gap-1.5 border-t border-black/[0.07] py-4 sm:grid-cols-[75px_1.2fr_1fr_auto] sm:items-center"
             >
-              <span className="text-[10px] font-medium uppercase tracking-[0.1em] text-black/30">
+              <span className="text-[9px] font-medium uppercase tracking-[0.1em] text-black/30">
                 {item.date}
               </span>
 
-              <p className="text-[13px] font-semibold">
+              <p className="text-[12px] font-semibold">
                 {item.title}
               </p>
 
-              <p className="text-[12px] text-black/40">
+              <p className="text-[11px] text-black/40">
                 {item.meta}
               </p>
 
-              <p className="text-[12px] font-medium text-black/60">
+              <p className="text-[11px] font-medium text-black/55">
                 {item.value}
               </p>
             </div>
@@ -465,91 +581,120 @@ export default function FynaroDashboardPage() {
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/* CAPABILITY CARD                                                            */
+/* -------------------------------------------------------------------------- */
+
 function CapabilityCard({
   capability,
-  index,
 }: {
   capability: Capability;
-  index: number;
 }) {
   const Icon = capability.icon;
-
-  const desktopBorders =
-    index === 0
-      ? "lg:border-r lg:border-b"
-      : index === 1
-        ? "lg:border-b"
-        : index === 2
-          ? "lg:border-r"
-          : "";
 
   return (
     <Link
       href={capability.href}
-      className={[
-        "group relative flex min-h-[390px] flex-col p-7 transition-colors duration-300 sm:p-9 lg:p-10",
-        "border-b border-black/[0.09] last:border-b-0 lg:border-b-0",
-        desktopBorders,
-        "hover:bg-[#f7f7f3]",
-      ].join(" ")}
+      className="group flex min-h-[270px] flex-col rounded-[18px] border border-black/[0.08] bg-white p-5 transition duration-300 hover:-translate-y-0.5 hover:border-black/15 hover:bg-[#f8f8f4]"
     >
       <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full border border-black/[0.09]">
-            <Icon size={15} strokeWidth={1.6} />
-          </div>
-
-          <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35">
-            {capability.eyebrow}
-          </span>
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black/[0.035]">
+          <Icon
+            size={14}
+            strokeWidth={1.6}
+          />
         </div>
 
-        <span className="text-[11px] font-semibold text-black/25">
+        <span className="text-[9px] font-semibold text-black/25">
           {capability.number}
         </span>
       </div>
 
-      <div className="mt-10">
-        <h3 className="text-[30px] font-semibold tracking-[-0.04em] sm:text-[34px]">
+      <div className="mt-5">
+        <p className="text-[8px] font-semibold uppercase tracking-[0.17em] text-black/30">
+          {capability.eyebrow}
+        </p>
+
+        <h3 className="mt-2 text-[20px] font-semibold tracking-[-0.035em]">
           {capability.title}
         </h3>
 
-        <p className="mt-4 max-w-[390px] text-[13px] leading-6 text-black/48">
+        <p className="mt-2.5 text-[11px] leading-5 text-black/45">
           {capability.description}
         </p>
-
-        <div className="mt-7 flex flex-wrap gap-2">
-          {capability.items.map((item) => (
-            <span
-              key={item}
-              className="rounded-full border border-black/[0.08] px-3 py-1.5 text-[10px] font-medium text-black/45"
-            >
-              {item}
-            </span>
-          ))}
-        </div>
       </div>
 
-      <div className="mt-auto flex items-end justify-between gap-6 pt-10">
+      <div className="mt-4 flex flex-wrap gap-1.5">
+        {capability.items.map((item) => (
+          <span
+            key={item}
+            className="rounded-full bg-black/[0.035] px-2.5 py-1 text-[9px] font-medium text-black/45"
+          >
+            {item}
+          </span>
+        ))}
+      </div>
+
+      <div className="mt-auto flex items-end justify-between gap-4 pt-6">
         <div>
-          <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-black/30">
+          <p className="text-[8px] font-semibold uppercase tracking-[0.15em] text-black/30">
             {capability.priceLabel}
           </p>
 
           {capability.price && (
-            <p className="mt-1 text-[21px] font-semibold tracking-[-0.03em]">
+            <p className="mt-1 text-[16px] font-semibold tracking-[-0.03em]">
               {capability.price}
             </p>
           )}
         </div>
 
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#111] text-white transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1">
-          <ArrowUpRight size={16} />
-        </div>
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#111] text-white transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5">
+          <ArrowUpRight size={13} />
+        </span>
       </div>
     </Link>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/* ATTENTION ITEM                                                             */
+/* -------------------------------------------------------------------------- */
+
+function AttentionItem({
+  href,
+  title,
+  meta,
+}: {
+  href: string;
+  title: string;
+  meta: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-center justify-between gap-4 py-4"
+    >
+      <div>
+        <p className="text-[11px] font-medium">
+          {title}
+        </p>
+
+        <p className="mt-1 text-[10px] text-white/40">
+          {meta}
+        </p>
+      </div>
+
+      <ChevronRight
+        size={14}
+        className="text-white/30 transition-transform group-hover:translate-x-0.5 group-hover:text-white"
+      />
+    </Link>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* SECTION HEADING                                                            */
+/* -------------------------------------------------------------------------- */
 
 function SectionHeading({
   eyebrow,
@@ -561,36 +706,80 @@ function SectionHeading({
   description: string;
 }) {
   return (
-    <div className="grid gap-5 lg:grid-cols-2 lg:items-end">
+    <div className="grid gap-3 lg:grid-cols-2 lg:items-end">
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.19em] text-black/35">
+        <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35">
           {eyebrow}
         </p>
 
-        <h2 className="mt-3 text-[32px] font-semibold tracking-[-0.04em] sm:text-[38px]">
+        <h2 className="mt-2 text-[27px] font-semibold tracking-[-0.04em] sm:text-[31px]">
           {title}
         </h2>
       </div>
 
-      <p className="max-w-[430px] text-[12px] leading-6 text-black/45 lg:justify-self-end">
+      <p className="max-w-[390px] text-[11px] leading-5 text-black/42 lg:justify-self-end">
         {description}
       </p>
     </div>
   );
 }
 
-function StatusBadge({ label }: { label: string }) {
+/* -------------------------------------------------------------------------- */
+/* SECTION HEADER                                                             */
+/* -------------------------------------------------------------------------- */
+
+function SectionHeader({
+  eyebrow,
+  title,
+  href,
+  linkLabel,
+}: {
+  eyebrow: string;
+  title: string;
+  href?: string;
+  linkLabel?: string;
+}) {
   return (
-    <span className="inline-flex items-center gap-2 rounded-full bg-[#edf4ed] px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.13em] text-[#315d38]">
-      <CheckCircle2 size={11} />
+    <div className="flex items-end justify-between gap-5">
+      <div>
+        <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35">
+          {eyebrow}
+        </p>
+
+        <h2 className="mt-2 text-[24px] font-semibold tracking-[-0.035em]">
+          {title}
+        </h2>
+      </div>
+
+      {href && linkLabel && (
+        <Link
+          href={href}
+          className="flex items-center gap-2 text-[10px] font-semibold text-black/40 transition hover:text-black"
+        >
+          {linkLabel}
+          <ArrowRight size={13} />
+        </Link>
+      )}
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* STATUS                                                                     */
+/* -------------------------------------------------------------------------- */
+
+function StatusBadge({
+  label,
+}: {
+  label: string;
+}) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#edf4ed] px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.12em] text-[#315d38]">
+      <CheckCircle2 size={10} />
       {label}
     </span>
   );
 }
-
-
-
-
 
 
 

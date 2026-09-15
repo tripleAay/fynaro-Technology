@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 import {
   BadgeHelp,
-  Boxes,
   BriefcaseBusiness,
   ChevronRight,
   CircleDollarSign,
@@ -13,7 +13,6 @@ import {
   FolderKanban,
   Globe2,
   House,
-  Layers3,
   LogOut,
   Menu,
   MessageSquare,
@@ -25,8 +24,6 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-
-import { useState } from "react";
 
 type NavItem = {
   label: string;
@@ -79,7 +76,7 @@ const workspaceLinks: NavItem[] = [
   },
   {
     label: "Orders",
-    href: "/shop/order",
+    href: "/shop/orders",
     icon: Package,
   },
   {
@@ -107,14 +104,15 @@ const accountLinks: NavItem[] = [
   },
   {
     label: "Support",
-    href: "/contact",
+    href: "/shop/support",
     icon: BadgeHelp,
   },
 ];
 
 export default function DashboardSidebar() {
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] =
+    useState(false);
 
   const isActive = (href: string) => {
     if (href === "/shop") {
@@ -124,7 +122,11 @@ export default function DashboardSidebar() {
     return pathname.startsWith(href);
   };
 
-  const NavLink = ({ item }: { item: NavItem }) => {
+  function NavLink({
+    item,
+  }: {
+    item: NavItem;
+  }) {
     const Icon = item.icon;
     const active = isActive(item.href);
 
@@ -133,161 +135,172 @@ export default function DashboardSidebar() {
         href={item.href}
         onClick={() => setMobileOpen(false)}
         className={[
-          "group flex h-11 items-center gap-3 rounded-xl px-3",
-          "text-[13px] font-medium transition-all duration-200",
+          "group flex h-[44px] items-center gap-3 rounded-[11px] px-3.5",
+          "text-[12.5px] font-medium transition-all duration-200",
           active
-            ? "bg-[#111111] text-white"
+            ? "bg-[#111] text-white shadow-[0_5px_16px_rgba(0,0,0,0.07)]"
             : "text-black/55 hover:bg-black/[0.045] hover:text-black",
         ].join(" ")}
       >
         <Icon
           size={17}
           strokeWidth={1.7}
-          className={
+          className={[
+            "shrink-0 transition-colors",
             active
               ? "text-white"
-              : "text-black/40 transition group-hover:text-black"
-          }
+              : "text-black/38 group-hover:text-black/70",
+          ].join(" ")}
         />
 
-        <span>{item.label}</span>
+        <span className="truncate">
+          {item.label}
+        </span>
 
         {active && (
           <ChevronRight
-            size={14}
-            className="ml-auto text-white/45"
+            size={13}
+            strokeWidth={1.8}
+            className="ml-auto shrink-0 text-white/45"
           />
         )}
       </Link>
     );
-  };
+  }
 
-  const SidebarContent = () => (
-    <>
-      {/* Brand */}
-      <div className="flex h-[72px] items-center border-b border-black/[0.08] px-6">
-        <Link href="/shop" className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#111] text-[11px] font-bold tracking-tight text-white">
-            F
-          </div>
+  function SidebarContent() {
+    return (
+      <>
+        {/* BRAND */}
+        <div className="flex h-[74px] shrink-0 items-center border-b border-black/[0.07] px-5">
+          <Link
+            href="/shop"
+            onClick={() => setMobileOpen(false)}
+            className="flex min-w-0 items-center gap-3"
+          >
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#111] text-[12px] font-bold text-white">
+              F
+            </div>
 
-          <div>
-            <p className="text-[14px] font-semibold tracking-[-0.02em]">
-              Fynaro
-            </p>
-            <p className="text-[10px] text-black/40">
-              Client Workspace
-            </p>
-          </div>
-        </Link>
+            <div className="min-w-0">
+              <p className="truncate text-[14px] font-semibold tracking-[-0.025em]">
+                Fynaro
+              </p>
 
-        <button
-          onClick={() => setMobileOpen(false)}
-          className="ml-auto flex h-9 w-9 items-center justify-center lg:hidden"
-        >
-          <X size={18} />
-        </button>
-      </div>
+              <p className="mt-0.5 truncate text-[9.5px] text-black/38">
+                Client Workspace
+              </p>
+            </div>
+          </Link>
 
-      {/* Navigation */}
-      <div className="flex-1 overflow-y-auto px-4 py-5">
-        <SidebarSection title="Overview">
-          <NavLink
-            item={{
-              label: "Dashboard",
-              href: "/shop",
-              icon: House,
-            }}
-          />
-        </SidebarSection>
+          <button
+            type="button"
+            onClick={() => setMobileOpen(false)}
+            aria-label="Close navigation"
+            className="ml-auto flex h-9 w-9 items-center justify-center rounded-lg text-black/45 transition hover:bg-black/[0.05] hover:text-black lg:hidden"
+          >
+            <X size={18} />
+          </button>
+        </div>
 
-        <SidebarSection title="Build">
-          {buildLinks.map((item) => (
-            <NavLink key={item.href} item={item} />
-          ))}
-        </SidebarSection>
-
-        <SidebarSection title="Workspace">
-          {workspaceLinks.map((item) => (
-            <NavLink key={item.href} item={item} />
-          ))}
-        </SidebarSection>
-
-        <SidebarSection title="More">
-          <NavLink
-            item={{
-              label: "Print & Branding",
-              href: "/shop/printed-products",
-              icon: Boxes,
-            }}
-          />
-        </SidebarSection>
-
-        <SidebarSection title="Account">
-          {accountLinks.map((item) => (
-            <NavLink key={item.href} item={item} />
-          ))}
-        </SidebarSection>
-      </div>
-
-      {/* Bottom */}
-      <div className="border-t border-black/[0.08] p-4">
-        <Link
-          href="/contact"
-          className="group block rounded-2xl bg-[#ecece7] p-4"
-        >
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-black/35">
-            Need help?
-          </p>
-
-          <div className="mt-2 flex items-center justify-between">
-            <p className="text-[13px] font-semibold">
-              Talk to Fynaro
-            </p>
-
-            <ChevronRight
-              size={15}
-              className="transition-transform group-hover:translate-x-1"
+        {/* NAVIGATION */}
+        <div className="flex-1 overflow-y-auto px-4 py-5">
+          <SidebarSection title="Overview">
+            <NavLink
+              item={{
+                label: "Dashboard",
+                href: "/shop",
+                icon: House,
+              }}
             />
-          </div>
-        </Link>
+          </SidebarSection>
 
-        <button className="mt-2 flex h-11 w-full items-center gap-3 rounded-xl px-3 text-[13px] font-medium text-black/45 transition hover:bg-black/[0.04] hover:text-black">
-          <LogOut size={16} strokeWidth={1.7} />
-          Log out
-        </button>
-      </div>
-    </>
-  );
+          <SidebarSection title="Build">
+            {buildLinks.map((item) => (
+              <NavLink
+                key={item.href}
+                item={item}
+              />
+            ))}
+          </SidebarSection>
+
+          <SidebarSection title="Workspace">
+            {workspaceLinks.map((item) => (
+              <NavLink
+                key={item.href}
+                item={item}
+              />
+            ))}
+          </SidebarSection>
+
+          <SidebarSection
+            title="Account"
+            last
+          >
+            {accountLinks.map((item) => (
+              <NavLink
+                key={item.href}
+                item={item}
+              />
+            ))}
+          </SidebarSection>
+        </div>
+
+        {/* BOTTOM */}
+        <div className="shrink-0 border-t border-black/[0.07] p-4">
+        
+
+          <button
+            type="button"
+            className="mt-2.5 flex h-[42px] w-full items-center gap-3 rounded-[11px] px-3.5 text-[12px] font-medium text-black/45 transition hover:bg-black/[0.04] hover:text-black"
+          >
+            <LogOut
+              size={16}
+              strokeWidth={1.7}
+            />
+
+            Log out
+          </button>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
-      {/* Mobile trigger */}
+      {/* MOBILE TRIGGER */}
       <button
+        type="button"
         onClick={() => setMobileOpen(true)}
-        className="fixed left-4 top-[18px] z-[60] flex h-9 w-9 items-center justify-center rounded-lg border border-black/10 bg-white lg:hidden"
+        aria-label="Open navigation"
+        className="fixed left-4 top-[18px] z-[60] flex h-10 w-10 items-center justify-center rounded-[10px] border border-black/[0.08] bg-white shadow-sm lg:hidden"
       >
         <Menu size={18} />
       </button>
 
-      {/* Desktop */}
-      <aside className="fixed inset-y-0 left-0 z-50 hidden w-[272px] flex-col border-r border-black/[0.08] bg-[#fafaf8] lg:flex">
+      {/* DESKTOP */}
+      <aside className="fixed inset-y-0 left-0 z-50 hidden w-[272px] flex-col border-r border-black/[0.07] bg-[#fafaf8] lg:flex">
         <SidebarContent />
       </aside>
 
-      {/* Mobile overlay */}
-      {mobileOpen && (
-        <div
-          onClick={() => setMobileOpen(false)}
-          className="fixed inset-0 z-[70] bg-black/30 backdrop-blur-[2px] lg:hidden"
-        />
-      )}
+      {/* MOBILE OVERLAY */}
+      <div
+        onClick={() => setMobileOpen(false)}
+        className={[
+          "fixed inset-0 z-[70] bg-black/25 backdrop-blur-[2px] transition-opacity duration-300 lg:hidden",
+          mobileOpen
+            ? "pointer-events-auto opacity-100"
+            : "pointer-events-none opacity-0",
+        ].join(" ")}
+      />
 
-      {/* Mobile sidebar */}
+      {/* MOBILE SIDEBAR */}
       <aside
         className={[
-          "fixed inset-y-0 left-0 z-[80] flex w-[290px] flex-col bg-[#fafaf8] transition-transform duration-300 lg:hidden",
-          mobileOpen ? "translate-x-0" : "-translate-x-full",
+          "fixed inset-y-0 left-0 z-[80] flex w-[292px] flex-col border-r border-black/[0.08] bg-[#fafaf8] shadow-[18px_0_50px_rgba(0,0,0,0.08)] transition-transform duration-300 ease-out lg:hidden",
+          mobileOpen
+            ? "translate-x-0"
+            : "-translate-x-full",
         ].join(" ")}
       >
         <SidebarContent />
@@ -299,17 +312,21 @@ export default function DashboardSidebar() {
 function SidebarSection({
   title,
   children,
+  last = false,
 }: {
   title: string;
   children: React.ReactNode;
+  last?: boolean;
 }) {
   return (
-    <div className="mb-6">
-      <p className="mb-2 px-3 text-[9px] font-semibold uppercase tracking-[0.18em] text-black/30">
+    <div className={last ? "mb-1" : "mb-6"}>
+      <p className="mb-2 px-3 text-[8.5px] font-semibold uppercase tracking-[0.17em] text-black/28">
         {title}
       </p>
 
-      <div className="space-y-1">{children}</div>
+      <div className="space-y-1">
+        {children}
+      </div>
     </div>
   );
 }

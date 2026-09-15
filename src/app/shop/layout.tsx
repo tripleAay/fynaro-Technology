@@ -38,7 +38,7 @@ export default async function ShopLayout({
   // ============================================================
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#fafaf8]">
       <DashboardSidebar
         
       />

@@ -2,321 +2,690 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { useState, useEffect, useRef } from "react";
-import { useCart, type Product } from "@/contexts/cartContext";
-import { Star, Heart } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Heart,
+  ShoppingBag,
+  Sparkles,
+  Star,
+} from "lucide-react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
+import {
+  useCart,
+  type Product,
+} from "@/contexts/cartContext";
+
 import ProductDetailModal from "@/components/dashboard components/productDetailModal";
-import { DetailedProduct } from "@/components/dashboard components/productTile";
-import { useFynaroToast } from "@/components/dashboard components/common/fynaroToast";
-import { useWishlist } from "@/contexts/wishlistContext";
-import { products } from "@/data/product"; 
-import { AppProduct } from "@/types/product";
 
-const StarRating = ({ rating = 5 }: { rating?: number }) => (
-  <div className="mt-1 flex items-center justify-center gap-1">
-    {[...Array(5)].map((_, i) => (
-      <Star
-        key={i}
-        size={14}
-        className={
-          i < rating ? "fill-yellow-400 text-yellow-400" : "text-neutral-300"
-        }
-      />
-    ))}
-  </div>
-);
+import {
+  DetailedProduct,
+} from "@/components/dashboard components/productTile";
 
-export default function HotStuffTile() {
-  const { addToCart } = useCart();
-  const { notifyAddToCart, notifyWishlistToggle } = useFynaroToast();
-  const { addToWishlist, removeFromWishlist, isWishlisted } = useWishlist();
+import {
+  useFynaroToast,
+} from "@/components/dashboard components/common/fynaroToast";
 
-  const hotProducts = products.filter((product) => product.isHotStuff);
+import {
+  useWishlist,
+} from "@/contexts/wishlistContext";
 
-  const [sparkId, setSparkId] = useState<number | string | null>(null);
-  const [selected, setSelected] = useState<AppProduct | null>(null);
+import {
+  products,
+} from "@/data/product";
 
-  const fullSubtitle =
-    "Limited picks. Clean silhouettes. Designed to carry your brand like it’s on the front row.";
-  const [typedSubtitle, setTypedSubtitle] = useState("");
+import {
+  AppProduct,
+} from "@/types/product";
 
-  const [activeIndex, setActiveIndex] = useState(0);
-  const stripRef = useRef<HTMLDivElement | null>(null);
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+function StarRating({
+  rating = 5,
+}: {
+  rating?: number;
+}) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[...Array(5)].map((_, index) => (
+        <Star
+          key={index}
+          size={10}
+          className={
+            index < rating
+              ? "fill-[#b7963f] text-[#b7963f]"
+              : "text-black/15"
+          }
+        />
+      ))}
+    </div>
+  );
+}
 
-  const setCardRef = (index: number) => (el: HTMLDivElement | null) => {
-    cardRefs.current[index] = el;
-  };
+export default function PremiumProductsShowcase() {
+  const {
+    addToCart,
+  } = useCart();
 
-  useEffect(() => {
-    let i = 0;
-    setTypedSubtitle("");
+  const {
+    notifyAddToCart,
+    notifyWishlistToggle,
+  } = useFynaroToast();
 
-    const timer = setInterval(() => {
-      i++;
-      setTypedSubtitle(fullSubtitle.slice(0, i));
-      if (i >= fullSubtitle.length) clearInterval(timer);
-    }, 35);
+  const {
+    addToWishlist,
+    removeFromWishlist,
+    isWishlisted,
+  } = useWishlist();
 
-    return () => clearInterval(timer);
-  }, []);
+  /*
+   * TEMPORARY:
+   *
+   * Your existing product dataset already uses `isHotStuff`.
+   * We can reuse it for now so this component works immediately.
+   *
+   * Later I recommend changing your product model from:
+   *
+   * isHotStuff: true
+   *
+   * to:
+   *
+   * isPremiumProduct: true
+   *
+   * and updating this filter.
+   */
+  const premiumProducts =
+    products.filter(
+      (product) =>
+        product.isHotStuff
+    );
 
-  const handleAddToCart = (product: AppProduct | DetailedProduct) => {
-    const priceStr =
-      typeof product.price === "string"
-        ? product.price
-        : `₦${Number(product.price ?? 0).toLocaleString("en-NG")}.00`;
+  const [
+    selected,
+    setSelected,
+  ] =
+    useState<AppProduct | null>(
+      null
+    );
 
-    const normalized: Product = {
-      id: product.id,
-      name: product.name,
-      price: priceStr,
-      image:
-        "image" in product && product.image
-          ? product.image
-          : "images" in product && product.images?.[0]
-          ? product.images[0]
-          : "",
+  const [
+    activeIndex,
+    setActiveIndex,
+  ] =
+    useState(0);
+
+  const [
+    addedProductId,
+    setAddedProductId,
+  ] = useState<
+    number | string | null
+  >(null);
+
+  const stripRef =
+    useRef<HTMLDivElement | null>(
+      null
+    );
+
+  const cardRefs =
+    useRef<
+      (
+        | HTMLDivElement
+        | null
+      )[]
+    >([]);
+
+  const setCardRef =
+    (index: number) =>
+    (
+      element:
+        | HTMLDivElement
+        | null
+    ) => {
+      cardRefs.current[
+        index
+      ] = element;
     };
+
+  const handleAddToCart = (
+    product:
+      | AppProduct
+      | DetailedProduct
+  ) => {
+    const price =
+      typeof product.price ===
+      "string"
+        ? product.price
+        : `₦${Number(
+            product.price ?? 0
+          ).toLocaleString(
+            "en-NG"
+          )}.00`;
+
+    const normalized: Product =
+      {
+        id: product.id,
+        name: product.name,
+        price,
+        image:
+          "image" in
+            product &&
+          product.image
+            ? product.image
+            : "images" in
+                  product &&
+                product
+                  .images?.[0]
+              ? product
+                  .images[0]
+              : "",
+      };
 
     addToCart(normalized);
-    setSparkId(product.id);
-    setTimeout(() => setSparkId(null), 800);
-    notifyAddToCart(normalized.name);
+
+    setAddedProductId(
+      product.id
+    );
+
+    window.setTimeout(
+      () =>
+        setAddedProductId(
+          null
+        ),
+      900
+    );
+
+    notifyAddToCart(
+      normalized.name
+    );
   };
 
-  const handleToggleWishlist = (product: AppProduct) => {
-    const payload = {
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image ?? product.images?.[0] ?? "",
+  const handleToggleWishlist =
+    (
+      product: AppProduct
+    ) => {
+      const payload = {
+        id: product.id,
+        name: product.name,
+        price:
+          product.price,
+        image:
+          product.image ??
+          product.images?.[0] ??
+          "",
+      };
+
+      if (
+        isWishlisted(
+          product.id
+        )
+      ) {
+        removeFromWishlist(
+          product.id
+        );
+
+        notifyWishlistToggle(
+          product.name,
+          false
+        );
+
+        return;
+      }
+
+      addToWishlist(
+        payload
+      );
+
+      notifyWishlistToggle(
+        product.name,
+        true
+      );
     };
 
-    if (isWishlisted(product.id)) {
-      removeFromWishlist(product.id);
-      notifyWishlistToggle(product.name, false);
-    } else {
-      addToWishlist(payload);
-      notifyWishlistToggle(product.name, true);
-    }
-  };
+  const handleScroll = () => {
+    const container =
+      stripRef.current;
 
-  const handleStripScroll = () => {
-    const container = stripRef.current;
-    if (!container) return;
+    if (!container) {
+      return;
+    }
+
+    const containerRect =
+      container.getBoundingClientRect();
 
     const center =
-      container.getBoundingClientRect().left + container.offsetWidth / 2;
+      containerRect.left +
+      containerRect.width / 2;
 
-    let closest = 0;
-    let min = Infinity;
+    let closestIndex = 0;
+    let closestDistance =
+      Infinity;
 
-    cardRefs.current.forEach((el, idx) => {
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const dist = Math.abs(rect.left + rect.width / 2 - center);
-      if (dist < min) {
-        min = dist;
-        closest = idx;
+    cardRefs.current.forEach(
+      (
+        element,
+        index
+      ) => {
+        if (!element) {
+          return;
+        }
+
+        const rect =
+          element.getBoundingClientRect();
+
+        const cardCenter =
+          rect.left +
+          rect.width / 2;
+
+        const distance =
+          Math.abs(
+            cardCenter -
+              center
+          );
+
+        if (
+          distance <
+          closestDistance
+        ) {
+          closestDistance =
+            distance;
+
+          closestIndex =
+            index;
+        }
       }
-    });
+    );
 
-    setActiveIndex(closest);
+    setActiveIndex(
+      closestIndex
+    );
   };
 
-  useEffect(() => {
-    handleStripScroll();
-  }, []);
-
-  const scrollToIndex = (idx: number) => {
-    cardRefs.current[idx]?.scrollIntoView({
+  const scrollToIndex = (
+    index: number
+  ) => {
+    cardRefs.current[
+      index
+    ]?.scrollIntoView({
       behavior: "smooth",
       inline: "center",
       block: "nearest",
     });
   };
 
+  const scrollPrevious =
+    () => {
+      scrollToIndex(
+        Math.max(
+          0,
+          activeIndex - 1
+        )
+      );
+    };
+
+  const scrollNext = () => {
+    scrollToIndex(
+      Math.min(
+        premiumProducts.length -
+          1,
+        activeIndex + 1
+      )
+    );
+  };
+
+  useEffect(() => {
+    handleScroll();
+  }, []);
+
+  if (
+    premiumProducts.length ===
+    0
+  ) {
+    return (
+      <div className="rounded-[18px] border border-dashed border-black/[0.12] bg-[#fafaf7] p-7">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white">
+          <Sparkles
+            size={14}
+          />
+        </div>
+
+        <h3 className="mt-5 text-[17px] font-semibold tracking-[-0.03em]">
+          Premium products
+          are coming.
+        </h3>
+
+        <p className="mt-2 max-w-[420px] text-[10px] leading-5 text-black/40">
+          Selected Fynaro
+          products will appear
+          here once they are
+          marked for premium
+          sale.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <>
-      <section className="relative mb-24 mt-14">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 md:px-8">
-          <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.25em] text-white/80">
-                Curated heat
-              </p>
-              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-[#c8a96a] sm:text-3xl md:text-4xl">
-                Hot Stuff <span className="align-middle">🔥</span>
-              </h2>
-            </div>
+      <div className="relative">
+        {/* CONTROLS */}
 
-            <motion.span
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.4 }}
-              className="max-w-xs text-[11px] text-white sm:text-right sm:text-xs md:text-sm"
+        {premiumProducts.length >
+          1 && (
+          <div className="mb-4 hidden justify-end gap-2 sm:flex">
+            <button
+              type="button"
+              onClick={
+                scrollPrevious
+              }
+              disabled={
+                activeIndex ===
+                0
+              }
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-black/[0.08] text-black/45 transition hover:border-black/20 hover:text-black disabled:cursor-not-allowed disabled:opacity-25"
+              aria-label="Previous product"
             >
-              {typedSubtitle}
-              <motion.span
-                className="ml-1 inline-block h-[1em] w-[2px] bg-white/70 align-middle"
-                animate={{ opacity: [1, 0, 1] }}
-                transition={{ duration: 0.8, repeat: Infinity }}
+              <ArrowLeft
+                size={12}
               />
-            </motion.span>
-          </div>
+            </button>
 
-          <div className="relative">
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#c8a96a] to-transparent opacity-80" />
-            <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#c8a96a] to-transparent opacity-80" />
-
-            <div
-              ref={stripRef}
-              onScroll={handleStripScroll}
-              className="mt-5 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 scrollbar-hide sm:gap-6"
+            <button
+              type="button"
+              onClick={
+                scrollNext
+              }
+              disabled={
+                activeIndex ===
+                premiumProducts.length -
+                  1
+              }
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-black/[0.08] text-black/45 transition hover:border-black/20 hover:text-black disabled:cursor-not-allowed disabled:opacity-25"
+              aria-label="Next product"
             >
-              {hotProducts.map((product, index) => {
-                const wished = isWishlisted(product.id);
+              <ArrowRight
+                size={12}
+              />
+            </button>
+          </div>
+        )}
 
-                return (
-                  <motion.div
-                    key={product.id}
-                    ref={setCardRef(index)}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.08, duration: 0.6 }}
-                    className="relative shrink-0 snap-center overflow-hidden rounded-[22px] border border-[#2a2722] bg-[radial-gradient(circle_at_top,#1b1917_0,#111014_42%,#0b0a09_100%)] text-white shadow-[0_18px_50px_rgba(0,0,0,0.45)] w-[82vw] sm:w-[60vw] md:w-[40vw] lg:w-[30%]"
+        {/* PRODUCTS */}
+
+        <div
+          ref={stripRef}
+          onScroll={
+            handleScroll
+          }
+          className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3 scrollbar-hide"
+        >
+          {premiumProducts.map(
+            (
+              product,
+              index
+            ) => {
+              const wished =
+                isWishlisted(
+                  product.id
+                );
+
+              const added =
+                addedProductId ===
+                product.id;
+
+              return (
+                <motion.article
+                  key={
+                    product.id
+                  }
+                  ref={setCardRef(
+                    index
+                  )}
+                  initial={{
+                    opacity: 0,
+                    y: 14,
+                  }}
+                  whileInView={{
+                    opacity: 1,
+                    y: 0,
+                  }}
+                  viewport={{
+                    once: true,
+                    amount: 0.2,
+                  }}
+                  transition={{
+                    duration: 0.35,
+                    delay:
+                      index *
+                      0.04,
+                  }}
+                  className="group relative w-[84vw] shrink-0 snap-center overflow-hidden rounded-[18px] border border-black/[0.08] bg-white sm:w-[440px] lg:w-[390px]"
+                >
+                  {/* IMAGE */}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSelected(
+                        product
+                      )
+                    }
+                    className="relative block h-[230px] w-full overflow-hidden bg-[#f4f4ef] text-left"
                   >
-                    <div className="pointer-events-none absolute inset-0">
-                      <div className="absolute -left-6 -top-6 h-16 w-16 rounded-bl-full rounded-tr-full border-l border-t border-[#c8a96a]/70 opacity-70" />
-                      <div className="absolute -bottom-6 -right-6 h-16 w-16 rounded-br-full rounded-tl-full border-b border-r border-[#c8a96a]/70 opacity-70" />
-                    </div>
+                    <Image
+                      src={
+                        product.image
+                      }
+                      alt={
+                        product.name
+                      }
+                      fill
+                      className="object-contain p-5 transition-transform duration-500 ease-out group-hover:scale-[1.035]"
+                    />
 
-                    <div className="relative h-48 w-full overflow-hidden sm:h-56 md:h-60">
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        className="object-contain transition-transform duration-700 ease-out group-hover:scale-105"
-                      />
-
-                      {product.tag && (
-                        <div className="absolute left-3 top-3 rounded-full border border-[#c8a96a]/70 bg-black/70 px-3 py-1 text-[10px] font-medium tracking-wide sm:text-[11px]">
-                          {product.tag}
-                        </div>
-                      )}
-
-                      <motion.button
-                        type="button"
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => handleToggleWishlist(product)}
-                        aria-label={
-                          wished ? "Remove from wishlist" : "Save to wishlist"
-                        }
-                        className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-black/70 transition-colors hover:bg-black/90"
-                      >
-                        <Heart
-                          size={16}
-                          className={`transition-colors ${
-                            wished
-                              ? "fill-[#ff7ab8] text-[#ff7ab8]"
-                              : "text-white/70"
-                          }`}
+                    <div className="absolute left-3 top-3">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-black/[0.07] bg-white/90 px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.13em] text-black/50 backdrop-blur">
+                        <Sparkles
+                          size={8}
                         />
-                      </motion.button>
-
-                      {sparkId === product.id && (
-                        <motion.span
-                          className="pointer-events-none absolute inset-3 rounded-[20px] border-2 border-[#f5e4b5]"
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{
-                            opacity: [0, 1, 0],
-                            scale: [0.9, 1.05, 1],
-                          }}
-                          transition={{ duration: 0.6, ease: "easeOut" }}
-                        />
-                      )}
+                        Premium
+                      </span>
                     </div>
+                  </button>
 
-                    <div className="px-4 pb-4 pt-3 sm:px-5 sm:pb-5">
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className="line-clamp-2 text-sm font-semibold leading-tight sm:text-base md:text-lg">
-                          {product.name}
+                  {/* WISHLIST */}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleToggleWishlist(
+                        product
+                      )
+                    }
+                    aria-label={
+                      wished
+                        ? "Remove from wishlist"
+                        : "Save to wishlist"
+                    }
+                    className={[
+                      "absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full border backdrop-blur transition",
+                      wished
+                        ? "border-black bg-[#111] text-white"
+                        : "border-black/[0.08] bg-white/90 text-black/45 hover:text-black",
+                    ].join(
+                      " "
+                    )}
+                  >
+                    <Heart
+                      size={12}
+                      className={
+                        wished
+                          ? "fill-current"
+                          : ""
+                      }
+                    />
+                  </button>
+
+                  {/* BODY */}
+
+                  <div className="p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        {product.tag && (
+                          <p className="mb-2 text-[8px] font-semibold uppercase tracking-[0.14em] text-[#92772d]">
+                            {
+                              product.tag
+                            }
+                          </p>
+                        )}
+
+                        <h3 className="line-clamp-2 max-w-[250px] text-[16px] font-semibold leading-[1.15] tracking-[-0.025em]">
+                          {
+                            product.name
+                          }
                         </h3>
-                        <span className="whitespace-nowrap text-[11px] text-[#e3c985] sm:text-xs">
-                          Limited
-                        </span>
                       </div>
 
-                      <div className="mt-1.5 flex items-center justify-between gap-3">
-                        <StarRating rating={product.rating} />
-                        <p className="text-sm font-semibold text-[#f5e4b5] sm:text-base">
-                          {product.price}
+                      <StarRating
+                        rating={
+                          product.rating
+                        }
+                      />
+                    </div>
+
+                    <p className="mt-3 line-clamp-2 min-h-[40px] text-[10px] leading-5 text-black/42">
+                      {
+                        product.description
+                      }
+                    </p>
+
+                    <div className="mt-5 flex items-end justify-between border-t border-black/[0.07] pt-4">
+                      <div>
+                        <p className="text-[8px] font-semibold uppercase tracking-[0.13em] text-black/30">
+                          Price
+                        </p>
+
+                        <p className="mt-1 text-[17px] font-semibold tracking-[-0.025em]">
+                          {
+                            product.price
+                          }
                         </p>
                       </div>
 
-                      <p className="mt-2 line-clamp-3 text-[11px] leading-relaxed text-neutral-300 sm:text-xs">
-                        {product.description}
-                      </p>
-
-                      <div className="mt-4 flex items-center gap-2">
-                        <motion.button
-                          whileTap={{ scale: 0.96 }}
-                          onClick={() => handleAddToCart(product)}
-                          className="flex-1 rounded-full bg-white py-2 text-[11px] font-semibold tracking-wide text-[#111014] transition-colors hover:bg-[#f5e9ce] sm:py-2.5 sm:text-xs"
-                        >
-                          Add to Cart
-                        </motion.button>
-
-                        <motion.button
-                          whileTap={{ scale: 0.96 }}
-                          onClick={() => setSelected(product)}
-                          className="flex-1 rounded-full border border-[#c8a96a]/70 py-2 text-[11px] font-medium text-[#f5e4b5] transition-all hover:border-[#f0d48b] hover:bg-[#1b1813] sm:py-2.5 sm:text-xs"
-                        >
-                          View Details
-                        </motion.button>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSelected(
+                            product
+                          )
+                        }
+                        className="flex items-center gap-1.5 text-[9px] font-semibold text-black/42 transition hover:text-black"
+                      >
+                        View details
+                        <ArrowRight
+                          size={10}
+                        />
+                      </button>
                     </div>
-                  </motion.div>
-                );
-              })}
-            </div>
 
-            {hotProducts.length > 1 && (
-              <div className="mt-3 flex items-center justify-center gap-3 sm:hidden">
-                {hotProducts.map((_, idx) => {
-                  const active = idx === activeIndex;
-                  return (
                     <button
-                      key={idx}
                       type="button"
-                      onClick={() => scrollToIndex(idx)}
-                      className="relative flex h-3 w-3 items-center justify-center"
-                      aria-label={`Go to product ${idx + 1}`}
+                      onClick={() =>
+                        handleAddToCart(
+                          product
+                        )
+                      }
+                      className={[
+                        "mt-4 flex h-10 w-full items-center justify-center gap-2 rounded-full text-[10px] font-semibold transition",
+                        added
+                          ? "bg-[#e7efe7] text-[#315d38]"
+                          : "bg-[#111] text-white hover:bg-black/80",
+                      ].join(
+                        " "
+                      )}
                     >
-                      <span
-                        className={`block h-3 w-3 rotate-45 rounded-[4px] transition-all ${
-                          active
-                            ? "scale-110 bg-[#F5B400] shadow-[0_0_14px_rgba(245,180,0,0.9)]"
-                            : "scale-95 border border-white/20 bg-white/15"
-                        }`}
-                      />
+                      {added ? (
+                        <>
+                          Added to cart
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingBag
+                            size={
+                              11
+                            }
+                          />
+                          Add to cart
+                        </>
+                      )}
                     </button>
-                  );
-                })}
-              </div>
+                  </div>
+                </motion.article>
+              );
+            }
+          )}
+        </div>
+
+        {/* MOBILE INDICATORS */}
+
+        {premiumProducts.length >
+          1 && (
+          <div className="mt-3 flex justify-center gap-1.5 sm:hidden">
+            {premiumProducts.map(
+              (
+                _,
+                index
+              ) => (
+                <button
+                  key={
+                    index
+                  }
+                  type="button"
+                  aria-label={`Go to product ${
+                    index + 1
+                  }`}
+                  onClick={() =>
+                    scrollToIndex(
+                      index
+                    )
+                  }
+                  className={[
+                    "h-1.5 rounded-full transition-all",
+                    activeIndex ===
+                    index
+                      ? "w-5 bg-[#111]"
+                      : "w-1.5 bg-black/15",
+                  ].join(
+                    " "
+                  )}
+                />
+              )
             )}
           </div>
-        </div>
-      </section>
+        )}
+      </div>
 
       <ProductDetailModal
-        product={selected as DetailedProduct | null}
-        open={Boolean(selected)}
-        onClose={() => setSelected(null)}
-        onAddToCart={(product: DetailedProduct) => {
-          handleAddToCart(product);
+        product={
+          selected as
+            | DetailedProduct
+            | null
+        }
+        open={Boolean(
+          selected
+        )}
+        onClose={() =>
+          setSelected(null)
+        }
+        onAddToCart={(
+          product: DetailedProduct
+        ) => {
+          handleAddToCart(
+            product
+          );
+
           setSelected(null);
         }}
       />
