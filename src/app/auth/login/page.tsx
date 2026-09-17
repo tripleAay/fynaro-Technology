@@ -6,6 +6,9 @@ import {
 } from "react";
 
 import Link from "next/link";
+import {
+  useSearchParams,
+} from "next/navigation";
 
 import {
   FiUser,
@@ -24,6 +27,23 @@ import HomeHeader from "@/components/dashboard components/homeHeader";
 import Footer from "@/components/footer";
 
 export default function LoginPage() {
+  const searchParams =
+    useSearchParams();
+
+  // ============================================================
+  // SAFE REDIRECT
+  // ============================================================
+
+  const nextPath =
+    searchParams.get("next");
+
+  const safeNextPath =
+    nextPath &&
+    nextPath.startsWith("/") &&
+    !nextPath.startsWith("//")
+      ? nextPath
+      : "/shop";
+
   // ============================================================
   // HYDRATION
   // ============================================================
@@ -68,9 +88,9 @@ export default function LoginPage() {
   const [
     turnstileToken,
     setTurnstileToken,
-  ] = useState<
-    string | null
-  >(null);
+  ] = useState<string | null>(
+    null
+  );
 
   const isProduction =
     process.env.NODE_ENV ===
@@ -93,9 +113,9 @@ export default function LoginPage() {
   const [
     errorMsg,
     setErrorMsg,
-  ] = useState<
-    string | null
-  >(null);
+  ] = useState<string | null>(
+    null
+  );
 
   // ============================================================
   // VALIDATION
@@ -136,9 +156,6 @@ export default function LoginPage() {
       try {
         // ======================================================
         // LOGIN THROUGH NEXT.JS
-        //
-        // IMPORTANT:
-        // Do NOT use NEXT_PUBLIC_API_URL here.
         //
         // Browser -> Next.js -> Express
         // ======================================================
@@ -193,9 +210,7 @@ export default function LoginPage() {
         // LOGIN FAILED
         // ======================================================
 
-        if (
-          !response.ok
-        ) {
+        if (!response.ok) {
           console.error(
             "Fynaro login failed:",
             {
@@ -223,7 +238,7 @@ export default function LoginPage() {
         }
 
         // ======================================================
-        // CONFIRM WE HIT NEXT.JS PROXY
+        // CONFIRM NEXT.JS PROXY
         // ======================================================
 
         if (
@@ -245,8 +260,7 @@ export default function LoginPage() {
         // ======================================================
         // VERIFY SESSION
         //
-        // This checks whether Next.js successfully created
-        // fynaro_token.
+        // Confirms Next.js successfully created fynaro_token.
         // ======================================================
 
         const meResponse =
@@ -330,10 +344,18 @@ export default function LoginPage() {
 
         // ======================================================
         // REDIRECT
+        //
+        // /auth/login
+        //       -> /shop
+        //
+        // /auth/login?next=/admin
+        //       -> /admin
+        //
+        // AdminLayout performs the final admin role check.
         // ======================================================
 
         window.location.href =
-          "/shop";
+          safeNextPath;
       } catch (
         error
       ) {
@@ -454,9 +476,7 @@ export default function LoginPage() {
                   role="alert"
                   className="mb-3 rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-[11px] text-red-700"
                 >
-                  {
-                    errorMsg
-                  }
+                  {errorMsg}
                 </div>
               )}
 

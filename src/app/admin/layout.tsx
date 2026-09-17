@@ -27,11 +27,11 @@ export default async function AdminLayout({
   const session =
     await getAdminSession();
 
-  if (!session) {
-    redirect(
-      "/login?next=/admin"
-    );
-  }
+if (!session) {
+  redirect(
+    "/auth/login?next=/admin"
+  );
+}
 
   if (
     !ALLOWED_ADMIN_ROLES.has(
