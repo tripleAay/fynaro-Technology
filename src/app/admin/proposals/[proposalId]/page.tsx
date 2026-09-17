@@ -7,13 +7,10 @@ import {
   Mail,
 } from "lucide-react";
 
-import {
-  notFound,
-} from "next/navigation";
+import { notFound } from "next/navigation";
 
-import {
-  getAdminProposal,
-} from "@/lib/admin/proposals";
+import { getAdminProposal } from "@/lib/admin/proposals";
+import SendProposalButton from "@/components/admin/SendProposalButton";
 
 type PageProps = {
   params: Promise<{
@@ -38,9 +35,8 @@ function formatMoney(
 export default async function AdminProposalDetailPage({
   params,
 }: PageProps) {
-  const {
-    proposalId,
-  } = await params;
+  const { proposalId } =
+    await params;
 
   const proposal =
     await getAdminProposal(
@@ -53,6 +49,10 @@ export default async function AdminProposalDetailPage({
 
   return (
     <div className="mx-auto max-w-[1400px]">
+      {/* ==================================================
+          BACK
+      ================================================== */}
+
       <Link
         href="/admin/proposals"
         className="inline-flex items-center gap-2 text-xs font-medium text-black/50 transition hover:text-black"
@@ -65,54 +65,63 @@ export default async function AdminProposalDetailPage({
         Back to proposals
       </Link>
 
+      {/* ==================================================
+          HEADER
+      ================================================== */}
+
       <section className="mt-6 flex flex-col gap-5 border-b border-black/5 pb-7 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/35">
-              {
-                proposal.reference
-              }
+              {proposal.reference}
             </p>
 
             <span className="rounded-full bg-[#f4f4ef] px-2.5 py-1 text-[11px] font-medium text-black/55">
               Version{" "}
-              {
-                proposal.version
-              }
+              {proposal.version}
             </span>
+
+            <ProposalStatusBadge
+              status={
+                proposal.status
+              }
+            />
           </div>
 
           <h1 className="mt-3 max-w-4xl text-3xl font-semibold tracking-[-0.045em]">
             {proposal.title}
           </h1>
 
-          <p className="mt-3 text-sm text-black/45">
-            {
-              proposal.service
-            }
+          <p className="mt-3 text-sm capitalize text-black/45">
+            {proposal.service}
           </p>
         </div>
 
-        <button
-          type="button"
-          disabled
-          title="Client delivery will be wired next."
-          className="inline-flex min-h-[44px] cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-[#111111] px-5 text-sm font-medium text-white opacity-40"
-        >
-          <Mail
-            className="h-4 w-4"
-            strokeWidth={1.8}
-          />
+        {/* REAL SEND BUTTON */}
 
-          Send to client
-        </button>
+        <SendProposalButton
+          proposalId={
+            proposal.id
+          }
+          status={
+            proposal.status
+          }
+        />
       </section>
 
+      {/* ==================================================
+          CONTENT
+      ================================================== */}
+
       <div className="mt-7 grid gap-5 xl:grid-cols-[1.4fr_0.6fr]">
+        {/* ==================================================
+            MAIN
+        ================================================== */}
+
         <main className="space-y-5">
-          <Section
-            title="Executive summary"
-          >
+          {/* EXECUTIVE SUMMARY */}
+
+          <Section title="Executive summary">
             <LongText
               value={
                 proposal.summary
@@ -120,9 +129,9 @@ export default async function AdminProposalDetailPage({
             />
           </Section>
 
-          <Section
-            title="Scope of work"
-          >
+          {/* SCOPE */}
+
+          <Section title="Scope of work">
             <LongText
               value={
                 proposal.scope
@@ -130,9 +139,9 @@ export default async function AdminProposalDetailPage({
             />
           </Section>
 
-          <Section
-            title="Deliverables"
-          >
+          {/* DELIVERABLES */}
+
+          <Section title="Deliverables">
             {proposal
               .deliverables
               ?.length ? (
@@ -180,9 +189,9 @@ export default async function AdminProposalDetailPage({
             )}
           </Section>
 
-          <Section
-            title="Exclusions"
-          >
+          {/* EXCLUSIONS */}
+
+          <Section title="Exclusions">
             {proposal
               .exclusions
               ?.length ? (
@@ -216,9 +225,9 @@ export default async function AdminProposalDetailPage({
             )}
           </Section>
 
-          <Section
-            title="Payment structure"
-          >
+          {/* PAYMENT STRUCTURE */}
+
+          <Section title="Payment structure">
             <div className="space-y-3">
               {proposal
                 .paymentStages
@@ -278,14 +287,21 @@ export default async function AdminProposalDetailPage({
                 ?.length && (
                 <EmptyText>
                   No payment
-                  structure recorded.
+                  structure
+                  recorded.
                 </EmptyText>
               )}
             </div>
           </Section>
         </main>
 
+        {/* ==================================================
+            SIDEBAR
+        ================================================== */}
+
         <aside className="space-y-5">
+          {/* INVESTMENT */}
+
           <section className="rounded-2xl bg-[#111111] p-6 text-white">
             <p className="text-xs font-medium text-white/45">
               Total investment
@@ -299,15 +315,13 @@ export default async function AdminProposalDetailPage({
             </p>
 
             <p className="mt-2 text-xs uppercase tracking-[0.12em] text-white/35">
-              {
-                proposal.currency
-              }
+              {proposal.currency}
             </p>
           </section>
 
-          <Section
-            title="Client"
-          >
+          {/* CLIENT */}
+
+          <Section title="Client">
             <p className="text-base font-semibold">
               {proposal.client
                 ?.full_name ||
@@ -328,7 +342,7 @@ export default async function AdminProposalDetailPage({
               ?.email && (
               <a
                 href={`mailto:${proposal.client.email}`}
-                className="mt-5 flex items-center gap-3 text-sm text-black/55"
+                className="mt-5 flex items-center gap-3 text-sm text-black/55 transition hover:text-black"
               >
                 <Mail
                   className="h-4 w-4"
@@ -347,9 +361,9 @@ export default async function AdminProposalDetailPage({
             )}
           </Section>
 
-          <Section
-            title="Proposal"
-          >
+          {/* PROPOSAL INFO */}
+
+          <Section title="Proposal">
             <Field
               label="Reference"
               value={
@@ -360,6 +374,13 @@ export default async function AdminProposalDetailPage({
             <Field
               label="Version"
               value={`v${proposal.version}`}
+            />
+
+            <Field
+              label="Status"
+              value={
+                proposal.status
+              }
             />
 
             <Field
@@ -377,10 +398,10 @@ export default async function AdminProposalDetailPage({
             />
           </Section>
 
+          {/* SOURCE REQUEST */}
+
           {proposal.request && (
-            <Section
-              title="Source request"
-            >
+            <Section title="Source request">
               <p className="text-sm font-semibold">
                 {
                   proposal.request
@@ -408,6 +429,8 @@ export default async function AdminProposalDetailPage({
             </Section>
           )}
 
+          {/* STATUS INFORMATION */}
+
           <div className="rounded-2xl border border-black/6 bg-[#f4f4ef] p-5">
             <div className="flex gap-3">
               <Check
@@ -417,13 +440,30 @@ export default async function AdminProposalDetailPage({
                 }
               />
 
-              <p className="text-xs leading-5 text-black/55">
-                This proposal is
-                stored in Fynaro.
-                Client delivery and
-                acceptance will be
-                connected next.
-              </p>
+              <div>
+                <p className="text-xs font-semibold">
+                  Proposal status
+                </p>
+
+                <p className="mt-1 text-xs leading-5 text-black/55">
+                  {proposal.status ===
+                  "draft"
+                    ? "This proposal is saved as a draft. Send it when it is ready for the client."
+                    : proposal.status ===
+                        "sent"
+                      ? "This proposal has been sent and is now available in the client's Fynaro workspace."
+                      : proposal.status ===
+                          "accepted"
+                        ? "The client has accepted this proposal."
+                        : proposal.status ===
+                            "rejected"
+                          ? "The client rejected this proposal."
+                          : proposal.status ===
+                              "expired"
+                            ? "This proposal has expired."
+                            : `Current status: ${proposal.status}.`}
+                </p>
+              </div>
             </div>
           </div>
         </aside>
@@ -431,6 +471,42 @@ export default async function AdminProposalDetailPage({
     </div>
   );
 }
+
+// ======================================================
+// STATUS BADGE
+// ======================================================
+
+function ProposalStatusBadge({
+  status,
+}: {
+  status: string;
+}) {
+  const label =
+    status === "draft"
+      ? "Draft"
+      : status === "sent"
+        ? "Sent"
+        : status ===
+            "accepted"
+          ? "Accepted"
+          : status ===
+              "rejected"
+            ? "Rejected"
+            : status ===
+                "expired"
+              ? "Expired"
+              : status;
+
+  return (
+    <span className="rounded-full border border-black/6 bg-white px-2.5 py-1 text-[11px] font-medium capitalize text-black/55">
+      {label}
+    </span>
+  );
+}
+
+// ======================================================
+// SECTION
+// ======================================================
 
 function Section({
   title,
@@ -453,6 +529,10 @@ function Section({
   );
 }
 
+// ======================================================
+// LONG TEXT
+// ======================================================
+
 function LongText({
   value,
 }: {
@@ -468,6 +548,10 @@ function LongText({
   );
 }
 
+// ======================================================
+// EMPTY TEXT
+// ======================================================
+
 function EmptyText({
   children,
 }: {
@@ -480,6 +564,10 @@ function EmptyText({
     </p>
   );
 }
+
+// ======================================================
+// FIELD
+// ======================================================
 
 function Field({
   label,
@@ -494,7 +582,7 @@ function Field({
         {label}
       </span>
 
-      <span className="max-w-[65%] text-right text-sm font-medium text-black/70">
+      <span className="max-w-[65%] text-right text-sm font-medium capitalize text-black/70">
         {value}
       </span>
     </div>
