@@ -18,7 +18,6 @@ import {
 import {
   useCallback,
   useEffect,
-  useMemo,
   useState,
 } from "react";
 import { useSearchParams } from "next/navigation";
@@ -92,7 +91,9 @@ type PaymentStage = {
   id: string;
   order_id: string;
 
-  proposal_payment_stage_id?: string | null;
+  proposal_payment_stage_id?:
+    | string
+    | null;
 
   position: number;
   stage: string;
@@ -105,9 +106,12 @@ type PaymentStage = {
     | number
     | string;
 
-  trigger_label?: string | null;
+  trigger_label?:
+    | string
+    | null;
 
-  payment_status: StagePaymentStatus;
+  payment_status:
+    StagePaymentStatus;
 
   paid_at?: string | null;
 };
@@ -129,23 +133,41 @@ type PaymentContextResponse = {
 
   stage: PaymentStage;
 
-  paymentSchedule: PaymentStage[];
+  paymentSchedule:
+    PaymentStage[];
 
   totals: PaymentTotals;
 };
 
 type InitializePaymentResponse = {
   message?: string;
+
   created?: boolean;
+
+  checkoutUrl?:
+    | string
+    | null;
 
   payment?: {
     id: string;
     reference: string;
-    amount: number | string;
+
+    amount:
+      | number
+      | string;
+
     currency: string;
+
     stage: string;
-    provider?: string | null;
-    provider_reference?: string | null;
+
+    provider?:
+      | string
+      | null;
+
+    provider_reference?:
+      | string
+      | null;
+
     status: string;
   };
 
@@ -153,7 +175,11 @@ type InitializePaymentResponse = {
     id: string;
     reference: string;
     title: string;
-    total: number | string;
+
+    total:
+      | number
+      | string;
+
     currency: string;
   };
 
@@ -161,13 +187,18 @@ type InitializePaymentResponse = {
     id: string;
     stage: string;
     position: number;
+
     percentage:
       | number
       | string;
+
     amount:
       | number
       | string;
-    trigger_label?: string | null;
+
+    trigger_label?:
+      | string
+      | null;
   };
 };
 
@@ -185,7 +216,9 @@ function numberValue(
   const parsed =
     Number(value ?? 0);
 
-  return Number.isFinite(parsed)
+  return Number.isFinite(
+    parsed
+  )
     ? parsed
     : 0;
 }
@@ -213,11 +246,14 @@ function formatMoney(
       "en-NG",
       {
         style: "currency",
+
         currency:
           normalizeCurrency(
             currency
           ),
-        maximumFractionDigits: 0,
+
+        maximumFractionDigits:
+          0,
       }
     ).format(value);
   } catch {
@@ -235,7 +271,10 @@ function formatLabel(
   }
 
   return value
-    .replace(/[_-]+/g, " ")
+    .replace(
+      /[_-]+/g,
+      " "
+    )
     .replace(
       /\b\w/g,
       (letter) =>
@@ -282,10 +321,14 @@ export default function BillingPage() {
     useSearchParams();
 
   const orderId =
-    searchParams.get("order");
+    searchParams.get(
+      "order"
+    );
 
   const stageId =
-    searchParams.get("stage");
+    searchParams.get(
+      "stage"
+    );
 
   const [
     paymentMethod,
@@ -337,73 +380,95 @@ export default function BillingPage() {
   // ==========================================================
 
   const loadPaymentContext =
-    useCallback(async () => {
-      if (
-        !orderId ||
-        !stageId
-      ) {
-        setLoading(false);
+    useCallback(
+      async () => {
+        if (
+          !orderId ||
+          !stageId
+        ) {
+          setLoading(false);
 
-        setError(
-          "This payment link is incomplete. Open the payment from your order page."
-        );
-
-        return;
-      }
-
-      setLoading(true);
-      setError(null);
-
-      try {
-        const params =
-          new URLSearchParams({
-            orderId,
-            stageId,
-          });
-
-        const response =
-          await fetch(
-            `/api/client/payments/context?${params.toString()}`,
-            {
-              method: "GET",
-              credentials:
-                "include",
-              cache:
-                "no-store",
-            }
+          setError(
+            "This payment link is incomplete. Open the payment from your order page."
           );
 
-        const data =
-          await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            data?.message ||
-              "Unable to load payment details."
-          );
+          return;
         }
 
-        setPaymentContext(
-          data
-        );
-      } catch (err) {
-        console.error(
-          "[BILLING] Context error:",
-          err
-        );
+        setLoading(true);
+        setError(null);
 
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Unable to load payment details."
-        );
-      } finally {
-        setLoading(false);
-      }
-    }, [
-      orderId,
-      stageId,
-    ]);
+        try {
+          const params =
+            new URLSearchParams({
+              orderId,
+              stageId,
+            });
+
+          const response =
+            await fetch(
+              `/api/client/payments/context?${params.toString()}`,
+              {
+                method: "GET",
+
+                credentials:
+                  "include",
+
+                cache:
+                  "no-store",
+              }
+            );
+
+          const contentType =
+            response.headers.get(
+              "content-type"
+            ) || "";
+
+          if (
+            !contentType.includes(
+              "application/json"
+            )
+          ) {
+            throw new Error(
+              "The payment server returned an invalid response."
+            );
+          }
+
+          const data =
+            (await response.json()) as PaymentContextResponse & {
+              message?: string;
+            };
+
+          if (!response.ok) {
+            throw new Error(
+              data?.message ||
+                "Unable to load payment details."
+            );
+          }
+
+          setPaymentContext(
+            data
+          );
+        } catch (err) {
+          console.error(
+            "[BILLING] Context error:",
+            err
+          );
+
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Unable to load payment details."
+          );
+        } finally {
+          setLoading(false);
+        }
+      },
+      [
+        orderId,
+        stageId,
+      ]
+    );
 
   useEffect(() => {
     loadPaymentContext();
@@ -488,12 +553,13 @@ export default function BillingPage() {
       : `Complete the ${stageLabel.toLowerCase()} payment.`;
 
   const paymentDescription =
-    currentStage?.trigger_label
+    currentStage
+      ?.trigger_label
       ? `${currentStage.trigger_label}. Complete this payment to keep the order moving through the Fynaro workflow.`
       : "Complete this payment to keep the order moving through the Fynaro workflow.";
 
   // ==========================================================
-  // INITIALIZE INTERNAL PAYMENT
+  // INITIALIZE PAYMENT
   // ==========================================================
 
   const handlePayment =
@@ -510,19 +576,42 @@ export default function BillingPage() {
         return;
       }
 
+      if (
+        currentStage
+          .payment_status ===
+        "paid"
+      ) {
+        setError(
+          "This payment has already been completed."
+        );
+
+        return;
+      }
+
       setPaymentStatus(
         "processing"
       );
 
-      setPaymentMessage(null);
+      setPaymentMessage(
+        null
+      );
+
       setError(null);
 
       try {
+        // ======================================================
+        // PROVIDER
+        // ======================================================
+
         const provider =
           paymentMethod ===
           "card"
             ? "flutterwave"
             : "bank_transfer";
+
+        // ======================================================
+        // INTERNAL PAYMENT + CHECKOUT INITIALIZATION
+        // ======================================================
 
         const response =
           await fetch(
@@ -531,6 +620,9 @@ export default function BillingPage() {
               method: "POST",
 
               headers: {
+                Accept:
+                  "application/json",
+
                 "Content-Type":
                   "application/json",
               },
@@ -538,16 +630,63 @@ export default function BillingPage() {
               credentials:
                 "include",
 
-              body: JSON.stringify({
-                orderId,
-                stageId,
-                provider,
-              }),
+              cache:
+                "no-store",
+
+              body:
+                JSON.stringify({
+                  orderId,
+                  stageId,
+                  provider,
+                }),
             }
           );
 
-        const data: InitializePaymentResponse =
-          await response.json();
+        // ======================================================
+        // SAFE RESPONSE
+        // ======================================================
+
+        const contentType =
+          response.headers.get(
+            "content-type"
+          ) || "";
+
+        let data:
+          InitializePaymentResponse;
+
+        if (
+          contentType.includes(
+            "application/json"
+          )
+        ) {
+          data =
+            (await response.json()) as InitializePaymentResponse;
+        } else {
+          const text =
+            await response.text();
+
+          console.error(
+            "[BILLING] Non-JSON payment response:",
+            {
+              status:
+                response.status,
+
+              text:
+                text.slice(
+                  0,
+                  500
+                ),
+            }
+          );
+
+          throw new Error(
+            "The payment server returned an invalid response."
+          );
+        }
+
+        // ======================================================
+        // API ERROR
+        // ======================================================
 
         if (!response.ok) {
           throw new Error(
@@ -561,18 +700,85 @@ export default function BillingPage() {
           data
         );
 
+        // ======================================================
+        // FLUTTERWAVE CHECKOUT
+        // ======================================================
+
         if (
           paymentMethod ===
           "card"
         ) {
+          const checkoutUrl =
+            data.checkoutUrl;
+
+          if (
+            !checkoutUrl ||
+            typeof checkoutUrl !==
+              "string"
+          ) {
+            console.error(
+              "[BILLING] Missing Flutterwave checkout URL:",
+              data
+            );
+
+            throw new Error(
+              "Flutterwave checkout URL was not returned."
+            );
+          }
+
+          let checkout:
+            URL;
+
+          try {
+            checkout =
+              new URL(
+                checkoutUrl
+              );
+          } catch {
+            throw new Error(
+              "Flutterwave returned an invalid checkout URL."
+            );
+          }
+
+          if (
+            checkout.protocol !==
+            "https:"
+          ) {
+            throw new Error(
+              "The payment checkout URL is not secure."
+            );
+          }
+
           setPaymentMessage(
-            `Payment ${data.payment?.reference ?? ""} is ready. Flutterwave checkout is the next integration step.`
+            "Redirecting to secure payment..."
           );
-        } else {
-          setPaymentMessage(
-            `Payment ${data.payment?.reference ?? ""} is ready for bank-transfer processing.`
+
+          window.location.assign(
+            checkout.toString()
+          );
+
+          return;
+        }
+
+        // ======================================================
+        // BANK TRANSFER
+        // ======================================================
+
+        const paymentReference =
+          data.payment
+            ?.reference;
+
+        if (
+          !paymentReference
+        ) {
+          throw new Error(
+            "Payment reference was not returned."
           );
         }
+
+        setPaymentMessage(
+          `Payment ${paymentReference} is ready for bank-transfer processing.`
+        );
 
         setPaymentStatus(
           "idle"
@@ -649,6 +855,7 @@ export default function BillingPage() {
             <ArrowLeft
               size={12}
             />
+
             Back to orders
           </Link>
         </div>
@@ -670,9 +877,7 @@ export default function BillingPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1500px] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
-      {/* =====================================================
-          BREADCRUMB
-      ===================================================== */}
+      {/* BREADCRUMB */}
 
       <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-black/35">
         <Link
@@ -707,9 +912,7 @@ export default function BillingPage() {
         </span>
       </div>
 
-      {/* =====================================================
-          HEADER
-      ===================================================== */}
+      {/* HEADER */}
 
       <section className="mt-8 border-b border-black/[0.09] pb-9">
         <Link
@@ -719,6 +922,7 @@ export default function BillingPage() {
           <ArrowLeft
             size={13}
           />
+
           Back to order
         </Link>
 
@@ -745,15 +949,11 @@ export default function BillingPage() {
         </div>
       </section>
 
-      {/* =====================================================
-          MAIN GRID
-      ===================================================== */}
+      {/* MAIN GRID */}
 
       <div className="grid gap-8 py-8 xl:grid-cols-[1fr_370px]">
         <main className="space-y-8">
-          {/* =================================================
-              ORDER / PROJECT
-          ================================================= */}
+          {/* ORDER */}
 
           <section className="overflow-hidden rounded-[20px] border border-black/[0.09] bg-white">
             <div className="p-6 sm:p-8">
@@ -812,9 +1012,7 @@ export default function BillingPage() {
             </div>
           </section>
 
-          {/* =================================================
-              AMOUNT DUE
-          ================================================= */}
+          {/* AMOUNT DUE */}
 
           <section className="rounded-[22px] bg-[#111] p-7 text-white sm:p-9">
             <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-end">
@@ -847,8 +1045,7 @@ export default function BillingPage() {
 
               <div className="md:text-right">
                 <p className="text-[9px] uppercase tracking-[0.14em] text-white/30">
-                  Remaining after
-                  payment
+                  Remaining after payment
                 </p>
 
                 <p className="mt-2 text-[16px] font-semibold">
@@ -861,9 +1058,7 @@ export default function BillingPage() {
             </div>
           </section>
 
-          {/* =================================================
-              PAYMENT METHOD
-          ================================================= */}
+          {/* PAYMENT METHOD */}
 
           <section className="rounded-[20px] border border-black/[0.09] bg-white p-6 sm:p-8">
             <p className="text-[9px] font-semibold uppercase tracking-[0.17em] text-black/30">
@@ -919,23 +1114,23 @@ export default function BillingPage() {
                 </p>
 
                 <p className="mt-3 text-[11px] leading-5 text-black/45">
-                  Fynaro bank
-                  details will be
-                  provided from the
-                  verified payment
+                  Fynaro bank details
+                  will be provided from
+                  the verified payment
                   configuration.
-                  Payment details
-                  are not hardcoded
-                  into this page.
+                  Payment details are
+                  not hardcoded into
+                  this page.
                 </p>
 
                 <div className="mt-5 inline-flex items-center gap-2 text-[10px] font-semibold text-black/45">
                   <FileText
                     size={12}
                   />
+
                   Payment reference
-                  generated when
-                  you continue
+                  generated when you
+                  continue
                 </div>
               </div>
             )}
@@ -970,9 +1165,7 @@ export default function BillingPage() {
               )}
           </section>
 
-          {/* =================================================
-              PAYMENT SCHEDULE
-          ================================================= */}
+          {/* PAYMENT SCHEDULE */}
 
           <section className="overflow-hidden rounded-[20px] border border-black/[0.09] bg-white">
             <div className="p-6 sm:p-8">
@@ -1056,9 +1249,7 @@ export default function BillingPage() {
             </div>
           </section>
 
-          {/* =================================================
-              SECURITY
-          ================================================= */}
+          {/* SECURITY */}
 
           <section className="flex items-start gap-4 rounded-[18px] bg-[#e9e9e3] p-6">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/70">
@@ -1069,9 +1260,8 @@ export default function BillingPage() {
 
             <div>
               <p className="text-[12px] font-semibold">
-                Payment records
-                stay attached to
-                your order.
+                Payment records stay
+                attached to your order.
               </p>
 
               <p className="mt-2 max-w-[650px] text-[10px] leading-5 text-black/42">
@@ -1089,9 +1279,7 @@ export default function BillingPage() {
           </section>
         </main>
 
-        {/* ===================================================
-            SIDEBAR
-        =================================================== */}
+        {/* SIDEBAR */}
 
         <aside>
           <div className="space-y-4 xl:sticky xl:top-[100px]">
@@ -1148,7 +1336,8 @@ export default function BillingPage() {
                   disabled={
                     paymentStatus ===
                       "processing" ||
-                    currentStage.payment_status ===
+                    currentStage
+                      .payment_status ===
                       "paid"
                   }
                   onClick={
@@ -1168,7 +1357,8 @@ export default function BillingPage() {
                     {paymentStatus ===
                     "processing"
                       ? "Preparing payment..."
-                      : currentStage.payment_status ===
+                      : currentStage
+                            .payment_status ===
                           "paid"
                         ? "Payment completed"
                         : `Pay ${formatMoney(
@@ -1177,7 +1367,8 @@ export default function BillingPage() {
                           )}`}
                   </span>
 
-                  {currentStage.payment_status ===
+                  {currentStage
+                    .payment_status ===
                   "paid" ? (
                     <Check
                       size={13}
@@ -1193,16 +1384,15 @@ export default function BillingPage() {
                   <LockKeyhole
                     size={11}
                   />
+
                   Secure payment
                 </div>
               </div>
             </div>
 
-            {/* ===============================================
-                ORDER DETAILS
-            =============================================== */}
+            {/* ORDER DETAILS */}
 
-            <div className="rounded-[20px] border border-black/[0.09] bg-[#f2f2ee] p-6">
+            <div className="rounded-[20px] bg-[#f2f2ee] p-6">
               <p className="text-[9px] font-semibold uppercase tracking-[0.17em] text-black/30">
                 Source
               </p>
@@ -1228,6 +1418,7 @@ export default function BillingPage() {
                   className="inline-flex h-9 items-center gap-2 rounded-full bg-white px-4 text-[9px] font-semibold"
                 >
                   View order
+
                   <ArrowRight
                     size={10}
                   />
@@ -1241,6 +1432,7 @@ export default function BillingPage() {
                     className="inline-flex h-9 items-center gap-2 rounded-full border border-black/[0.08] px-4 text-[9px] font-semibold"
                   >
                     Proposal
+
                     <FileText
                       size={10}
                     />
@@ -1249,9 +1441,7 @@ export default function BillingPage() {
               </div>
             </div>
 
-            {/* ===============================================
-                RECEIPT
-            =============================================== */}
+            {/* RECEIPT */}
 
             <div className="rounded-[20px] bg-[#111] p-6 text-white">
               <ReceiptText
