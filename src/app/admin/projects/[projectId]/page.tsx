@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import {
   getAdminProjectById,
   getAdminProjectFiles,
+  getAdminProjectMessages,
 } from "@/lib/admin/project";
 
 import AdminProjectWorkspace from "./AdminProjectWorkspace";
@@ -27,8 +28,12 @@ export default async function AdminProjectPage({
     notFound();
   }
 
-  const files =
-    await getAdminProjectFiles(projectId);
+  // Load project-related resources in parallel.
+  const [files, messages] =
+    await Promise.all([
+      getAdminProjectFiles(projectId),
+      getAdminProjectMessages(projectId),
+    ]);
 
   return (
     <AdminProjectWorkspace
@@ -38,6 +43,7 @@ export default async function AdminProjectPage({
       order={result.order}
       paymentStages={result.paymentStages}
       files={files}
+      messages={messages}
     />
   );
 }

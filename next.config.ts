@@ -1,4 +1,11 @@
-/** @type {import('next').NextConfig} */
+/** @type {import("next").NextConfig} */
+
+const apiBaseUrl = (
+  process.env.API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:3500"
+).replace(/\/$/, "");
+
 const nextConfig = {
   reactStrictMode: true,
 
@@ -10,10 +17,21 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "gbjyhkiagafnzqgwtwof.supabase.co",
-        pathname: "/storage/v1/object/public/**",
+        hostname:
+          "gbjyhkiagafnzqgwtwof.supabase.co",
+        pathname:
+          "/storage/v1/object/public/**",
       },
     ],
+  },
+
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${apiBaseUrl}/api/:path*`,
+      },
+    ];
   },
 };
 

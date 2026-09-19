@@ -1,7 +1,4 @@
-import {
-  NextRequest,
-  NextResponse,
-} from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
@@ -13,34 +10,30 @@ const API_URL =
 
 type RouteContext = {
   params: Promise<{
-    proposalId: string;
+    projectId: string;
   }>;
 };
 
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: RouteContext
 ) {
   try {
-    const { proposalId } = await params;
+    const { projectId } = await params;
 
-    if (!proposalId) {
+    if (!projectId?.trim()) {
       return NextResponse.json(
         {
           success: false,
-          message: "Proposal ID is required.",
-          code: "PROPOSAL_ID_REQUIRED",
+          message: "Project ID is required.",
+          code: "PROJECT_ID_REQUIRED",
         },
-        {
-          status: 400,
-        }
+        { status: 400 }
       );
     }
 
     const cookieStore = await cookies();
-
-    const token =
-      cookieStore.get("fynaro_token")?.value;
+    const token = cookieStore.get("fynaro_token")?.value;
 
     if (!token) {
       return NextResponse.json(
@@ -49,54 +42,38 @@ export async function POST(
           message: "Authentication required.",
           code: "AUTH_REQUIRED",
         },
-        {
-          status: 401,
-        }
+        { status: 401 }
       );
     }
 
-    const backendUrl =
-      API_URL.replace(/\/+$/, "");
+    const body = await request.json();
 
-    const endpoint =
-      `${backendUrl}/api/admin/proposals/${encodeURIComponent(
-        proposalId
-      )}/send`;
-
-    console.log(
-      "[ADMIN SEND PROPOSAL] Sending:",
-      {
-        proposalId,
-        endpoint,
-      }
-    );
+    const backendUrl = API_URL.replace(/\/+$/, "");
 
     const response = await fetch(
-      endpoint,
+      `${backendUrl}/api/client/projects/${encodeURIComponent(
+        projectId
+      )}/messages`,
       {
         method: "POST",
         headers: {
           Accept: "application/json",
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify(body),
         cache: "no-store",
       }
     );
 
-    const rawText =
-      await response.text();
+    const rawText = await response.text();
 
-    let data: any = null;
+    let data: unknown = null;
 
     if (rawText) {
       try {
         data = JSON.parse(rawText);
       } catch {
-        console.error(
-          "[ADMIN SEND PROPOSAL] Invalid backend response:",
-          rawText
-        );
-
         data = {
           success: false,
           message:
@@ -106,42 +83,27 @@ export async function POST(
       }
     }
 
-    console.log(
-      "[ADMIN SEND PROPOSAL] Backend response:",
-      {
-        status: response.status,
-        ok: response.ok,
-        data,
-      }
-    );
-
     if (!response.ok) {
       return NextResponse.json(
         data || {
           success: false,
-          message:
-            "Unable to send proposal.",
-          code: "SEND_PROPOSAL_FAILED",
+          message: "Unable to send message.",
+          code: "SEND_MESSAGE_FAILED",
         },
-        {
-          status: response.status,
-        }
+        { status: response.status }
       );
     }
 
     return NextResponse.json(
       data || {
         success: true,
-        message:
-          "Proposal sent to client.",
+        message: "Message sent.",
       },
-      {
-        status: response.status,
-      }
+      { status: response.status }
     );
   } catch (error) {
     console.error(
-      "[POST /api/admin/proposals/[proposalId]/send]",
+      "[POST /api/client/projects/[projectId]/messages]",
       error
     );
 
@@ -151,13 +113,10 @@ export async function POST(
         message:
           error instanceof Error
             ? error.message
-            : "Unable to send proposal.",
-        code:
-          "SEND_PROPOSAL_PROXY_FAILED",
+            : "Unable to send message.",
+        code: "MESSAGE_PROXY_FAILED",
       },
-      {
-        status: 500,
-      }
+      { status: 500 }
     );
   }
 }

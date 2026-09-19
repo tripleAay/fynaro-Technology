@@ -20,20 +20,26 @@ function getApiUrl() {
 export type ClientProject = {
   id: string;
   reference: string;
+
   client_id: string;
   request_id: string;
   proposal_id: string;
   order_id: string | null;
+
   title: string;
   service: string;
   status: string;
+
   total_investment: number;
   progress: number;
+
   current_phase_id: string | null;
   next_milestone: string | null;
+
   started_at: string | null;
   estimated_delivery: string | null;
   completed_at: string | null;
+
   created_at: string;
   updated_at: string;
 };
@@ -41,12 +47,17 @@ export type ClientProject = {
 export type ProjectPhase = {
   id: string;
   project_id: string;
+
   position: number;
+
   title: string;
   description: string | null;
+
   status: string;
+
   started_at: string | null;
   completed_at: string | null;
+
   created_at: string;
   updated_at: string;
 };
@@ -54,29 +65,45 @@ export type ProjectPhase = {
 export type ProjectActivity = {
   id: string;
   project_id: string;
+
   activity_type: string;
+
   title: string;
   description: string | null;
+
   metadata: Record<string, unknown>;
+
   visible_to_client: boolean;
+
   created_at: string;
 };
 
 export type ProjectOrder = {
   id: string;
   reference: string;
+
   order_type: string;
+
   title: string;
   service: string;
+
   currency: string;
   total: number;
+
   status: string;
+
   payment_status: string;
   fulfillment_status: string;
+
   accepted_at: string | null;
   placed_at: string | null;
+
   created_at: string;
 };
+
+// ======================================================
+// PROJECT FILE
+// ======================================================
 
 export type ProjectFile = {
   id: string;
@@ -97,8 +124,57 @@ export type ProjectFile = {
   created_at: string;
 
   signed_url: string;
-
   signed_url_expires_in: number;
+};
+
+// ======================================================
+// PROJECT MESSAGE
+// ======================================================
+
+export type ProjectMessageSender = {
+  id: string;
+
+  external_auth_id?: string | null;
+
+  email: string;
+
+  full_name?: string | null;
+  company_name?: string | null;
+
+  role?: string | null;
+
+  avatar_url?: string | null;
+};
+
+export type ProjectMessageType =
+  | "message"
+  | "update"
+  | "feedback"
+  | "question";
+
+export type ProjectMessage = {
+  id: string;
+
+  project_id: string;
+
+  sender_profile_id: string | null;
+
+  message: string;
+
+  message_type:
+    | ProjectMessageType
+    | "internal_note";
+
+  visible_to_client: boolean;
+
+  edited_at: string | null;
+
+  created_at: string;
+
+  sender:
+    | ProjectMessageSender
+    | ProjectMessageSender[]
+    | null;
 };
 
 // ======================================================
@@ -107,13 +183,16 @@ export type ProjectFile = {
 
 type ProjectsResponse = {
   success: boolean;
+
   message?: string;
   code?: string;
+
   projects?: ClientProject[];
 };
 
 type ProjectResponse = {
   success: boolean;
+
   message?: string;
   code?: string;
 
@@ -128,6 +207,7 @@ type ProjectResponse = {
 
 type ProjectFilesResponse = {
   success: boolean;
+
   message?: string;
   code?: string;
 
@@ -138,10 +218,22 @@ type ProjectFilesResponse = {
 
 type ProjectFileResponse = {
   success: boolean;
+
   message?: string;
   code?: string;
 
   file?: ProjectFile;
+};
+
+type ProjectMessagesResponse = {
+  success: boolean;
+
+  message?: string;
+  code?: string;
+
+  projectId?: string;
+
+  messages?: ProjectMessage[];
 };
 
 // ======================================================
@@ -155,6 +247,20 @@ async function getAuthToken() {
   return cookieStore.get(
     "fynaro_token"
   )?.value;
+}
+
+// ======================================================
+// SAFE JSON
+// ======================================================
+
+async function readJson<T>(
+  response: Response
+): Promise<T | null> {
+  try {
+    return (await response.json()) as T;
+  } catch {
+    return null;
+  }
 }
 
 // ======================================================
@@ -190,14 +296,12 @@ export async function getClientProjects(): Promise<
       }
     );
 
-  let data:
-    | ProjectsResponse
-    | null = null;
+  const data =
+    await readJson<ProjectsResponse>(
+      response
+    );
 
-  try {
-    data =
-      (await response.json()) as ProjectsResponse;
-  } catch {
+  if (!data) {
     throw new Error(
       "The project server returned an invalid response."
     );
@@ -205,7 +309,7 @@ export async function getClientProjects(): Promise<
 
   if (!response.ok) {
     throw new Error(
-      data?.message ||
+      data.message ||
         "Unable to load projects."
     );
   }
@@ -265,14 +369,12 @@ export async function getClientProjectById(
     return null;
   }
 
-  let data:
-    | ProjectResponse
-    | null = null;
+  const data =
+    await readJson<ProjectResponse>(
+      response
+    );
 
-  try {
-    data =
-      (await response.json()) as ProjectResponse;
-  } catch {
+  if (!data) {
     throw new Error(
       "The project server returned an invalid response."
     );
@@ -280,7 +382,7 @@ export async function getClientProjectById(
 
   if (!response.ok) {
     throw new Error(
-      data?.message ||
+      data.message ||
         "Unable to load project."
     );
   }
@@ -345,14 +447,12 @@ export async function getClientProjectFiles(
       }
     );
 
-  let data:
-    | ProjectFilesResponse
-    | null = null;
+  const data =
+    await readJson<ProjectFilesResponse>(
+      response
+    );
 
-  try {
-    data =
-      (await response.json()) as ProjectFilesResponse;
-  } catch {
+  if (!data) {
     throw new Error(
       "The project file server returned an invalid response."
     );
@@ -360,7 +460,7 @@ export async function getClientProjectFiles(
 
   if (!response.ok) {
     throw new Error(
-      data?.message ||
+      data.message ||
         "Unable to load project files."
     );
   }
@@ -424,14 +524,12 @@ export async function getClientProjectFileById(
     return null;
   }
 
-  let data:
-    | ProjectFileResponse
-    | null = null;
+  const data =
+    await readJson<ProjectFileResponse>(
+      response
+    );
 
-  try {
-    data =
-      (await response.json()) as ProjectFileResponse;
-  } catch {
+  if (!data) {
     throw new Error(
       "The project file server returned an invalid response."
     );
@@ -439,10 +537,155 @@ export async function getClientProjectFileById(
 
   if (!response.ok) {
     throw new Error(
-      data?.message ||
+      data.message ||
         "Unable to load project file."
     );
   }
 
   return data.file || null;
+}
+
+// ======================================================
+// PROJECT MESSAGES
+// ======================================================
+
+export async function getClientProjectMessages(
+  projectId: string
+): Promise<ProjectMessage[]> {
+  const token =
+    await getAuthToken();
+
+  if (!token) {
+    return [];
+  }
+
+  if (!projectId?.trim()) {
+    throw new Error(
+      "Project ID is required."
+    );
+  }
+
+  const response =
+    await fetch(
+      `${getApiUrl()}/api/client/projects/${encodeURIComponent(
+        projectId
+      )}/messages`,
+      {
+        method: "GET",
+
+        headers: {
+          Accept:
+            "application/json",
+
+          Authorization:
+            `Bearer ${token}`,
+        },
+
+        cache:
+          "no-store",
+      }
+    );
+
+  const data =
+    await readJson<ProjectMessagesResponse>(
+      response
+    );
+
+  if (!data) {
+    throw new Error(
+      "The project message server returned an invalid response."
+    );
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      data.message ||
+        "Unable to load project messages."
+    );
+  }
+
+  return data.messages || [];
+}
+
+// ======================================================
+// SEND PROJECT MESSAGE
+// ======================================================
+
+type CreateProjectMessageResponse = {
+  success: boolean;
+
+  message?: string;
+  code?: string;
+
+  projectMessage?: ProjectMessage;
+};
+
+export async function createClientProjectMessage(
+  projectId: string,
+  message: string,
+  messageType: ProjectMessageType = "message"
+): Promise<ProjectMessage> {
+  const token = await getAuthToken();
+
+  if (!token) {
+    throw new Error("Authentication required.");
+  }
+
+  if (!projectId?.trim()) {
+    throw new Error("Project ID is required.");
+  }
+
+  const cleanMessage = message.trim();
+
+  if (!cleanMessage) {
+    throw new Error("Message is required.");
+  }
+
+  const response = await fetch(
+    `${getApiUrl()}/api/client/projects/${encodeURIComponent(
+      projectId
+    )}/messages`,
+    {
+      method: "POST",
+
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+
+      body: JSON.stringify({
+        message: cleanMessage,
+        messageType,
+      }),
+
+      cache: "no-store",
+    }
+  );
+
+  const data =
+    await readJson<CreateProjectMessageResponse>(
+      response
+    );
+
+  if (!data) {
+    throw new Error(
+      "The project message server returned an invalid response."
+    );
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      data.message ||
+        "Unable to send project message."
+    );
+  }
+
+  if (!data.projectMessage) {
+    throw new Error(
+      "The server did not return the created message."
+    );
+  }
+
+  return data.projectMessage;
 }

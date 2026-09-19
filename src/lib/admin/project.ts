@@ -145,6 +145,10 @@ export type AdminProjectPaymentStage = {
   updated_at?: string;
 };
 
+// ======================================================
+// PROJECT FILE
+// ======================================================
+
 export type AdminProjectFile = {
   id: string;
   project_id: string;
@@ -176,6 +180,55 @@ export type AdminProjectFile = {
 
   signed_url: string;
   signed_url_expires_in: number;
+};
+
+// ======================================================
+// PROJECT MESSAGE
+// ======================================================
+
+export type AdminProjectMessageSender = {
+  id: string;
+
+  external_auth_id?: string | null;
+
+  email: string;
+
+  full_name?: string | null;
+  company_name?: string | null;
+
+  role?: string | null;
+
+  avatar_url?: string | null;
+};
+
+export type AdminProjectMessageType =
+  | "message"
+  | "update"
+  | "feedback"
+  | "question"
+  | "internal_note";
+
+export type AdminProjectMessage = {
+  id: string;
+
+  project_id: string;
+
+  sender_profile_id: string | null;
+
+  message: string;
+
+  message_type: AdminProjectMessageType;
+
+  visible_to_client: boolean;
+
+  edited_at: string | null;
+
+  created_at: string;
+
+  sender:
+    | AdminProjectMessageSender
+    | AdminProjectMessageSender[]
+    | null;
 };
 
 // ======================================================
@@ -218,6 +271,17 @@ type AdminProjectFilesResponse = {
   projectId?: string;
 
   files?: AdminProjectFile[];
+};
+
+type AdminProjectMessagesResponse = {
+  success: boolean;
+
+  message?: string;
+  code?: string;
+
+  projectId?: string;
+
+  messages?: AdminProjectMessage[];
 };
 
 // ======================================================
@@ -410,4 +474,52 @@ export async function getAdminProjectFiles(
   }
 
   return data?.files || [];
+}
+
+// ======================================================
+// GET ADMIN PROJECT MESSAGES
+// ======================================================
+
+export async function getAdminProjectMessages(
+  projectId: string
+): Promise<AdminProjectMessage[]> {
+  const token = await getAdminToken();
+
+  if (!token) {
+    throw new Error("Authentication required.");
+  }
+
+  if (!projectId?.trim()) {
+    throw new Error("Project ID is required.");
+  }
+
+  const response = await fetch(
+    `${getApiUrl()}/api/admin/projects/${encodeURIComponent(
+      projectId
+    )}/messages`,
+    {
+      method: "GET",
+
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+
+      cache: "no-store",
+    }
+  );
+
+  const data =
+    await readJson<AdminProjectMessagesResponse>(
+      response
+    );
+
+  if (!response.ok) {
+    throw new Error(
+      data?.message ||
+        "Unable to load project messages."
+    );
+  }
+
+  return data?.messages || [];
 }

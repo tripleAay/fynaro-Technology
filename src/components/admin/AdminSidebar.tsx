@@ -2,6 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 
 import {
   Activity,
@@ -12,6 +17,7 @@ import {
   FileText,
   FolderKanban,
   LayoutDashboard,
+  MessageSquareText,
   Settings,
   Users,
 } from "lucide-react";
@@ -73,6 +79,11 @@ const navigation = [
         href: "/admin/clients",
         icon: Users,
       },
+      {
+        label: "Messages",
+        href: "/admin/messages",
+        icon: MessageSquareText,
+      },
     ],
   },
 
@@ -93,6 +104,26 @@ const navigation = [
   },
 ];
 
+type AdminConversation = {
+  id: string;
+  unread_count?:
+    | number
+    | string
+    | null;
+};
+
+type ConversationsResponse = {
+  success?: boolean;
+
+  conversations?: AdminConversation[];
+
+  data?:
+    | AdminConversation[]
+    | {
+        conversations?: AdminConversation[];
+      };
+};
+
 function isActive(
   pathname: string,
   href: string
@@ -109,12 +140,209 @@ function isActive(
   );
 }
 
+function getConversations(
+  data: ConversationsResponse
+): AdminConversation[] {
+  if (
+    Array.isArray(
+      data.conversations
+    )
+  ) {
+    return data.conversations;
+  }
+
+  if (Array.isArray(data.data)) {
+    return data.data;
+  }
+
+  if (
+    data.data &&
+    !Array.isArray(data.data) &&
+    Array.isArray(
+      data.data.conversations
+    )
+  ) {
+    return data.data.conversations;
+  }
+
+  return [];
+}
+
 export default function AdminSidebar() {
-  const pathname =
-    usePathname();
+  const pathname = usePathname();
+
+  const [
+    unreadMessages,
+    setUnreadMessages,
+  ] = useState(0);
+
+  // ======================================================
+  // LOAD UNREAD MESSAGES
+  // ======================================================
+
+  const loadUnreadMessages =
+    useCallback(async () => {
+      try {
+        const response =
+          await fetch(
+            "/api/admin/conversations",
+            {
+              method: "GET",
+
+              headers: {
+                Accept:
+                  "application/json",
+              },
+
+              cache: "no-store",
+            }
+          );
+
+        if (!response.ok) {
+          return;
+        }
+
+        const text =
+          await response.text();
+
+        if (!text) {
+          return;
+        }
+
+        let data: ConversationsResponse;
+
+        try {
+          data =
+            JSON.parse(text);
+        } catch {
+          return;
+        }
+
+        const conversations =
+          getConversations(data);
+
+        const totalUnread =
+          conversations.reduce(
+            (
+              total,
+              conversation
+            ) => {
+              const unread =
+                Number(
+                  conversation.unread_count ??
+                    0
+                );
+
+              return (
+                total +
+                (Number.isFinite(
+                  unread
+                )
+                  ? unread
+                  : 0)
+              );
+            },
+            0
+          );
+
+        setUnreadMessages(
+          totalUnread
+        );
+      } catch (error) {
+        console.error(
+          "[ADMIN SIDEBAR UNREAD]",
+          error
+        );
+      }
+    }, []);
+
+  // ======================================================
+  // LIVE / POLLING REFRESH
+  // ======================================================
+
+  useEffect(() => {
+    void loadUnreadMessages();
+
+    const interval =
+      window.setInterval(() => {
+        void loadUnreadMessages();
+      }, 15000);
+
+    const handleFocus = () => {
+      void loadUnreadMessages();
+    };
+
+    const handleVisibilityChange =
+      () => {
+        if (
+          document.visibilityState ===
+          "visible"
+        ) {
+          void loadUnreadMessages();
+        }
+      };
+
+    const handleMessagesRead =
+      () => {
+        void loadUnreadMessages();
+      };
+
+    window.addEventListener(
+      "focus",
+      handleFocus
+    );
+
+    window.addEventListener(
+      "fynaro:admin-messages-read",
+      handleMessagesRead
+    );
+
+    document.addEventListener(
+      "visibilitychange",
+      handleVisibilityChange
+    );
+
+    return () => {
+      window.clearInterval(
+        interval
+      );
+
+      window.removeEventListener(
+        "focus",
+        handleFocus
+      );
+
+      window.removeEventListener(
+        "fynaro:admin-messages-read",
+        handleMessagesRead
+      );
+
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange
+      );
+    };
+  }, [loadUnreadMessages]);
+
+  // ======================================================
+  // ROUTE CHANGE REFRESH
+  // ======================================================
+
+  useEffect(() => {
+    void loadUnreadMessages();
+  }, [
+    pathname,
+    loadUnreadMessages,
+  ]);
+
+  // ======================================================
+  // RENDER
+  // ======================================================
 
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-[272px] border-r border-black/5 bg-[#f4f4ef] lg:flex lg:flex-col">
+      {/* LOGO */}
+
       <div className="flex h-[86px] items-center border-b border-black/5 px-7">
         <Link
           href="/admin"
@@ -136,6 +364,8 @@ export default function AdminSidebar() {
         </Link>
       </div>
 
+      {/* NAVIGATION */}
+
       <nav className="flex-1 overflow-y-auto px-4 py-6">
         <div className="space-y-7">
           {navigation.map(
@@ -146,9 +376,7 @@ export default function AdminSidebar() {
                 }
               >
                 <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-black/35">
-                  {
-                    section.label
-                  }
+                  {section.label}
                 </p>
 
                 <div className="space-y-1">
@@ -163,6 +391,10 @@ export default function AdminSidebar() {
                           item.href
                         );
 
+                      const isMessages =
+                        item.href ===
+                        "/admin/messages";
+
                       return (
                         <Link
                           key={
@@ -173,6 +405,7 @@ export default function AdminSidebar() {
                           }
                           className={[
                             "group flex min-h-[44px] items-center justify-between rounded-xl px-3.5 text-sm transition-all duration-200",
+
                             active
                               ? "bg-white font-medium text-[#111111] shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
                               : "text-black/55 hover:bg-white/65 hover:text-[#111111]",
@@ -180,29 +413,56 @@ export default function AdminSidebar() {
                             " "
                           )}
                         >
-                          <div className="flex items-center gap-3">
-                            <Icon
-                              className="h-[18px] w-[18px]"
-                              strokeWidth={
-                                1.8
-                              }
-                            />
+                          <div className="flex min-w-0 items-center gap-3">
+                            <div className="relative shrink-0">
+                              <Icon
+                                className="h-[18px] w-[18px]"
+                                strokeWidth={
+                                  1.8
+                                }
+                              />
+
+                              {isMessages &&
+                                unreadMessages >
+                                  0 && (
+                                  <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-[#d6cc6d] ring-2 ring-[#f4f4ef]" />
+                                )}
+                            </div>
 
                             <span>
-                              {
-                                item.label
-                              }
+                              {item.label}
                             </span>
                           </div>
 
-                          {active && (
-                            <ChevronRight
-                              className="h-4 w-4 text-black/35"
-                              strokeWidth={
-                                1.8
-                              }
-                            />
-                          )}
+                          <div className="flex items-center gap-2">
+                            {isMessages &&
+                              unreadMessages >
+                                0 && (
+                                <span
+                                  className="flex min-w-[22px] items-center justify-center rounded-full bg-[#111111] px-1.5 py-0.5 text-[10px] font-semibold leading-4 text-white"
+                                  title={`${unreadMessages} unread message${
+                                    unreadMessages ===
+                                    1
+                                      ? ""
+                                      : "s"
+                                  }`}
+                                >
+                                  {unreadMessages >
+                                  99
+                                    ? "99+"
+                                    : unreadMessages}
+                                </span>
+                              )}
+
+                            {active && (
+                              <ChevronRight
+                                className="h-4 w-4 text-black/35"
+                                strokeWidth={
+                                  1.8
+                                }
+                              />
+                            )}
+                          </div>
                         </Link>
                       );
                     }
@@ -213,6 +473,8 @@ export default function AdminSidebar() {
           )}
         </div>
       </nav>
+
+      {/* CLIENT DASHBOARD */}
 
       <div className="border-t border-black/5 p-4">
         <Link

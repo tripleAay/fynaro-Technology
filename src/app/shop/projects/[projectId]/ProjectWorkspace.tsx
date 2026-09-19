@@ -5,6 +5,7 @@ import {
   type ElementType,
   useState,
 } from "react";
+import { useRouter } from "next/navigation";
 
 import {
   ArrowLeft,
@@ -16,8 +17,10 @@ import {
   Clock3,
   FileText,
   FolderOpen,
+  Loader2,
   MessageSquareText,
   MoreHorizontal,
+  Send,
   ReceiptText,
   RefreshCw,
   Rocket,
@@ -28,6 +31,9 @@ import type {
   ClientProject,
   ProjectActivity,
   ProjectFile,
+  ProjectMessage,
+  ProjectMessageSender,
+  ProjectMessageType,
   ProjectOrder,
   ProjectPhase,
 } from "@/lib/client/projects";
@@ -44,6 +50,7 @@ type Props = {
   phases: ProjectPhase[];
   activities: ProjectActivity[];
   files: ProjectFile[];
+  messages: ProjectMessage[];
   order: ProjectOrder | null;
 };
 
@@ -243,8 +250,10 @@ export default function ProjectWorkspace({
   phases,
   activities = [],
   files = [],
+  messages = [],
   order,
 }: Props) {
+  const router = useRouter();
   const [
     activeTab,
     setActiveTab,
@@ -334,16 +343,14 @@ export default function ProjectWorkspace({
           </div>
 
           <div className="flex gap-2">
-            <Link
-              href={`/shop/messages?project=${project.id}`}
-              className="inline-flex h-11 items-center gap-2 rounded-full border border-black/[0.1] bg-white px-4 text-[11px] font-semibold"
+            <button
+              type="button"
+              onClick={() => setActiveTab("messages")}
+              className="inline-flex h-11 items-center gap-2 rounded-full border border-black/[0.1] bg-white px-4 text-[11px] font-semibold transition hover:border-black/25"
             >
-              <MessageSquareText
-                size={13}
-              />
-
+              <MessageSquareText size={13} />
               Message Fynaro
-            </Link>
+            </button>
 
             <button
               type="button"
@@ -456,9 +463,9 @@ export default function ProjectWorkspace({
         {activeTab ===
           "messages" && (
           <Messages
-            projectId={
-              project.id
-            }
+            projectId={project.id}
+            messages={messages}
+            onRefresh={() => router.refresh()}
           />
         )}
 
@@ -1336,43 +1343,365 @@ function formatFileSize(
 
 function Messages({
   projectId,
+  messages,
+  onRefresh,
 }: {
   projectId: string;
+  messages: ProjectMessage[];
+  onRefresh: () => void;
 }) {
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] =
+    useState<ProjectMessageType>("message");
+  const [sending, setSending] = useState(false);
+  const [notice, setNotice] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
+  async function sendMessage() {
+    const cleanMessage = message.trim();
+
+    if (!cleanMessage) {
+      setNotice({
+        type: "error",
+        message: "Write a message before sending.",
+      });
+      return;
+    }
+
+    if (cleanMessage.length > 10000) {
+      setNotice({
+        type: "error",
+        message: "Message cannot exceed 10,000 characters.",
+      });
+      return;
+    }
+
+    setSending(true);
+    setNotice(null);
+
+    try {
+      const response = await fetch(
+        `/api/client/projects/${projectId}/messages`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            message: cleanMessage,
+            messageType,
+          }),
+        }
+      );
+
+      const data = await readMessageResponse(response);
+
+      if (!response.ok) {
+        throw new Error(
+          getMessageResponseText(
+            data,
+            "Unable to send project message."
+          )
+        );
+      }
+
+      setMessage("");
+      setMessageType("message");
+      setNotice({
+        type: "success",
+        message: "Message sent to Fynaro.",
+      });
+
+      onRefresh();
+    } catch (error) {
+      setNotice({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to send project message.",
+      });
+    } finally {
+      setSending(false);
+    }
+  }
+
   return (
-    <div className="grid min-h-[520px] place-items-center rounded-[20px] border border-black/[0.09] bg-white px-6 text-center">
-      <div>
-        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-black/[0.05]">
-          <MessageSquareText
-            size={17}
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_330px]">
+      <section className="overflow-hidden rounded-[20px] border border-black/[0.09] bg-white">
+        <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-end sm:justify-between sm:p-8">
+          <div>
+            <p className="text-[9px] font-semibold uppercase tracking-[0.17em] text-black/30">
+              Project Messages
+            </p>
+            <h2 className="mt-3 text-[27px] font-semibold tracking-[-0.04em]">
+              Conversation with Fynaro
+            </h2>
+            <p className="mt-3 max-w-[560px] text-[10px] leading-5 text-black/40">
+              Keep questions, feedback and project decisions attached to this project.
+            </p>
+          </div>
+
+          <span className="w-fit rounded-full bg-black/[0.05] px-3 py-2 text-[9px] font-semibold text-black/45">
+            {messages.length} {messages.length === 1 ? "message" : "messages"}
+          </span>
+        </div>
+
+        <div className="border-t border-black/[0.08]">
+          {messages.length > 0 ? (
+            <div className="max-h-[620px] overflow-y-auto">
+              {messages.map((item) => (
+                <ClientMessageRow key={item.id} item={item} />
+              ))}
+            </div>
+          ) : (
+            <div className="grid min-h-[280px] place-items-center px-6 py-12 text-center">
+              <div>
+                <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-black/[0.05]">
+                  <MessageSquareText size={17} />
+                </span>
+                <h3 className="mt-5 text-[19px] font-semibold tracking-[-0.03em]">
+                  No messages yet
+                </h3>
+                <p className="mx-auto mt-2 max-w-[390px] text-[10px] leading-5 text-black/40">
+                  Start the project conversation below. Replies and updates from Fynaro will appear here.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="border-t border-black/[0.08] bg-black/[0.015] p-6 sm:p-8">
+          {notice && (
+            <div
+              className={[
+                "mb-5 rounded-[12px] border px-4 py-3 text-[10px]",
+                notice.type === "success"
+                  ? "border-emerald-500/20 bg-emerald-500/[0.06] text-emerald-700"
+                  : "border-red-500/20 bg-red-500/[0.06] text-red-700",
+              ].join(" ")}
+            >
+              {notice.message}
+            </div>
+          )}
+
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-black/35">
+                Send as
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {(
+                  [
+                    ["message", "Message"],
+                    ["question", "Question"],
+                    ["feedback", "Feedback"],
+                  ] as const
+                ).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setMessageType(value)}
+                    className={[
+                      "rounded-full px-3 py-2 text-[9px] font-semibold transition",
+                      messageType === value
+                        ? "bg-[#111] text-white"
+                        : "border border-black/[0.09] bg-white text-black/45 hover:border-black/20",
+                    ].join(" ")}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <span className="text-[9px] text-black/30">
+              {message.length.toLocaleString()} / 10,000
+            </span>
+          </div>
+
+          <textarea
+            value={message}
+            onChange={(event) => {
+              setMessage(event.target.value);
+              if (notice) setNotice(null);
+            }}
+            maxLength={10000}
+            rows={6}
+            placeholder="Write a project message..."
+            className="mt-5 w-full resize-y rounded-[16px] border border-black/[0.1] bg-white px-4 py-4 text-[11px] leading-6 outline-none placeholder:text-black/25 focus:border-black/30"
           />
-        </span>
 
-        <h2 className="mt-5 text-[23px] font-semibold tracking-[-0.035em]">
-          Project conversation
-        </h2>
+          <div className="mt-4 flex justify-end">
+            <button
+              type="button"
+              onClick={sendMessage}
+              disabled={sending || !message.trim()}
+              className="inline-flex h-11 items-center gap-2 rounded-full bg-[#111] px-5 text-[10px] font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {sending ? (
+                <Loader2 size={12} className="animate-spin" />
+              ) : (
+                <Send size={12} />
+              )}
+              {sending ? "Sending..." : "Send to Fynaro"}
+            </button>
+          </div>
+        </div>
+      </section>
 
-        <p className="mx-auto mt-3 max-w-[430px] text-[11px] leading-5 text-black/40">
-          Messages related to
-          this project will live
-          here so decisions and
-          project context stay
-          attached to the work.
-        </p>
+      <aside className="space-y-4">
+        <section className="rounded-[20px] bg-[#111] p-6 text-white">
+          <MessageSquareText size={17} className="text-white/40" />
+          <h3 className="mt-5 text-[17px] font-semibold tracking-[-0.025em]">
+            Project communication
+          </h3>
+          <p className="mt-3 text-[10px] leading-5 text-white/40">
+            Use this conversation for questions, feedback, approvals and decisions related to this project.
+          </p>
+        </section>
 
-        <Link
-          href={`/shop/messages?project=${projectId}`}
-          className="mt-6 inline-flex h-11 items-center gap-3 rounded-full bg-[#111] px-5 text-[11px] font-semibold text-white"
-        >
-          Open Conversation
-
-          <ArrowRight
-            size={12}
-          />
-        </Link>
-      </div>
+        <section className="rounded-[20px] bg-[#e9e9e3] p-6">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-black/30">
+            Message Types
+          </p>
+          <div className="mt-5 space-y-4">
+            <MessageTypeInfo title="Message" description="General project communication." />
+            <MessageTypeInfo title="Question" description="Ask Fynaro something about the work." />
+            <MessageTypeInfo title="Feedback" description="Share revisions, comments or approval feedback." />
+          </div>
+        </section>
+      </aside>
     </div>
   );
+}
+
+function ClientMessageRow({ item }: { item: ProjectMessage }) {
+  const sender = getMessageSender(item.sender);
+  const fromFynaro = isFynaroSender(sender);
+  const senderName =
+    sender?.full_name ||
+    sender?.company_name ||
+    (fromFynaro ? "Fynaro" : "Client");
+
+  return (
+    <article className="border-b border-black/[0.07] px-6 py-6 last:border-b-0 sm:px-8">
+      <div className="flex items-start gap-4">
+        <span
+          className={[
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold",
+            fromFynaro
+              ? "bg-[#111] text-white"
+              : "bg-black/[0.05] text-black/55",
+          ].join(" ")}
+        >
+          {getInitials(senderName)}
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-[11px] font-semibold">{senderName}</p>
+
+              {fromFynaro && (
+                <span className="rounded-full bg-[#111] px-2 py-1 text-[7px] font-semibold uppercase tracking-[0.1em] text-white">
+                  Fynaro
+                </span>
+              )}
+
+              <span className="rounded-full bg-black/[0.04] px-2 py-1 text-[7px] font-semibold uppercase tracking-[0.1em] text-black/35">
+                {formatLabel(item.message_type)}
+              </span>
+            </div>
+
+            <span className="shrink-0 text-[9px] text-black/25">
+              {formatActivityDate(item.created_at)}
+            </span>
+          </div>
+
+          <p className="mt-3 whitespace-pre-wrap break-words text-[11px] leading-6 text-black/55">
+            {item.message}
+          </p>
+
+          {item.edited_at && (
+            <p className="mt-2 text-[8px] uppercase tracking-[0.1em] text-black/25">
+              Edited
+            </p>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function MessageTypeInfo({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
+  return (
+    <div>
+      <p className="text-[10px] font-semibold">{title}</p>
+      <p className="mt-1 text-[9px] leading-4 text-black/40">
+        {description}
+      </p>
+    </div>
+  );
+}
+
+function getMessageSender(
+  sender: ProjectMessageSender | ProjectMessageSender[] | null
+): ProjectMessageSender | null {
+  if (Array.isArray(sender)) {
+    return sender[0] || null;
+  }
+  return sender || null;
+}
+
+function isFynaroSender(sender: ProjectMessageSender | null) {
+  const role = sender?.role?.toLowerCase() || "";
+
+  return [
+    "owner",
+    "admin",
+    "project_manager",
+    "finance",
+    "support",
+  ].includes(role);
+}
+
+function getInitials(value: string) {
+  const parts = value.trim().split(/\s+/).filter(Boolean);
+
+  if (parts.length === 0) return "U";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+}
+
+async function readMessageResponse(response: Response): Promise<unknown> {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
+function getMessageResponseText(data: unknown, fallback: string) {
+  if (
+    typeof data === "object" &&
+    data !== null &&
+    "message" in data &&
+    typeof (data as { message?: unknown }).message === "string"
+  ) {
+    return (data as { message: string }).message;
+  }
+
+  return fallback;
 }
 
 // ======================================================
@@ -1824,4 +2153,4 @@ function EmptySection({
       </div>
     </div>
   );
-}
+} 

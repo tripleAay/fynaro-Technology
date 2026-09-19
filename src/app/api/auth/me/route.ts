@@ -3,10 +3,30 @@ import {
   NextResponse,
 } from "next/server";
 
+export const dynamic = "force-dynamic";
+
+// ============================================================
+// GET CURRENT AUTHENTICATED USER
+//
+// Universal session endpoint.
+//
+// Client:
+// /auth/login -> /api/auth/me -> /shop
+//
+// Admin:
+// /auth/login?next=/admin -> /api/auth/me -> /admin
+//
+// Admin authorization is handled separately by /api/admin/me.
+// ============================================================
+
 export async function GET(
   request: NextRequest
 ) {
   try {
+    // ========================================================
+    // SESSION COOKIE
+    // ========================================================
+
     const token =
       request.cookies.get(
         "fynaro_token"
@@ -15,6 +35,7 @@ export async function GET(
     if (!token) {
       return NextResponse.json(
         {
+          authenticated: false,
           message:
             "Not authenticated.",
         },
@@ -24,14 +45,23 @@ export async function GET(
       );
     }
 
+    // ========================================================
+    // BACKEND CONFIG
+    // ========================================================
+
     const apiUrl =
-      process.env.FYNARO_API_URL;
+      process.env.FYNARO_API_URL?.trim();
 
     if (!apiUrl) {
+      console.error(
+        "[FYNARO AUTH ME] FYNARO_API_URL is not configured."
+      );
+
       return NextResponse.json(
         {
+          authenticated: false,
           message:
-            "FYNARO_API_URL is not configured.",
+            "Fynaro API is not configured.",
         },
         {
           status: 500,
@@ -40,92 +70,230 @@ export async function GET(
     }
 
     const backendUrl =
-      apiUrl.replace(
-        /\/$/,
-        ""
-      );
+      apiUrl.replace(/\/+$/, "");
 
-    const response =
-      await fetch(
-        `${backendUrl}/api/admin/me`,
-        {
-          method: "GET",
+    // IMPORTANT:
+    // This is the universal auth endpoint.
+    // Do NOT use /api/admin/me here.
+    const meUrl =
+      `${backendUrl}/api/auth/me`;
 
-          headers: {
-            Accept:
-              "application/json",
+    console.log(
+      "[FYNARO AUTH ME] Verifying session:",
+      meUrl
+    );
 
-            Authorization:
-              `Bearer ${token}`,
-          },
+    // ========================================================
+    // VERIFY JWT WITH EXPRESS
+    // ========================================================
 
-          cache:
-            "no-store",
-        }
-      );
+    let backendResponse: Response;
 
-    const data =
-      await response
-        .json()
-        .catch(() => ({}));
-
-    if (!response.ok) {
-      const result =
-        NextResponse.json(
+    try {
+      backendResponse =
+        await fetch(
+          meUrl,
           {
-            message:
-              data?.message ||
-              "Unable to verify admin access.",
-          },
-          {
-            status:
-              response.status,
+            method: "GET",
+
+            headers: {
+              Accept:
+                "application/json",
+
+              Authorization:
+                `Bearer ${token}`,
+            },
+
+            cache:
+              "no-store",
           }
         );
+    } catch (error) {
+      console.error(
+        "[FYNARO AUTH ME] Backend connection failed:",
+        error
+      );
 
-      if (
-        response.status ===
-        401
-      ) {
-        result.cookies.set(
-          "fynaro_token",
-          "",
+      return NextResponse.json(
+        {
+          authenticated: false,
+          message:
+            "Unable to connect to the Fynaro API.",
+        },
+        {
+          status: 502,
+        }
+      );
+    }
+
+    // ========================================================
+    // READ BACKEND RESPONSE
+    // ========================================================
+
+    const rawText =
+      await backendResponse.text();
+
+    let data: Record<
+      string,
+      any
+    > = {};
+
+    if (rawText) {
+      try {
+        data =
+          JSON.parse(rawText);
+      } catch {
+        console.error(
+          "[FYNARO AUTH ME] Backend returned non-JSON:",
+          rawText.slice(
+            0,
+            500
+          )
+        );
+
+        return NextResponse.json(
           {
-            httpOnly: true,
-            path: "/",
-            maxAge: 0,
+            authenticated: false,
+            message:
+              "Fynaro API returned an invalid response.",
+          },
+          {
+            status: 502,
           }
         );
       }
-
-      return result;
     }
+
+    // ========================================================
+    // SESSION REJECTED
+    // ========================================================
+
+    if (!backendResponse.ok) {
+      console.error(
+        "[FYNARO AUTH ME] Session rejected:",
+        {
+          status:
+            backendResponse.status,
+
+          message:
+            data?.message,
+        }
+      );
+
+      const response =
+        NextResponse.json(
+          {
+            authenticated: false,
+
+            message:
+              data?.message ||
+              "Unable to verify your session.",
+          },
+          {
+            status:
+              backendResponse.status,
+          }
+        );
+
+      // Only remove the browser session when the JWT itself
+      // is invalid/expired.
+      if (
+        backendResponse.status ===
+        401
+      ) {
+        response.cookies.set({
+          name:
+            "fynaro_token",
+
+          value:
+            "",
+
+          httpOnly:
+            true,
+
+          secure:
+            process.env.NODE_ENV ===
+            "production",
+
+          sameSite:
+            "lax",
+
+          path:
+            "/",
+
+          maxAge:
+            0,
+        });
+      }
+
+      return response;
+    }
+
+    // ========================================================
+    // VALIDATE USER
+    // ========================================================
+
+    if (!data?.user) {
+      console.error(
+        "[FYNARO AUTH ME] Backend returned no user:",
+        data
+      );
+
+      return NextResponse.json(
+        {
+          authenticated: false,
+          message:
+            "Fynaro could not verify your account.",
+        },
+        {
+          status: 502,
+        }
+      );
+    }
+
+    // ========================================================
+    // SUCCESS
+    // ========================================================
+
+    console.log(
+      "[FYNARO AUTH ME] Session verified:",
+      {
+        userId:
+          data.user?.id,
+
+        email:
+          data.user?.email,
+      }
+    );
 
     return NextResponse.json(
       {
-        authenticated:
-          data.authenticated,
+        authenticated: true,
 
         user:
           data.user,
-
-        profile:
-          data.profile,
       },
       {
         status: 200,
+
+        headers: {
+          "Cache-Control":
+            "no-store, no-cache, must-revalidate",
+        },
       }
     );
   } catch (error) {
     console.error(
-      "GET /api/admin/me error:",
+      "[FYNARO AUTH ME] Unexpected error:",
       error
     );
 
     return NextResponse.json(
       {
+        authenticated: false,
+
         message:
-          "Unable to verify admin access.",
+          "Unable to verify your session.",
       },
       {
         status: 500,

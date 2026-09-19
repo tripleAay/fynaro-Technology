@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -75,6 +76,13 @@ type SearchItem = {
 type CartItem = {
   id: string | number;
   quantity?: number;
+};
+
+type UnreadCountResponse = {
+  success?: boolean;
+  unread_count?: number | string | null;
+  conversation_id?: string | null;
+  message?: string;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -303,6 +311,11 @@ export default function DashboardTopbar({
   ] = useState(false);
 
   const [
+    unreadMessages,
+    setUnreadMessages,
+  ] = useState(0);
+
+  const [
     search,
     setSearch,
   ] = useState("");
@@ -439,6 +452,157 @@ export default function DashboardTopbar({
       href
     );
   }
+
+  /* ------------------------------------------------------------------------ */
+  /* UNREAD MESSAGES                                                         */
+  /* ------------------------------------------------------------------------ */
+
+  const loadUnreadMessages =
+    useCallback(async () => {
+      try {
+        const response =
+          await fetch(
+            "/api/client/conversations/unread-count",
+            {
+              method: "GET",
+              headers: {
+                Accept:
+                  "application/json",
+              },
+              cache: "no-store",
+            }
+          );
+
+        if (!response.ok) {
+          if (
+            response.status ===
+            401
+          ) {
+            setUnreadMessages(0);
+          }
+
+          return;
+        }
+
+        const text =
+          await response.text();
+
+        if (!text) {
+          setUnreadMessages(0);
+          return;
+        }
+
+        let data: UnreadCountResponse;
+
+        try {
+          data = JSON.parse(text);
+        } catch {
+          return;
+        }
+
+        const count =
+          Number(
+            data.unread_count ??
+              0
+          );
+
+        setUnreadMessages(
+          Number.isFinite(count)
+            ? Math.max(0, count)
+            : 0
+        );
+      } catch (error) {
+        console.error(
+          "[CLIENT HEADER UNREAD]",
+          error
+        );
+      }
+    }, []);
+
+  useEffect(() => {
+    void loadUnreadMessages();
+
+    const interval =
+      window.setInterval(
+        () => {
+          void loadUnreadMessages();
+        },
+        15000
+      );
+
+    const handleFocus = () => {
+      void loadUnreadMessages();
+    };
+
+    const handleVisibilityChange =
+      () => {
+        if (
+          document.visibilityState ===
+          "visible"
+        ) {
+          void loadUnreadMessages();
+        }
+      };
+
+    const handleMessagesRead =
+      () => {
+        setUnreadMessages(0);
+        void loadUnreadMessages();
+      };
+
+    window.addEventListener(
+      "focus",
+      handleFocus
+    );
+
+    window.addEventListener(
+      "fynaro:client-messages-read",
+      handleMessagesRead
+    );
+
+    document.addEventListener(
+      "visibilitychange",
+      handleVisibilityChange
+    );
+
+    return () => {
+      window.clearInterval(
+        interval
+      );
+
+      window.removeEventListener(
+        "focus",
+        handleFocus
+      );
+
+      window.removeEventListener(
+        "fynaro:client-messages-read",
+        handleMessagesRead
+      );
+
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange
+      );
+    };
+  }, [loadUnreadMessages]);
+
+  useEffect(() => {
+    if (
+      pathname ===
+        "/shop/messages" ||
+      pathname.startsWith(
+        "/shop/messages/"
+      )
+    ) {
+      setUnreadMessages(0);
+    }
+
+    void loadUnreadMessages();
+  }, [
+    pathname,
+    loadUnreadMessages,
+  ]);
 
   /* ------------------------------------------------------------------------ */
   /* NOTIFICATION FLAG                                                       */
@@ -780,8 +944,28 @@ export default function DashboardTopbar({
 
             <Link
               href="/shop/messages"
-              aria-label="Messages"
-              className="hidden h-10 w-10 items-center justify-center rounded-xl text-black/50 transition hover:bg-black/[0.04] hover:text-black sm:flex"
+              aria-label={
+                unreadMessages > 0
+                  ? `${unreadMessages} unread message${
+                      unreadMessages === 1
+                        ? ""
+                        : "s"
+                    }`
+                  : "Messages"
+              }
+              title={
+                unreadMessages > 0
+                  ? `${unreadMessages} unread message${
+                      unreadMessages === 1
+                        ? ""
+                        : "s"
+                    }`
+                  : "Messages"
+              }
+              onClick={() => {
+                setUnreadMessages(0);
+              }}
+              className="relative hidden h-10 w-10 items-center justify-center rounded-xl text-black/50 transition hover:bg-black/[0.04] hover:text-black sm:flex"
             >
               <MessageSquare
                 size={17}
@@ -789,6 +973,20 @@ export default function DashboardTopbar({
                   1.7
                 }
               />
+
+              {unreadMessages >
+                0 && (
+                <>
+                  <span className="absolute right-[8px] top-[7px] h-[6px] w-[6px] rounded-full bg-[#d6cc6d] ring-2 ring-[#f5f5f2]" />
+
+                  <span className="absolute -right-[5px] -top-[5px] flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#111] px-1 text-[8px] font-semibold text-white ring-2 ring-[#f5f5f2]">
+                    {unreadMessages >
+                    99
+                      ? "99+"
+                      : unreadMessages}
+                  </span>
+                </>
+              )}
             </Link>
 
             {/* NOTIFICATIONS */}

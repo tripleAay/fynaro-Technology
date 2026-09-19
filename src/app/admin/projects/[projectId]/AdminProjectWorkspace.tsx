@@ -24,8 +24,11 @@ import {
   ExternalLink,
   FileText,
   Loader2,
+  LockKeyhole,
+  MessageSquare,
   ReceiptText,
   Save,
+  Send,
   Trash2,
   Upload,
   UserRound,
@@ -37,6 +40,8 @@ import type {
   AdminProjectActivity,
   AdminProjectClient,
   AdminProjectFile,
+  AdminProjectMessage,
+  AdminProjectMessageType,
   AdminProjectOrder,
   AdminProjectPaymentStage,
   AdminProjectPhase,
@@ -58,6 +63,8 @@ type Props = {
   paymentStages: AdminProjectPaymentStage[];
 
   files: AdminProjectFile[];
+
+  messages: AdminProjectMessage[];
 };
 
 type ProjectForm = {
@@ -258,6 +265,7 @@ export default function AdminProjectWorkspace({
   order,
   paymentStages,
   files,
+  messages,
 }: Props) {
   const router = useRouter();
 
@@ -286,6 +294,13 @@ export default function AdminProjectWorkspace({
   const [visibleToClient, setVisibleToClient] = useState(true);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
+
+  const [messageText, setMessageText] = useState("");
+  const [messageType, setMessageType] =
+    useState<AdminProjectMessageType>("message");
+  const [messageVisibleToClient, setMessageVisibleToClient] = useState(true);
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null);
 
   const [
     form,
@@ -618,6 +633,102 @@ export default function AdminProjectWorkspace({
       });
     } finally {
       setDeletingFileId(null);
+    }
+  }
+
+  // ====================================================
+  // PROJECT MESSAGES
+  // ====================================================
+
+  async function sendProjectMessage() {
+    setNotice(null);
+
+    const cleanMessage = messageText.trim();
+
+    if (!cleanMessage) {
+      setNotice({ type: "error", message: "Write a message before sending." });
+      return;
+    }
+
+    setSendingMessage(true);
+
+    try {
+      const response = await fetch(
+        `/api/admin/projects/${project.id}/messages`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: cleanMessage,
+            messageType,
+            visibleToClient:
+              messageType === "internal_note" ? false : messageVisibleToClient,
+          }),
+        }
+      );
+
+      const data = await readJsonResponse(response);
+
+      if (!response.ok) {
+        throw new Error(
+          getResponseMessage(data, "Unable to send project message.")
+        );
+      }
+
+      setMessageText("");
+      setMessageType("message");
+      setMessageVisibleToClient(true);
+      setNotice({ type: "success", message: "Project message sent." });
+      router.refresh();
+    } catch (error) {
+      setNotice({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to send project message.",
+      });
+    } finally {
+      setSendingMessage(false);
+    }
+  }
+
+  async function deleteProjectMessage(message: AdminProjectMessage) {
+    const confirmed = window.confirm(
+      "Delete this project message? This action cannot be undone."
+    );
+
+    if (!confirmed) return;
+
+    setNotice(null);
+    setDeletingMessageId(message.id);
+
+    try {
+      const response = await fetch(
+        `/api/admin/projects/${project.id}/messages/${message.id}`,
+        { method: "DELETE" }
+      );
+
+      const data = await readJsonResponse(response);
+
+      if (!response.ok) {
+        throw new Error(
+          getResponseMessage(data, "Unable to delete project message.")
+        );
+      }
+
+      setNotice({ type: "success", message: "Project message deleted." });
+      router.refresh();
+    } catch (error) {
+      setNotice({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to delete project message.",
+      });
+    } finally {
+      setDeletingMessageId(null);
     }
   }
 
@@ -1269,6 +1380,135 @@ export default function AdminProjectWorkspace({
             )}
           </section>
 
+          {/* PROJECT MESSAGES */}
+
+          <section className="overflow-hidden rounded-[22px] border border-black/[0.08] bg-white">
+            <div className="p-6 sm:p-8">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.17em] text-black/30">
+                    Communication
+                  </p>
+
+                  <h2 className="mt-3 text-[26px] font-semibold tracking-[-0.04em]">
+                    Project messages
+                  </h2>
+
+                  <p className="mt-2 max-w-xl text-[10px] leading-5 text-black/40">
+                    Send client updates, answer questions, collect feedback or keep private internal notes for the Fynaro team.
+                  </p>
+                </div>
+
+                <span className="w-fit rounded-full bg-black/[0.05] px-3 py-1.5 text-[9px] font-semibold text-black/40">
+                  {messages.length} {messages.length === 1 ? "message" : "messages"}
+                </span>
+              </div>
+
+              <div className="mt-8 rounded-[18px] border border-black/[0.08] bg-black/[0.02] p-5 sm:p-6">
+                <div className="grid gap-5 md:grid-cols-[190px_minmax(0,1fr)]">
+                  <Field label="Message Type">
+                    <select
+                      value={messageType}
+                      onChange={(event) => {
+                        const nextType = event.target.value as AdminProjectMessageType;
+                        setMessageType(nextType);
+                        if (nextType === "internal_note") {
+                          setMessageVisibleToClient(false);
+                        }
+                      }}
+                      className="h-12 w-full rounded-[12px] border border-black/[0.1] bg-white px-4 text-[11px] outline-none focus:border-black/30"
+                    >
+                      <option value="message">Message</option>
+                      <option value="update">Project Update</option>
+                      <option value="question">Question</option>
+                      <option value="feedback">Feedback</option>
+                      <option value="internal_note">Internal Note</option>
+                    </select>
+                  </Field>
+
+                  <Field label="Message">
+                    <textarea
+                      value={messageText}
+                      onChange={(event) => setMessageText(event.target.value)}
+                      maxLength={10000}
+                      rows={5}
+                      placeholder={
+                        messageType === "internal_note"
+                          ? "Write a private note for the Fynaro team..."
+                          : "Write a project message for the client..."
+                      }
+                      className="min-h-[120px] w-full resize-y rounded-[12px] border border-black/[0.1] bg-white px-4 py-3 text-[11px] leading-5 outline-none placeholder:text-black/25 focus:border-black/30"
+                    />
+                  </Field>
+                </div>
+
+                <div className="mt-5 flex flex-col gap-4 border-t border-black/[0.07] pt-5 sm:flex-row sm:items-center sm:justify-between">
+                  <label
+                    className={[
+                      "flex items-center gap-3",
+                      messageType === "internal_note"
+                        ? "cursor-not-allowed opacity-45"
+                        : "cursor-pointer",
+                    ].join(" ")}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={messageVisibleToClient}
+                      disabled={messageType === "internal_note"}
+                      onChange={(event) => setMessageVisibleToClient(event.target.checked)}
+                      className="h-4 w-4 accent-black"
+                    />
+                    <span>
+                      <span className="block text-[10px] font-semibold">
+                        Visible to client
+                      </span>
+                      <span className="mt-0.5 block text-[9px] text-black/35">
+                        {messageType === "internal_note"
+                          ? "Internal notes are always private."
+                          : "Show this message in the client project workspace."}
+                      </span>
+                    </span>
+                  </label>
+
+                  <button
+                    type="button"
+                    onClick={sendProjectMessage}
+                    disabled={!messageText.trim() || sendingMessage}
+                    className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[#111] px-5 text-[10px] font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {sendingMessage ? (
+                      <Loader2 size={12} className="animate-spin" />
+                    ) : (
+                      <Send size={12} />
+                    )}
+                    {sendingMessage ? "Sending..." : "Send Message"}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {messages.length > 0 ? (
+              <div className="border-t border-black/[0.08]">
+                {messages.map((message, index) => (
+                  <ProjectMessageRow
+                    key={message.id}
+                    message={message}
+                    last={index === messages.length - 1}
+                    deleting={deletingMessageId === message.id}
+                    onDelete={() => deleteProjectMessage(message)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="border-t border-black/[0.08] px-6 pb-8 sm:px-8">
+                <EmptyState
+                  title="No project messages"
+                  description="Start the project conversation by sending the first update or message."
+                />
+              </div>
+            )}
+          </section>
+
           {/* PROJECT ACTIVITY */}
 
           <section className="rounded-[22px] border border-black/[0.08] bg-white p-6 sm:p-8">
@@ -1878,6 +2118,118 @@ function PhaseControl({
               Completed
             </option>
           </select>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ======================================================
+// PROJECT MESSAGE ROW
+// ======================================================
+
+function ProjectMessageRow({
+  message,
+  last,
+  deleting,
+  onDelete,
+}: {
+  message: AdminProjectMessage;
+  last: boolean;
+  deleting: boolean;
+  onDelete: () => void;
+}) {
+  const sender = Array.isArray(message.sender)
+    ? message.sender[0] || null
+    : message.sender;
+
+  const senderName =
+    sender?.full_name ||
+    sender?.company_name ||
+    sender?.email ||
+    "Fynaro Team";
+
+  const internal =
+    message.message_type === "internal_note" || !message.visible_to_client;
+
+  return (
+    <div
+      className={[
+        "px-6 py-6 sm:px-8",
+        !last ? "border-b border-black/[0.07]" : "",
+        internal ? "bg-amber-500/[0.025]" : "",
+      ].join(" ")}
+    >
+      <div className="flex gap-4">
+        <span
+          className={[
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
+            internal
+              ? "bg-amber-500/10 text-amber-700"
+              : "bg-black/[0.05] text-black/45",
+          ].join(" ")}
+        >
+          {internal ? <LockKeyhole size={13} /> : <MessageSquare size={13} />}
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-[11px] font-semibold">{senderName}</p>
+
+                <span className="rounded-full bg-black/[0.04] px-2 py-1 text-[7px] font-semibold uppercase tracking-[0.1em] text-black/35">
+                  {formatLabel(message.message_type)}
+                </span>
+
+                {message.visible_to_client ? (
+                  <span className="rounded-full bg-emerald-500/[0.08] px-2 py-1 text-[7px] font-semibold uppercase tracking-[0.1em] text-emerald-700">
+                    Client Visible
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-amber-500/10 px-2 py-1 text-[7px] font-semibold uppercase tracking-[0.1em] text-amber-700">
+                    Internal
+                  </span>
+                )}
+              </div>
+
+              {sender?.role && (
+                <p className="mt-1 text-[8px] uppercase tracking-[0.1em] text-black/25">
+                  {formatLabel(sender.role)}
+                </p>
+              )}
+            </div>
+
+            <div className="flex shrink-0 items-center gap-3">
+              <p className="text-[8px] uppercase tracking-[0.08em] text-black/25">
+                {formatActivityDate(message.created_at)}
+              </p>
+
+              <button
+                type="button"
+                onClick={onDelete}
+                disabled={deleting}
+                aria-label="Delete message"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-red-500/15 text-red-600 transition hover:bg-red-500/[0.05] disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {deleting ? (
+                  <Loader2 size={10} className="animate-spin" />
+                ) : (
+                  <Trash2 size={10} />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <p className="mt-4 whitespace-pre-wrap break-words text-[11px] leading-6 text-black/60">
+            {message.message}
+          </p>
+
+          {message.edited_at && (
+            <p className="mt-3 text-[8px] uppercase tracking-[0.08em] text-black/25">
+              Edited {formatActivityDate(message.edited_at)}
+            </p>
+          )}
         </div>
       </div>
     </div>
