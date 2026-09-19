@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { ComponentType } from "react";
 
 import {
   ArrowDown,
@@ -27,7 +29,7 @@ type Capability = {
   priceLabel: string;
   price?: string;
   items: string[];
-  icon: React.ComponentType<{
+  icon: ComponentType<{
     size?: number;
     strokeWidth?: number;
   }>;
@@ -37,7 +39,7 @@ type BuildAction = {
   label: string;
   description: string;
   href: string;
-  icon: React.ComponentType<{
+  icon: ComponentType<{
     size?: number;
     strokeWidth?: number;
   }>;
@@ -162,28 +164,190 @@ const startingPoints = [
   },
 ];
 
-const activity = [
-  {
-    title: "Payment received",
-    meta: "Growth Website",
-    value: "₦375,000",
-    date: "Sep 07",
-  },
-  {
-    title: "Homepage design approved",
-    meta: "NewJersey.ng",
-    value: "Design milestone",
-    date: "Sep 06",
-  },
-  {
-    title: "Proposal ready",
-    meta: "Brand Identity",
-    value: "Review proposal",
-    date: "Sep 04",
-  },
-];
+type UnknownRecord = Record<string, unknown>;
+
+type ClientProject = UnknownRecord & {
+  id: string;
+  title?: string;
+  name?: string;
+  service?: string;
+  description?: string;
+  status?: string;
+  progress?: number;
+  progress_percentage?: number;
+  current_phase?: string;
+  next_milestone?: string;
+  updated_at?: string;
+  created_at?: string;
+};
+
+type ActivityItem = {
+  id: string;
+  title: string;
+  meta: string;
+  value: string;
+  href: string;
+  createdAt: string;
+};
+
+const ACTIVE_STATUSES = new Set([
+  "active",
+  "in_progress",
+  "in progress",
+  "started",
+  "development",
+  "design",
+  "review",
+]);
+
+function asRecord(value: unknown): UnknownRecord {
+  return value && typeof value === "object" ? (value as UnknownRecord) : {};
+}
+
+function asArray(payload: unknown, keys: string[]): UnknownRecord[] {
+  if (Array.isArray(payload)) return payload.map(asRecord);
+  const object = asRecord(payload);
+  for (const key of keys) {
+    if (Array.isArray(object[key])) return (object[key] as unknown[]).map(asRecord);
+  }
+  return [];
+}
+
+function text(value: unknown, fallback = "") {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
+function numberValue(value: unknown, fallback = 0) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function titleCase(value: string) {
+  return value.replace(/[_-]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function shortDate(value: string) {
+  if (!value) return "Now";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? "Now"
+    : new Intl.DateTimeFormat("en", { month: "short", day: "2-digit" }).format(date);
+}
+
+async function getJson(url: string, signal: AbortSignal) {
+  const response = await fetch(url, {
+    credentials: "include",
+    cache: "no-store",
+    signal,
+    headers: { Accept: "application/json" },
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(text(asRecord(body).message, `Request failed (${response.status})`));
+  return body;
+}
 
 export default function FynaroDashboardPage() {
+  const [profile, setProfile] = useState<UnknownRecord>({});
+  const [projects, setProjects] = useState<ClientProject[]>([]);
+  const [proposals, setProposals] = useState<UnknownRecord[]>([]);
+  const [payments, setPayments] = useState<UnknownRecord[]>([]);
+  const [notifications, setNotifications] = useState<UnknownRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const loadDashboard = useCallback(async (signal: AbortSignal) => {
+    setError("");
+    const endpoints = [
+      ["profile", "/api/client/profile"],
+      ["projects", "/api/client/projects"],
+      ["proposals", "/api/client/proposals"],
+      ["payments", "/api/client/payments"],
+      ["notifications", "/api/client/notifications"],
+    ] as const;
+
+    const results = await Promise.allSettled(
+      endpoints.map(([, url]) => getJson(url, signal))
+    );
+    if (signal.aborted) return;
+
+    const data = new Map<string, unknown>();
+    results.forEach((result, index) => {
+      if (result.status === "fulfilled") data.set(endpoints[index][0], result.value);
+    });
+
+    const profilePayload = asRecord(data.get("profile"));
+    setProfile(asRecord(profilePayload.profile ?? profilePayload.user ?? profilePayload.data));
+    setProjects(asArray(data.get("projects"), ["projects", "data"]) as ClientProject[]);
+    setProposals(asArray(data.get("proposals"), ["proposals", "data"]));
+    setPayments(asArray(data.get("payments"), ["payments", "data"]));
+    setNotifications(asArray(data.get("notifications"), ["notifications", "data"]));
+
+    if (results.every((result) => result.status === "rejected")) {
+      setError("Fynaro could not load your workspace. Please refresh the page.");
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    loadDashboard(controller.signal);
+    return () => controller.abort();
+  }, [loadDashboard]);
+
+  const activeProjects = useMemo(
+    () => projects.filter((project) => ACTIVE_STATUSES.has(text(project.status).toLowerCase())),
+    [projects]
+  );
+  const featuredProject = activeProjects[0] ?? projects[0] ?? null;
+  const firstName = text(profile.full_name ?? profile.name, "Fynaro Client").split(" ")[0];
+
+  const attentionItems = useMemo(() => {
+    const items: ActivityItem[] = [];
+    proposals
+      .filter((proposal) => ["sent", "ready", "pending", "awaiting_client"].includes(text(proposal.status).toLowerCase()))
+      .slice(0, 2)
+      .forEach((proposal, index) => items.push({
+        id: text(proposal.id, `proposal-${index}`),
+        title: "Proposal ready",
+        meta: text(proposal.title ?? proposal.service, "Review your Fynaro proposal"),
+        value: "Review proposal",
+        href: "/shop/proposals",
+        createdAt: text(proposal.updated_at ?? proposal.created_at),
+      }));
+    return items;
+  }, [proposals]);
+
+  const activity = useMemo(() => {
+    const items: ActivityItem[] = [];
+    payments.forEach((payment, index) => items.push({
+      id: `payment-${text(payment.id, String(index))}`,
+      title: text(payment.status).toLowerCase() === "paid" ? "Payment received" : "Payment updated",
+      meta: text(payment.title ?? payment.reference ?? payment.order_reference, "Fynaro payment"),
+      value: payment.amount == null
+        ? titleCase(text(payment.status, "Updated"))
+        : new Intl.NumberFormat("en-NG", { style: "currency", currency: text(payment.currency, "NGN"), maximumFractionDigits: 0 }).format(numberValue(payment.amount)),
+      href: "/shop/payments",
+      createdAt: text(payment.updated_at ?? payment.created_at),
+    }));
+    notifications.forEach((notification, index) => items.push({
+      id: `notification-${text(notification.id, String(index))}`,
+      title: text(notification.title, "Workspace update"),
+      meta: text(notification.message, "A new Fynaro update is available"),
+      value: notification.read_at ? "Viewed" : "New",
+      href: text(notification.href, "/notifications"),
+      createdAt: text(notification.created_at),
+    }));
+    projects.forEach((project) => items.push({
+      id: `project-${project.id}`,
+      title: "Project updated",
+      meta: text(project.title ?? project.name, "Fynaro project"),
+      value: titleCase(text(project.status, "Updated")),
+      href: `/shop/projects/${project.id}`,
+      createdAt: text(project.updated_at ?? project.created_at),
+    }));
+    return items.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()).slice(0, 6);
+  }, [notifications, payments, projects]);
+
   return (
     <div className="mx-auto w-full max-w-[1460px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
       {/* ------------------------------------------------------------------ */}
@@ -204,7 +368,7 @@ export default function FynaroDashboardPage() {
         <div className="mt-6 grid gap-8 xl:grid-cols-[1fr_410px] xl:items-end">
           <div>
             <p className="mb-3 text-[12px] font-medium text-black/45">
-              Welcome back, Shina.
+              Welcome back, {firstName}.
             </p>
 
             <h1 className="max-w-[760px] text-[42px] font-semibold leading-[0.94] tracking-[-0.055em] sm:text-[54px] lg:text-[66px]">
@@ -288,7 +452,7 @@ export default function FynaroDashboardPage() {
       <section className="py-9 lg:py-11">
         <SectionHeader
           eyebrow="Your workspace"
-          title="2 active projects"
+          title={loading ? "Loading projects…" : `${activeProjects.length} active ${activeProjects.length === 1 ? "project" : "projects"}`}
           href="/shop/projects"
           linkLabel="View all"
         />
@@ -296,26 +460,26 @@ export default function FynaroDashboardPage() {
         <div className="mt-5 grid gap-3 xl:grid-cols-[1.55fr_.75fr]">
           {/* MAIN PROJECT */}
 
-          <Link
-            href="/shop/projects/newjersey"
+          {featuredProject ? <Link
+            href={`/shop/projects/${featuredProject.id}`}
             className="group rounded-[18px] border border-black/[0.09] bg-white p-5 transition hover:border-black/20 sm:p-6"
           >
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-black/30">
-                  Web Development
+                  {text(featuredProject.service ?? featuredProject.project_type, "Fynaro Project")}
                 </p>
 
                 <h3 className="mt-2 text-[21px] font-semibold tracking-[-0.035em]">
-                  NewJersey.ng Website
+                  {text(featuredProject.title ?? featuredProject.name, "Untitled project")}
                 </h3>
 
                 <p className="mt-1 text-[11px] text-black/40">
-                  Digital platform development
+                  {text(featuredProject.description, "Your Fynaro project workspace")}
                 </p>
               </div>
 
-              <StatusBadge label="Active" />
+              <StatusBadge label={titleCase(text(featuredProject.status, "Active"))} />
             </div>
 
             <div className="mt-8">
@@ -325,12 +489,12 @@ export default function FynaroDashboardPage() {
                 </span>
 
                 <span className="font-semibold">
-                  68%
+                  {Math.min(100, Math.max(0, numberValue(featuredProject.progress_percentage ?? featuredProject.progress)))}%
                 </span>
               </div>
 
               <div className="mt-2.5 h-[4px] overflow-hidden rounded-full bg-black/[0.07]">
-                <div className="h-full w-[68%] rounded-full bg-[#111]" />
+                <div className="h-full rounded-full bg-[#111]" style={{ width: `${Math.min(100, Math.max(0, numberValue(featuredProject.progress_percentage ?? featuredProject.progress)))}%` }} />
               </div>
             </div>
 
@@ -341,7 +505,7 @@ export default function FynaroDashboardPage() {
                 </p>
 
                 <p className="mt-1.5 text-[12px] font-medium">
-                  Frontend implementation
+                  {text(featuredProject.next_milestone ?? featuredProject.current_phase, "Project team will post the next milestone")}
                 </p>
               </div>
 
@@ -354,7 +518,12 @@ export default function FynaroDashboardPage() {
                 />
               </span>
             </div>
-          </Link>
+          </Link> : <div className="rounded-[18px] border border-dashed border-black/15 bg-white p-6">
+            <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-black/30">Your projects</p>
+            <h3 className="mt-3 text-[21px] font-semibold tracking-[-0.035em]">No active project yet</h3>
+            <p className="mt-2 max-w-md text-[11px] leading-5 text-black/45">When Fynaro starts your project, its live status, progress and next milestone will appear here.</p>
+            <Link href="/shop/requests/new" className="mt-6 inline-flex h-9 items-center gap-2 rounded-full bg-[#111] px-4 text-[10px] font-semibold text-white">Start a project <ArrowRight size={12} /></Link>
+          </div>}
 
           {/* NEEDS ATTENTION */}
 
@@ -366,27 +535,17 @@ export default function FynaroDashboardPage() {
                 </p>
 
                 <h3 className="mt-3 text-[21px] font-semibold tracking-[-0.035em]">
-                  2 pending items
+                  {attentionItems.length} pending {attentionItems.length === 1 ? "item" : "items"}
                 </h3>
               </div>
 
               <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-white text-[10px] font-bold text-black">
-                2
+                {attentionItems.length}
               </span>
             </div>
 
             <div className="mt-6 divide-y divide-white/10 border-y border-white/10">
-              <AttentionItem
-                href="/shop/proposals"
-                title="Proposal ready"
-                meta="Brand Identity"
-              />
-
-              <AttentionItem
-                href="/shop/projects"
-                title="Design approval"
-                meta="NewJersey.ng"
-              />
+              {attentionItems.length ? attentionItems.map((item) => <AttentionItem key={item.id} href={item.href} title={item.title} meta={item.meta} />) : <p className="py-5 text-[11px] text-white/45">You&apos;re all caught up.</p>}
             </div>
 
             <Link
@@ -553,13 +712,16 @@ export default function FynaroDashboardPage() {
         />
 
         <div className="mt-5">
+          {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-[11px] text-red-700">{error}</p>}
+          {!loading && !activity.length && !error && <p className="border-t border-black/[0.07] py-5 text-[11px] text-black/40">Your latest Fynaro updates will appear here.</p>}
           {activity.map((item) => (
-            <div
-              key={`${item.title}-${item.date}`}
+            <Link
+              href={item.href}
+              key={item.id}
               className="grid gap-1.5 border-t border-black/[0.07] py-4 sm:grid-cols-[75px_1.2fr_1fr_auto] sm:items-center"
             >
               <span className="text-[9px] font-medium uppercase tracking-[0.1em] text-black/30">
-                {item.date}
+                {shortDate(item.createdAt)}
               </span>
 
               <p className="text-[12px] font-semibold">
@@ -573,7 +735,7 @@ export default function FynaroDashboardPage() {
               <p className="text-[11px] font-medium text-black/55">
                 {item.value}
               </p>
-            </div>
+            </Link>
           ))}
         </div>
       </section>
