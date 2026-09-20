@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ElementType } from "react";
 
 import {
   ArrowRight,
@@ -109,7 +110,7 @@ function statusClasses(
     normalized ===
     "completed"
   ) {
-    return "border-emerald-500/20 bg-emerald-500/10 text-emerald-300";
+    return "border-emerald-700/15 bg-emerald-50 text-emerald-700";
   }
 
   if (
@@ -118,14 +119,14 @@ function statusClasses(
     normalized ===
       "in_progress"
   ) {
-    return "border-[#d6cc6d]/30 bg-[#d6cc6d]/10 text-[#e8df8d]";
+    return "border-[#b5aa49]/25 bg-[#f5f1cf] text-[#665f1f]";
   }
 
   if (
     normalized ===
     "waiting_on_client"
   ) {
-    return "border-blue-500/20 bg-blue-500/10 text-blue-300";
+    return "border-blue-700/15 bg-blue-50 text-blue-700";
   }
 
   if (
@@ -134,10 +135,10 @@ function statusClasses(
     normalized ===
       "on_hold"
   ) {
-    return "border-orange-500/20 bg-orange-500/10 text-orange-300";
+    return "border-orange-700/15 bg-orange-50 text-orange-700";
   }
 
-  return "border-white/10 bg-white/[0.05] text-white/60";
+  return "border-black/10 bg-black/[0.035] text-black/55";
 }
 
 // ======================================================
@@ -166,7 +167,7 @@ function ProjectCard({
   return (
     <Link
       href={`/admin/projects/${project.id}`}
-      className="group block rounded-[26px] border border-white/[0.08] bg-[#111111] p-5 transition duration-300 hover:border-[#d6cc6d]/30 hover:bg-[#141414] sm:p-6"
+      className="group block rounded-[22px] border border-black/[0.08] bg-white p-5 shadow-[0_1px_0_rgba(0,0,0,0.03)] transition duration-300 hover:-translate-y-0.5 hover:border-black/20 hover:shadow-[0_16px_40px_rgba(0,0,0,0.06)] sm:p-6"
     >
       <div className="flex h-full flex-col">
         {/* TOP */}
@@ -174,7 +175,7 @@ function ProjectCard({
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.17em] text-[#d6cc6d]">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.17em] text-[#8a812d]">
                 {
                   project.reference
                 }
@@ -191,18 +192,18 @@ function ProjectCard({
               </span>
             </div>
 
-            <h2 className="mt-4 truncate text-[20px] font-semibold tracking-[-0.035em] text-white">
+            <h2 className="mt-4 truncate text-[20px] font-semibold tracking-[-0.035em] text-[#111]">
               {project.title}
             </h2>
 
-            <p className="mt-1 text-[11px] text-white/35">
+            <p className="mt-1 text-[11px] text-black/40">
               {formatLabel(
                 project.service
               )}
             </p>
           </div>
 
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/[0.08] text-white/35 transition group-hover:border-[#d6cc6d]/30 group-hover:text-[#d6cc6d]">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/[0.09] text-black/35 transition group-hover:border-black group-hover:bg-black group-hover:text-white">
             <ArrowRight
               size={14}
             />
@@ -211,18 +212,18 @@ function ProjectCard({
 
         {/* CLIENT */}
 
-        <div className="mt-6 rounded-2xl border border-white/[0.06] bg-black/20 p-4">
-          <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-white/25">
+        <div className="mt-6 rounded-2xl border border-black/[0.06] bg-[#f5f5f0] p-4">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-black/30">
             Client
           </p>
 
-          <p className="mt-2 truncate text-[12px] font-semibold text-white/80">
+          <p className="mt-2 truncate text-[12px] font-semibold text-black/80">
             {client?.full_name ||
               client?.company_name ||
               "Fynaro Client"}
           </p>
 
-          <p className="mt-1 truncate text-[10px] text-white/30">
+          <p className="mt-1 truncate text-[10px] text-black/35">
             {client?.email ||
               "No email available"}
           </p>
@@ -232,18 +233,18 @@ function ProjectCard({
 
         <div className="mt-6">
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-[10px] text-white/35">
+            <span className="text-[10px] text-black/40">
               Progress
             </span>
 
-            <span className="text-[10px] font-semibold text-white">
+            <span className="text-[10px] font-semibold text-black">
               {progress}%
             </span>
           </div>
 
-          <div className="h-[3px] overflow-hidden rounded-full bg-white/[0.08]">
+          <div className="h-[4px] overflow-hidden rounded-full bg-black/[0.07]">
             <div
-              className="h-full bg-[#d6cc6d]"
+              className="h-full rounded-full bg-[#111]"
               style={{
                 width:
                   `${progress}%`,
@@ -255,8 +256,8 @@ function ProjectCard({
         {/* INFO */}
 
         <div className="mt-6 grid grid-cols-2 gap-3">
-          <div className="rounded-xl border border-white/[0.05] bg-white/[0.025] p-3.5">
-            <div className="flex items-center gap-2 text-white/25">
+          <div className="rounded-xl border border-black/[0.06] bg-black/[0.018] p-3.5">
+            <div className="flex items-center gap-2 text-black/30">
               <WalletCards
                 size={12}
               />
@@ -266,15 +267,15 @@ function ProjectCard({
               </span>
             </div>
 
-            <p className="mt-2 text-[11px] font-semibold text-white/75">
+            <p className="mt-2 text-[11px] font-semibold text-black/70">
               {formatMoney(
                 project.total_investment
               )}
             </p>
           </div>
 
-          <div className="rounded-xl border border-white/[0.05] bg-white/[0.025] p-3.5">
-            <div className="flex items-center gap-2 text-white/25">
+          <div className="rounded-xl border border-black/[0.06] bg-black/[0.018] p-3.5">
+            <div className="flex items-center gap-2 text-black/30">
               <CalendarDays
                 size={12}
               />
@@ -284,7 +285,7 @@ function ProjectCard({
               </span>
             </div>
 
-            <p className="mt-2 text-[11px] font-semibold text-white/75">
+            <p className="mt-2 text-[11px] font-semibold text-black/70">
               {formatDate(
                 project.estimated_delivery
               )}
@@ -294,12 +295,12 @@ function ProjectCard({
 
         {/* MILESTONE */}
 
-        <div className="mt-5 border-t border-white/[0.06] pt-4">
-          <p className="text-[8px] font-semibold uppercase tracking-[0.14em] text-white/25">
+        <div className="mt-5 border-t border-black/[0.07] pt-4">
+          <p className="text-[8px] font-semibold uppercase tracking-[0.14em] text-black/30">
             Next milestone
           </p>
 
-          <p className="mt-1.5 line-clamp-2 text-[10px] leading-5 text-white/45">
+          <p className="mt-1.5 line-clamp-2 text-[10px] leading-5 text-black/45">
             {project.next_milestone ||
               "No milestone set."}
           </p>
@@ -388,11 +389,11 @@ export default async function AdminProjectsPage({
     ).length;
 
   return (
-    <main className="min-h-screen bg-[#090909] text-white">
+    <main className="min-h-screen bg-[#f3f3ee] text-[#111]">
       <div className="mx-auto w-full max-w-[1600px] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
         {/* HEADER */}
 
-        <section className="border-b border-white/[0.07] pb-8">
+        <section className="overflow-hidden rounded-[28px] bg-[#0d0d0d] px-6 py-7 text-white sm:px-8 sm:py-9">
           <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
             <div>
               <div className="flex items-center gap-2 text-[#d6cc6d]">
@@ -409,7 +410,7 @@ export default async function AdminProjectsPage({
                 Projects
               </h1>
 
-              <p className="mt-3 max-w-2xl text-[11px] leading-6 text-white/35">
+              <p className="mt-3 max-w-2xl text-[11px] leading-6 text-white/45">
                 Manage client
                 delivery, phases,
                 milestones and
@@ -420,7 +421,7 @@ export default async function AdminProjectsPage({
 
             <Link
               href="/admin/requests"
-              className="inline-flex h-11 w-fit items-center gap-2 rounded-full border border-white/[0.1] px-5 text-[10px] font-semibold text-white/65 transition hover:border-white/20 hover:text-white"
+              className="inline-flex h-11 w-fit items-center gap-2 rounded-full border border-[#d6cc6d]/35 bg-[#d6cc6d] px-5 text-[10px] font-semibold text-black transition hover:bg-[#e4db7d]"
             >
               <BriefcaseBusiness
                 size={13}
@@ -467,12 +468,12 @@ export default async function AdminProjectsPage({
 
         {/* FILTERS */}
 
-        <section className="mt-7 rounded-[22px] border border-white/[0.07] bg-[#101010] p-4">
+        <section className="mt-7 rounded-[20px] border border-black/[0.08] bg-white p-4 shadow-[0_1px_0_rgba(0,0,0,0.03)]">
           <form className="flex flex-col gap-3 lg:flex-row">
             <div className="relative flex-1">
               <Search
                 size={14}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-white/25"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-black/30"
               />
 
               <input
@@ -482,7 +483,7 @@ export default async function AdminProjectsPage({
                   search
                 }
                 placeholder="Search project reference, title or service..."
-                className="h-11 w-full rounded-xl border border-white/[0.07] bg-black/30 pl-11 pr-4 text-[11px] text-white outline-none placeholder:text-white/20 focus:border-[#d6cc6d]/35"
+                className="h-11 w-full rounded-xl border border-black/[0.09] bg-[#f7f7f3] pl-11 pr-4 text-[11px] text-black outline-none placeholder:text-black/25 focus:border-black/30"
               />
             </div>
 
@@ -491,7 +492,7 @@ export default async function AdminProjectsPage({
               defaultValue={
                 status
               }
-              className="h-11 rounded-xl border border-white/[0.07] bg-[#111] px-4 text-[11px] text-white/70 outline-none focus:border-[#d6cc6d]/35"
+              className="h-11 rounded-xl border border-black/[0.09] bg-[#f7f7f3] px-4 text-[11px] text-black/70 outline-none focus:border-black/30"
             >
               <option value="all">
                 All statuses
@@ -520,7 +521,7 @@ export default async function AdminProjectsPage({
 
             <button
               type="submit"
-              className="h-11 rounded-xl bg-[#d6cc6d] px-6 text-[10px] font-semibold text-black transition hover:opacity-90"
+              className="h-11 rounded-xl bg-[#111] px-6 text-[10px] font-semibold text-white transition hover:bg-black/80"
             >
               Apply
             </button>
@@ -530,7 +531,7 @@ export default async function AdminProjectsPage({
                 "all") && (
               <Link
                 href="/admin/projects"
-                className="flex h-11 items-center justify-center rounded-xl border border-white/[0.08] px-5 text-[10px] font-semibold text-white/45 transition hover:text-white"
+                className="flex h-11 items-center justify-center rounded-xl border border-black/[0.09] px-5 text-[10px] font-semibold text-black/45 transition hover:border-black/20 hover:text-black"
               >
                 Clear
               </Link>
@@ -554,7 +555,7 @@ export default async function AdminProjectsPage({
             </div>
           ) : projects.length ===
             0 ? (
-            <div className="grid min-h-[430px] place-items-center rounded-[28px] border border-white/[0.07] bg-[#101010] px-6 py-14 text-center">
+            <div className="grid min-h-[430px] place-items-center rounded-[24px] border border-black/[0.08] bg-white px-6 py-14 text-center">
               <div className="max-w-md">
                 <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-[#d6cc6d]/20 bg-[#d6cc6d]/[0.06] text-[#d6cc6d]">
                   <FolderKanban
@@ -570,7 +571,7 @@ export default async function AdminProjectsPage({
                     : "No projects yet"}
                 </h2>
 
-                <p className="mx-auto mt-3 max-w-sm text-[10px] leading-5 text-white/35">
+                <p className="mx-auto mt-3 max-w-sm text-[10px] leading-5 text-black/40">
                   {search ||
                   status !==
                     "all"
@@ -583,7 +584,7 @@ export default async function AdminProjectsPage({
                   "all" ? (
                   <Link
                     href="/admin/projects"
-                    className="mt-6 inline-flex h-10 items-center rounded-full border border-white/[0.1] px-5 text-[10px] font-semibold text-white/60"
+                    className="mt-6 inline-flex h-10 items-center rounded-full border border-black/[0.1] px-5 text-[10px] font-semibold text-black/60"
                   >
                     Clear filters
                   </Link>
@@ -604,7 +605,7 @@ export default async function AdminProjectsPage({
           ) : (
             <>
               <div className="mb-4 flex items-center justify-between">
-                <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-white/25">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-black/30">
                   {projects.length}{" "}
                   {projects.length ===
                   1
@@ -644,15 +645,15 @@ function StatCard({
   label,
   value,
 }: {
-  icon: React.ElementType;
+  icon: ElementType;
   label: string;
   value: number;
 }) {
   return (
-    <div className="rounded-[20px] border border-white/[0.07] bg-[#101010] p-5">
+    <div className="rounded-[20px] border border-black/[0.08] bg-white p-5 shadow-[0_1px_0_rgba(0,0,0,0.03)]">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-white/25">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-black/30">
             {label}
           </p>
 
@@ -661,7 +662,7 @@ function StatCard({
           </p>
         </div>
 
-        <span className="flex h-9 w-9 items-center justify-center rounded-full border border-white/[0.07] bg-white/[0.025] text-white/30">
+        <span className="flex h-9 w-9 items-center justify-center rounded-full border border-black/[0.07] bg-[#f5f5f0] text-black/35">
           <Icon
             size={14}
           />

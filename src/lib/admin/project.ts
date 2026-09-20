@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 
 // ======================================================
-// API
+// API CONFIGURATION
 // ======================================================
 
 function getApiUrl() {
@@ -145,9 +145,16 @@ export type AdminProjectPaymentStage = {
   updated_at?: string;
 };
 
-// ======================================================
-// PROJECT FILE
-// ======================================================
+export type AdminProjectFileCategory =
+  | "document"
+  | "design"
+  | "deliverable"
+  | "asset"
+  | "report"
+  | "contract"
+  | "invoice"
+  | "client_upload"
+  | "other";
 
 export type AdminProjectFile = {
   id: string;
@@ -161,16 +168,7 @@ export type AdminProjectFile = {
   mime_type: string | null;
   file_size: number | null;
 
-  category:
-    | "document"
-    | "design"
-    | "deliverable"
-    | "asset"
-    | "report"
-    | "contract"
-    | "invoice"
-    | "client_upload"
-    | "other";
+  category: AdminProjectFileCategory;
 
   description: string | null;
 
@@ -181,10 +179,6 @@ export type AdminProjectFile = {
   signed_url: string;
   signed_url_expires_in: number;
 };
-
-// ======================================================
-// PROJECT MESSAGE
-// ======================================================
 
 export type AdminProjectMessageSender = {
   id: string;
@@ -231,25 +225,32 @@ export type AdminProjectMessage = {
     | null;
 };
 
+export type AdminProjectUpdatePayload = {
+  status?: string;
+  progress?: number;
+  nextMilestone?: string | null;
+  estimatedDelivery?: string | null;
+};
+
+export type AdminProjectPhaseUpdatePayload = {
+  status: "upcoming" | "in_progress" | "completed";
+};
+
 // ======================================================
 // API RESPONSE TYPES
 // ======================================================
 
-type AdminProjectsResponse = {
+type BaseResponse = {
   success: boolean;
-
   message?: string;
   code?: string;
+};
 
+type AdminProjectsResponse = BaseResponse & {
   projects?: AdminProject[];
 };
 
-type AdminProjectResponse = {
-  success: boolean;
-
-  message?: string;
-  code?: string;
-
+type AdminProjectResponse = BaseResponse & {
   project?: AdminProject;
 
   phases?: AdminProjectPhase[];
@@ -262,26 +263,22 @@ type AdminProjectResponse = {
   payment_stages?: AdminProjectPaymentStage[];
 };
 
-type AdminProjectFilesResponse = {
-  success: boolean;
-
-  message?: string;
-  code?: string;
-
+type AdminProjectFilesResponse = BaseResponse & {
   projectId?: string;
-
   files?: AdminProjectFile[];
 };
 
-type AdminProjectMessagesResponse = {
-  success: boolean;
-
-  message?: string;
-  code?: string;
-
+type AdminProjectMessagesResponse = BaseResponse & {
   projectId?: string;
-
   messages?: AdminProjectMessage[];
+};
+
+type AdminProjectUpdateResponse = BaseResponse & {
+  project?: AdminProject;
+};
+
+type AdminProjectPhaseUpdateResponse = BaseResponse & {
+  phase?: AdminProjectPhase;
 };
 
 // ======================================================
@@ -289,9 +286,25 @@ type AdminProjectMessagesResponse = {
 // ======================================================
 
 async function getAdminToken() {
-  const cookieStore = await cookies();
+  const cookieStore =
+    await cookies();
 
-  return cookieStore.get("fynaro_token")?.value;
+  return cookieStore.get(
+    "fynaro_token"
+  )?.value;
+}
+
+async function requireAdminToken() {
+  const token =
+    await getAdminToken();
+
+  if (!token) {
+    throw new Error(
+      "Authentication required."
+    );
+  }
+
+  return token;
 }
 
 // ======================================================
@@ -302,42 +315,114 @@ async function readJson<T>(
   response: Response
 ): Promise<T | null> {
   try {
-    return (await response.json()) as T;
+    return (
+      await response.json()
+    ) as T;
   } catch {
     return null;
   }
 }
 
 // ======================================================
+// REQUEST HELPER
+// ======================================================
+
+async function adminApiRequest<T>(
+  path: string,
+  options: RequestInit = {}
+): Promise<{
+  response: Response;
+  data: T | null;
+}> {
+  const token =
+    await requireAdminToken();
+
+  const headers =
+    new Headers(
+      options.headers
+    );
+
+  headers.set(
+    "Accept",
+    "application/json"
+  );
+
+  headers.set(
+    "Authorization",
+    `Bearer ${token}`
+  );
+
+  const response =
+    await fetch(
+      `${getApiUrl()}${path}`,
+      {
+        ...options,
+
+        headers,
+
+        cache:
+          options.cache ||
+          "no-store",
+      }
+    );
+
+  const data =
+    await readJson<T>(
+      response
+    );
+
+  return {
+    response,
+    data,
+  };
+}
+
+// ======================================================
 // LIST ADMIN PROJECTS
 // ======================================================
 
-export async function getAdminProjects(): Promise<
-  AdminProject[]
-> {
-  const token = await getAdminToken();
+export async function getAdminProjects(
+  filters: {
+    status?: string;
+    search?: string;
+  } = {}
+): Promise<AdminProject[]> {
+  const query =
+    new URLSearchParams();
 
-  if (!token) {
-    throw new Error("Authentication required.");
+  if (
+    filters.status &&
+    filters.status !== "all"
+  ) {
+    query.set(
+      "status",
+      filters.status
+    );
   }
 
-  const response = await fetch(
-    `${getApiUrl()}/api/admin/projects`,
-    {
-      method: "GET",
+  if (
+    filters.search?.trim()
+  ) {
+    query.set(
+      "search",
+      filters.search.trim()
+    );
+  }
 
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+  const suffix =
+    query.toString()
+      ? `?${query.toString()}`
+      : "";
 
-      cache: "no-store",
-    }
-  );
-
-  const data =
-    await readJson<AdminProjectsResponse>(
-      response
+  const {
+    response,
+    data,
+  } =
+    await adminApiRequest<AdminProjectsResponse>(
+      `/api/admin/projects${suffix}`,
+      {
+        method: "GET",
+      }
     );
 
   if (!response.ok) {
@@ -363,40 +448,33 @@ export async function getAdminProjectById(
   order: AdminProjectOrder | null;
   paymentStages: AdminProjectPaymentStage[];
 } | null> {
-  const token = await getAdminToken();
+  const safeProjectId =
+    projectId?.trim();
 
-  if (!token) {
-    throw new Error("Authentication required.");
+  if (!safeProjectId) {
+    throw new Error(
+      "Project ID is required."
+    );
   }
 
-  if (!projectId?.trim()) {
-    throw new Error("Project ID is required.");
-  }
+  const {
+    response,
+    data,
+  } =
+    await adminApiRequest<AdminProjectResponse>(
+      `/api/admin/projects/${encodeURIComponent(
+        safeProjectId
+      )}`,
+      {
+        method: "GET",
+      }
+    );
 
-  const response = await fetch(
-    `${getApiUrl()}/api/admin/projects/${encodeURIComponent(
-      projectId
-    )}`,
-    {
-      method: "GET",
-
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-
-      cache: "no-store",
-    }
-  );
-
-  if (response.status === 404) {
+  if (
+    response.status === 404
+  ) {
     return null;
   }
-
-  const data =
-    await readJson<AdminProjectResponse>(
-      response
-    );
 
   if (!response.ok) {
     throw new Error(
@@ -410,7 +488,8 @@ export async function getAdminProjectById(
   }
 
   return {
-    project: data.project,
+    project:
+      data.project,
 
     phases:
       data.phases || [],
@@ -429,41 +508,172 @@ export async function getAdminProjectById(
 }
 
 // ======================================================
+// UPDATE ADMIN PROJECT
+// ======================================================
+
+export async function updateAdminProject(
+  projectId: string,
+  payload: AdminProjectUpdatePayload
+): Promise<AdminProject> {
+  const safeProjectId =
+    projectId?.trim();
+
+  if (!safeProjectId) {
+    throw new Error(
+      "Project ID is required."
+    );
+  }
+
+  const progress =
+    payload.progress;
+
+  if (
+    progress !== undefined &&
+    (
+      !Number.isFinite(progress) ||
+      progress < 0 ||
+      progress > 100
+    )
+  ) {
+    throw new Error(
+      "Progress must be between 0 and 100."
+    );
+  }
+
+  const {
+    response,
+    data,
+  } =
+    await adminApiRequest<AdminProjectUpdateResponse>(
+      `/api/admin/projects/${encodeURIComponent(
+        safeProjectId
+      )}`,
+      {
+        method: "PATCH",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+
+        body:
+          JSON.stringify(
+            payload
+          ),
+      }
+    );
+
+  if (!response.ok) {
+    throw new Error(
+      data?.message ||
+        "Unable to update project."
+    );
+  }
+
+  if (!data?.project) {
+    throw new Error(
+      "The updated project was not returned."
+    );
+  }
+
+  return data.project;
+}
+
+// ======================================================
+// UPDATE ADMIN PROJECT PHASE
+// ======================================================
+
+export async function updateAdminProjectPhase(
+  projectId: string,
+  phaseId: string,
+  payload: AdminProjectPhaseUpdatePayload
+): Promise<AdminProjectPhase> {
+  const safeProjectId =
+    projectId?.trim();
+
+  const safePhaseId =
+    phaseId?.trim();
+
+  if (!safeProjectId) {
+    throw new Error(
+      "Project ID is required."
+    );
+  }
+
+  if (!safePhaseId) {
+    throw new Error(
+      "Project phase ID is required."
+    );
+  }
+
+  const {
+    response,
+    data,
+  } =
+    await adminApiRequest<AdminProjectPhaseUpdateResponse>(
+      `/api/admin/projects/${encodeURIComponent(
+        safeProjectId
+      )}/phases/${encodeURIComponent(
+        safePhaseId
+      )}`,
+      {
+        method: "PATCH",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+
+        body:
+          JSON.stringify(
+            payload
+          ),
+      }
+    );
+
+  if (!response.ok) {
+    throw new Error(
+      data?.message ||
+        "Unable to update project phase."
+    );
+  }
+
+  if (!data?.phase) {
+    throw new Error(
+      "The updated project phase was not returned."
+    );
+  }
+
+  return data.phase;
+}
+
+// ======================================================
 // GET ADMIN PROJECT FILES
 // ======================================================
 
 export async function getAdminProjectFiles(
   projectId: string
 ): Promise<AdminProjectFile[]> {
-  const token = await getAdminToken();
+  const safeProjectId =
+    projectId?.trim();
 
-  if (!token) {
-    throw new Error("Authentication required.");
+  if (!safeProjectId) {
+    throw new Error(
+      "Project ID is required."
+    );
   }
 
-  if (!projectId?.trim()) {
-    throw new Error("Project ID is required.");
-  }
-
-  const response = await fetch(
-    `${getApiUrl()}/api/admin/projects/${encodeURIComponent(
-      projectId
-    )}/files`,
-    {
-      method: "GET",
-
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-
-      cache: "no-store",
-    }
-  );
-
-  const data =
-    await readJson<AdminProjectFilesResponse>(
-      response
+  const {
+    response,
+    data,
+  } =
+    await adminApiRequest<AdminProjectFilesResponse>(
+      `/api/admin/projects/${encodeURIComponent(
+        safeProjectId
+      )}/files`,
+      {
+        method: "GET",
+      }
     );
 
   if (!response.ok) {
@@ -483,35 +693,26 @@ export async function getAdminProjectFiles(
 export async function getAdminProjectMessages(
   projectId: string
 ): Promise<AdminProjectMessage[]> {
-  const token = await getAdminToken();
+  const safeProjectId =
+    projectId?.trim();
 
-  if (!token) {
-    throw new Error("Authentication required.");
+  if (!safeProjectId) {
+    throw new Error(
+      "Project ID is required."
+    );
   }
 
-  if (!projectId?.trim()) {
-    throw new Error("Project ID is required.");
-  }
-
-  const response = await fetch(
-    `${getApiUrl()}/api/admin/projects/${encodeURIComponent(
-      projectId
-    )}/messages`,
-    {
-      method: "GET",
-
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-
-      cache: "no-store",
-    }
-  );
-
-  const data =
-    await readJson<AdminProjectMessagesResponse>(
-      response
+  const {
+    response,
+    data,
+  } =
+    await adminApiRequest<AdminProjectMessagesResponse>(
+      `/api/admin/projects/${encodeURIComponent(
+        safeProjectId
+      )}/messages`,
+      {
+        method: "GET",
+      }
     );
 
   if (!response.ok) {
