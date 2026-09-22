@@ -4,6 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 
 import {
+  AnimatePresence,
+  motion,
+} from "framer-motion";
+
+import {
   useCallback,
   useEffect,
   useMemo,
@@ -295,6 +300,9 @@ export default function DashboardTopbar({
       null
     );
 
+  const notificationAutoOpened =
+    useRef(false);
+
   const [
     profileOpen,
     setProfileOpen,
@@ -364,37 +372,6 @@ export default function DashboardTopbar({
       );
     }, [
       items,
-    ]);
-
-  /* ------------------------------------------------------------------------ */
-  /* CURRENT PAGE                                                             */
-  /* ------------------------------------------------------------------------ */
-
-  const currentPage =
-    useMemo(() => {
-      if (
-        pathname ===
-        "/shop"
-      ) {
-        return "Dashboard";
-      }
-
-      const match =
-        searchItems.find(
-          (item) =>
-            item.href !==
-              "/shop" &&
-            pathname.startsWith(
-              item.href
-            )
-        );
-
-      return (
-        match?.title ??
-        "Workspace"
-      );
-    }, [
-      pathname,
     ]);
 
   /* ------------------------------------------------------------------------ */
@@ -612,13 +589,45 @@ export default function DashboardTopbar({
     if (
       projectRequestJustCreated
     ) {
+      notificationAutoOpened.current =
+        true;
+
       setHasUnreadNotifications(
+        true
+      );
+
+      setNotificationsOpen(
         true
       );
     }
   }, [
     projectRequestJustCreated,
   ]);
+
+  useEffect(() => {
+    if (
+      !hasUnreadNotifications ||
+      notificationAutoOpened.current
+    ) {
+      return;
+    }
+
+    notificationAutoOpened.current =
+      true;
+
+    const timer =
+      window.setTimeout(
+        () => {
+          setProfileOpen(false);
+          setNotificationsOpen(true);
+        },
+        450
+      );
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [hasUnreadNotifications]);
 
   /* ------------------------------------------------------------------------ */
   /* OUTSIDE CLICK                                                            */
@@ -710,8 +719,27 @@ export default function DashboardTopbar({
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-black/[0.08] bg-[#f5f5f2]/92 backdrop-blur-xl">
-        <div className="flex h-[72px] items-center gap-4 px-4 sm:px-6 lg:px-8">
+      <motion.header
+        initial={{
+          opacity: 0,
+          y: -10,
+        }}
+        animate={{
+          opacity: 1,
+          y: 0,
+        }}
+        transition={{
+          duration: 0.4,
+          ease: [
+            0.16,
+            1,
+            0.3,
+            1,
+          ],
+        }}
+        className="sticky top-0 z-40 border-b border-black/[0.07] bg-[#f7f7f4]/90 shadow-[0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-2xl"
+      >
+        <div className="flex h-[68px] items-center gap-3 px-4 sm:px-6 lg:px-8">
           {/* -------------------------------------------------------------- */}
           {/* MOBILE MENU                                                    */}
           {/* -------------------------------------------------------------- */}
@@ -737,26 +765,12 @@ export default function DashboardTopbar({
           )}
 
           {/* -------------------------------------------------------------- */}
-          {/* PAGE CONTEXT                                                   */}
-          {/* -------------------------------------------------------------- */}
-
-          <div className="hidden min-w-[130px] xl:block">
-            <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-black/30">
-              Fynaro Workspace
-            </p>
-
-            <p className="mt-1 truncate text-[11px] font-semibold text-black/65">
-              {currentPage}
-            </p>
-          </div>
-
-          {/* -------------------------------------------------------------- */}
           {/* SEARCH                                                         */}
           {/* -------------------------------------------------------------- */}
 
           <div
             ref={searchRef}
-            className="relative hidden max-w-[390px] flex-1 md:block"
+            className="relative hidden max-w-[520px] flex-1 md:block"
           >
             <div
               className={[
@@ -1013,16 +1027,40 @@ export default function DashboardTopbar({
                 " "
               )}
             >
-              <Bell
-                size={17}
-                strokeWidth={
-                  1.7
+              <motion.span
+                className="flex"
+                animate={
+                  hasUnreadNotifications
+                    ? {
+                        rotate: [
+                          0,
+                          -10,
+                          9,
+                          -6,
+                          4,
+                          0,
+                        ],
+                      }
+                    : {
+                        rotate: 0,
+                      }
                 }
-              />
+                transition={{
+                  duration: 0.65,
+                  ease: "easeOut",
+                }}
+              >
+                <Bell
+                  size={17}
+                  strokeWidth={
+                    1.7
+                  }
+                />
+              </motion.span>
 
               {hasUnreadNotifications &&
                 !notificationsOpen && (
-                  <span className="absolute right-[9px] top-[8px] h-[5px] w-[5px] rounded-full bg-[#a68b39] ring-2 ring-[#f5f5f2]" />
+                  <span className="absolute right-[8px] top-[7px] h-[7px] w-[7px] animate-pulse rounded-full bg-[#b89d42] shadow-[0_0_0_4px_rgba(184,157,66,0.12)] ring-2 ring-[#f5f5f2]" />
                 )}
             </button>
 
@@ -1137,8 +1175,28 @@ export default function DashboardTopbar({
 
               {/* PROFILE MENU */}
 
-              {profileOpen && (
-                <div
+              <AnimatePresence>
+                {profileOpen && (
+                <motion.div
+                  initial={{
+                    opacity: 0,
+                    y: -8,
+                    scale: 0.97,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                  }}
+                  exit={{
+                    opacity: 0,
+                    y: -6,
+                    scale: 0.98,
+                  }}
+                  transition={{
+                    duration: 0.18,
+                    ease: "easeOut",
+                  }}
                   role="menu"
                   className="absolute right-0 top-[calc(100%+9px)] w-[285px] overflow-hidden rounded-[17px] border border-black/[0.08] bg-white shadow-[0_22px_65px_rgba(0,0,0,0.11)]"
                 >
@@ -1297,12 +1355,13 @@ export default function DashboardTopbar({
                       </div>
                     </button>
                   </div>
-                </div>
-              )}
+                </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>
-      </header>
+      </motion.header>
 
       {/* ------------------------------------------------------------------ */}
       {/* MOBILE SEARCH                                                      */}

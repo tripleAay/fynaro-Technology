@@ -103,23 +103,23 @@ function iconClasses(
 ) {
   switch (type) {
     case "payment":
-      return "bg-amber-400/10 text-amber-300 ring-amber-300/20";
+      return "bg-[#f7f1df] text-[#8a7125] ring-[#d6cc6d]/35";
 
     case "project":
     case "milestone":
-      return "bg-[#d6cc6d]/15 text-[#e2d986] ring-[#d6cc6d]/25";
+      return "bg-[#f3f0dc] text-[#786b24] ring-[#d6cc6d]/35";
 
     case "proposal":
-      return "bg-violet-400/10 text-violet-300 ring-violet-300/20";
+      return "bg-[#f0edf5] text-[#655778] ring-[#655778]/15";
 
     case "order":
-      return "bg-sky-400/10 text-sky-300 ring-sky-300/20";
+      return "bg-[#eaf0f2] text-[#4d6970] ring-[#4d6970]/15";
 
     case "request":
-      return "bg-emerald-400/10 text-emerald-300 ring-emerald-300/20";
+      return "bg-[#e9f0ea] text-[#4d6852] ring-[#4d6852]/15";
 
     default:
-      return "bg-white/[0.06] text-white/65 ring-white/10";
+      return "bg-[#f0f0eb] text-black/50 ring-black/[0.06]";
   }
 }
 
@@ -542,7 +542,7 @@ export default function NotificationPanel({
             onClick={
               onClose
             }
-            className="fixed inset-0 z-[65] cursor-default bg-black/20 backdrop-blur-[2px]"
+            className="fixed inset-0 z-[65] cursor-default bg-black/10 backdrop-blur-[1.5px]"
             initial={{
               opacity: 0,
             }}
@@ -560,8 +560,8 @@ export default function NotificationPanel({
             aria-label="Fynaro notifications"
             initial={{
               opacity: 0,
-              y: -10,
-              scale: 0.97,
+              y: -8,
+              scale: 0.985,
             }}
             animate={{
               opacity: 1,
@@ -570,23 +570,27 @@ export default function NotificationPanel({
             }}
             exit={{
               opacity: 0,
-              y: -8,
-              scale: 0.98,
+              y: -6,
+              scale: 0.99,
             }}
             transition={{
-              duration: 0.18,
-              ease:
-                "easeOut",
+              duration: 0.22,
+              ease: [
+                0.16,
+                1,
+                0.3,
+                1,
+              ],
             }}
-            className="fixed right-3 top-[68px] z-[70] w-[calc(100vw-24px)] max-w-[390px] overflow-hidden rounded-[20px] border border-white/10 bg-[#090909] text-white shadow-[0_24px_80px_rgba(0,0,0,0.42)] sm:right-5 sm:top-[76px]"
+            className="fixed right-3 top-[68px] z-[70] w-[calc(100vw-24px)] max-w-[390px] overflow-hidden rounded-[20px] border border-black/[0.08] bg-[#fafaf8] text-[#111] shadow-[0_24px_70px_rgba(0,0,0,0.16)] sm:right-5 sm:top-[76px]"
           >
-            <div className="h-[3px] bg-[#d6cc6d]" />
+            <div className="h-[2px] bg-[#d6cc6d]" />
 
             {projectRequestJustCreated && (
-              <div className="flex items-start gap-2.5 border-b border-[#d6cc6d]/20 bg-[#d6cc6d]/10 px-4 py-3">
-                <FiCheckCircle className="mt-0.5 shrink-0 text-[#d6cc6d]" />
+              <div className="flex items-start gap-2.5 border-b border-[#d6cc6d]/35 bg-[#f5f1d9] px-4 py-3">
+                <FiCheckCircle className="mt-0.5 shrink-0 text-[#85772b]" />
 
-                <p className="text-[11px] leading-5 text-white/70">
+                <p className="text-[10px] leading-5 text-black/55">
                   Your request has
                   entered the Fynaro
                   review process.
@@ -596,19 +600,14 @@ export default function NotificationPanel({
               </div>
             )}
 
-            <header className="flex items-center justify-between gap-4 border-b border-white/[0.08] px-4 py-4">
+            <header className="flex items-center justify-between gap-4 border-b border-black/[0.07] bg-white px-4 py-4">
               <div>
-                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#d6cc6d]">
-                  Fynaro workspace
-                </p>
-
-                <h2 className="mt-1 text-[15px] font-semibold tracking-[-0.02em]">
+                <h2 className="text-[15px] font-semibold tracking-[-0.025em] text-[#111]">
                   Notifications
                 </h2>
 
-                <p className="mt-1 text-[10px] text-white/40">
-                  Hello,{" "}
-                  {firstName}
+                <p className="mt-1 text-[9px] text-black/35">
+                  Updates for {firstName}
                 </p>
               </div>
 
@@ -618,14 +617,14 @@ export default function NotificationPanel({
                   onClose
                 }
                 aria-label="Close notifications"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-white/45 transition hover:bg-white/[0.06] hover:text-white"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-black/[0.08] bg-[#fafaf8] text-black/35 transition hover:border-black/15 hover:bg-[#f1f1ec] hover:text-black"
               >
                 <FiX size={15} />
               </button>
             </header>
 
-            <div className="flex items-center justify-between gap-3 border-b border-white/[0.07] bg-white/[0.025] px-4 py-2.5">
-              <span className="text-[10px] text-white/40">
+            <div className="flex items-center justify-between gap-3 border-b border-black/[0.07] bg-[#f5f5f1] px-4 py-2.5">
+              <span className="text-[9px] text-black/40">
                 {unreadCount >
                 0
                   ? `${unreadCount} new update${
@@ -647,7 +646,7 @@ export default function NotificationPanel({
                   onClick={
                     handleMarkAllAsRead
                   }
-                  className="text-[10px] font-semibold text-[#d6cc6d] transition hover:text-[#eee49a] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="text-[9px] font-semibold text-[#786b24] transition hover:text-[#111] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {markingAll
                     ? "Updating..."
@@ -663,19 +662,19 @@ export default function NotificationPanel({
                     (item) => (
                       <div
                         key={item}
-                        className="h-[82px] animate-pulse rounded-[14px] bg-white/[0.045]"
+                        className="h-[82px] animate-pulse rounded-[14px] bg-black/[0.045]"
                       />
                     )
                   )}
                 </div>
               ) : errorMessage ? (
                 <div className="px-6 py-12 text-center">
-                  <p className="text-[12px] font-medium text-white/65">
+                  <p className="text-[12px] font-medium text-black/65">
                     Notifications
                     unavailable
                   </p>
 
-                  <p className="mt-2 text-[10px] leading-5 text-white/35">
+                  <p className="mt-2 text-[10px] leading-5 text-black/35">
                     {
                       errorMessage
                     }
@@ -686,7 +685,7 @@ export default function NotificationPanel({
                     onClick={() =>
                       void loadNotifications()
                     }
-                    className="mt-4 rounded-full border border-[#d6cc6d]/30 px-4 py-2 text-[10px] font-semibold text-[#d6cc6d]"
+                    className="mt-4 rounded-full border border-black/[0.09] bg-white px-4 py-2 text-[9px] font-semibold text-black/60 transition hover:bg-[#111] hover:text-white"
                   >
                     Try again
                   </button>
@@ -694,17 +693,17 @@ export default function NotificationPanel({
               ) : notifications.length ===
                 0 ? (
                 <div className="px-6 py-14 text-center">
-                  <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-[#d6cc6d]/10 text-[#d6cc6d]">
+                  <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-[#f1eed8] text-[#796d27] ring-1 ring-[#d6cc6d]/30">
                     <FiBell
                       size={18}
                     />
                   </div>
 
-                  <p className="mt-4 text-[13px] font-semibold">
+                  <p className="mt-4 text-[13px] font-semibold text-[#111]">
                     Nothing new yet
                   </p>
 
-                  <p className="mx-auto mt-2 max-w-[250px] text-[10px] leading-5 text-white/35">
+                  <p className="mx-auto mt-2 max-w-[250px] text-[10px] leading-5 text-black/35">
                     Updates about
                     requests,
                     proposals,
@@ -724,16 +723,16 @@ export default function NotificationPanel({
                     const content = (
                       <div
                         className={[
-                          "relative flex gap-3 border-b border-white/[0.07] px-4 py-4 transition last:border-b-0",
+                          "relative flex gap-3 border-b border-black/[0.06] px-4 py-4 transition last:border-b-0",
                           unread
-                            ? "bg-[#d6cc6d]/[0.055] hover:bg-[#d6cc6d]/[0.08]"
-                            : "hover:bg-white/[0.03]",
+                            ? "bg-[#f8f5e7] hover:bg-[#f4efd5]"
+                            : "bg-white hover:bg-[#f7f7f3]",
                         ].join(
                           " "
                         )}
                       >
                         {unread && (
-                          <span className="absolute right-4 top-4 h-2 w-2 rounded-full bg-[#d6cc6d]" />
+                          <span className="absolute right-4 top-4 h-1.5 w-1.5 rounded-full bg-[#9a8732] shadow-[0_0_0_3px_rgba(214,204,109,0.22)]" />
                         )}
 
                         <div
@@ -753,27 +752,27 @@ export default function NotificationPanel({
 
                         <div className="min-w-0 flex-1 pr-3">
                           <div className="flex items-start justify-between gap-3">
-                            <p className="text-[11.5px] font-semibold leading-5 text-white/90">
+                            <p className="text-[11px] font-semibold leading-5 text-black/75">
                               {
                                 notification.title
                               }
                             </p>
 
-                            <span className="shrink-0 text-[8.5px] text-white/30">
+                            <span className="shrink-0 text-[8px] text-black/30">
                               {formatTimeAgo(
                                 notification.created_at
                               )}
                             </span>
                           </div>
 
-                          <p className="mt-1 text-[10px] leading-[1.65] text-white/45">
+                          <p className="mt-1 text-[9.5px] leading-[1.65] text-black/43">
                             {
                               notification.message
                             }
                           </p>
 
                           {notification.href && (
-                            <p className="mt-2 text-[9.5px] font-semibold text-[#d6cc6d]">
+                            <p className="mt-2 text-[9px] font-semibold text-[#786b24]">
                               View update
                               <span className="ml-1">
                                 →
@@ -830,14 +829,12 @@ export default function NotificationPanel({
               )}
             </div>
 
-            <footer className="flex items-center justify-between gap-4 border-t border-white/[0.08] bg-white/[0.025] px-4 py-3">
-              <p className="text-[9px] leading-4 text-white/30">
-                Important movement
-                across your Fynaro
-                workspace.
+            <footer className="flex items-center justify-between gap-4 border-t border-black/[0.07] bg-white px-4 py-3">
+              <p className="text-[8px] leading-4 text-black/30">
+                Requests, proposals, payments and project updates.
               </p>
 
-              <div className="h-2 w-2 shrink-0 rounded-full bg-[#d6cc6d] shadow-[0_0_14px_rgba(214,204,109,0.65)]" />
+              <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#a48f35]" />
             </footer>
           </motion.section>
         </>

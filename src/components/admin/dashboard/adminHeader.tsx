@@ -2,7 +2,7 @@
 
 export default function AdminHeader() {
   return (
-    <div className="flex h-16 items-center justify-between border-b border-black/5 bg-white px-4 sm:px-6">
+    <div className="flex h-16 items-center justify-between border-b border-black/5 bg-[#f4f4ef] px-4 sm:px-6">
       <div>
         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8f8440]">
           Fynaro Tech

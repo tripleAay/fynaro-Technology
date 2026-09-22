@@ -42,7 +42,7 @@ if (!session) {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafaf8] text-[#111111]">
+    <div className="min-h-screen bg-[#f4f4ef] text-[#111111]">
       <AdminSidebar />
 
       <div className="lg:pl-[272px]">

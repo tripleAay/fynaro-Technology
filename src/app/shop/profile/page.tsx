@@ -35,9 +35,6 @@ type StoredProfile = {
   company: string;
   role: string;
   website: string;
-  address: string;
-  city: string;
-  state: string;
 };
 
 type ProfileForm = {
@@ -47,9 +44,6 @@ type ProfileForm = {
   company: string;
   role: string;
   website: string;
-  address: string;
-  city: string;
-  state: string;
 };
 
 const PROFILE_STORAGE_KEY =
@@ -60,9 +54,6 @@ const EMPTY_STORED_PROFILE: StoredProfile = {
   company: "",
   role: "",
   website: "",
-  address: "",
-  city: "",
-  state: "",
 };
 
 const EMPTY_PROFILE: ProfileForm = {
@@ -72,9 +63,6 @@ const EMPTY_PROFILE: ProfileForm = {
   company: "",
   role: "",
   website: "",
-  address: "",
-  city: "",
-  state: "",
 };
 
 export default function ProfilePage() {
@@ -270,15 +258,6 @@ export default function ProfilePage() {
 
       website:
         form.website.trim(),
-
-      address:
-        form.address.trim(),
-
-      city:
-        form.city.trim(),
-
-      state:
-        form.state.trim(),
     };
 
     window.localStorage.setItem(
@@ -319,9 +298,6 @@ export default function ProfilePage() {
         form.fullName,
         form.email,
         form.phone,
-        form.address,
-        form.city,
-        form.state,
       ];
 
       const useful = [
@@ -578,76 +554,51 @@ export default function ProfilePage() {
 
             <SectionHeading
               eyebrow="Delivery"
-              title="Default delivery address"
-              description="This address will automatically appear during checkout and can still be changed for an individual order."
+              title="Delivery preferences"
+              description="Keep the destination for future orders accurate and ready."
             />
 
-            <div className="mt-6 grid gap-5">
-              <FormField
-                label="Street address"
-                value={
-                  form.address
-                }
-                onChange={(
-                  value
-                ) =>
-                  updateField(
-                    "address",
-                    value
-                  )
-                }
-                icon={
-                  MapPin
-                }
-                autoComplete="street-address"
-                placeholder="House number, street and area"
-                required
-              />
+            <Link
+              href="/shop/settings/addresses"
+              className="group relative mt-6 block overflow-hidden rounded-[20px] bg-[#111] text-white shadow-[0_18px_45px_rgba(17,17,17,0.12)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_60px_rgba(17,17,17,0.18)]"
+            >
+              <div className="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full bg-[#d6cc6d]/10 blur-3xl transition duration-500 group-hover:bg-[#d6cc6d]/15" />
 
-              <div className="grid gap-5 sm:grid-cols-2">
-                <FormField
-                  label="City"
-                  value={
-                    form.city
-                  }
-                  onChange={(
-                    value
-                  ) =>
-                    updateField(
-                      "city",
-                      value
-                    )
-                  }
-                  icon={
-                    MapPin
-                  }
-                  autoComplete="address-level2"
-                  placeholder="Ibadan"
-                  required
-                />
+              <div className="relative flex flex-col gap-6 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[15px] border border-white/10 bg-white/[0.06] text-[#d6cc6d]">
+                    <MapPin
+                      size={18}
+                      strokeWidth={1.8}
+                    />
+                  </div>
 
-                <FormField
-                  label="State"
-                  value={
-                    form.state
-                  }
-                  onChange={(
-                    value
-                  ) =>
-                    updateField(
-                      "state",
-                      value
-                    )
-                  }
-                  icon={
-                    MapPin
-                  }
-                  autoComplete="address-level1"
-                  placeholder="Oyo"
-                  required
-                />
+                  <div>
+                    <p className="text-[8px] font-semibold uppercase tracking-[0.17em] text-white/35">
+                      Address book
+                    </p>
+
+                    <p className="mt-2 text-[14px] font-semibold tracking-[-0.02em] text-white">
+                      Manage delivery addresses
+                    </p>
+
+                    <p className="mt-1.5 max-w-[430px] text-[9px] leading-5 text-white/42">
+                      Update recipients, locations and the default address used for future Fynaro orders.
+                    </p>
+                  </div>
+                </div>
+
+                <span className="inline-flex h-10 w-fit shrink-0 items-center justify-center gap-2 rounded-full bg-[#d6cc6d] px-5 text-[9px] font-semibold text-[#111] transition duration-300 group-hover:bg-[#e3da86]">
+                  Open address book
+
+                  <ChevronRight
+                    size={11}
+                    strokeWidth={1.8}
+                    className="transition-transform duration-300 group-hover:translate-x-0.5"
+                  />
+                </span>
               </div>
-            </div>
+            </Link>
 
             <Divider />
 
@@ -786,11 +737,11 @@ export default function ProfilePage() {
               </div>
 
               <p className="mt-4 text-[9px] leading-5 text-white/45">
-                Complete your contact
-                and delivery details
-                once and Fynaro can
-                reuse them during
-                checkout.
+                Complete your account
+                details here, then use
+                your address book to
+                manage delivery
+                locations securely.
               </p>
             </section>
 
@@ -829,13 +780,9 @@ export default function ProfilePage() {
 
                 <StatusRow
                   label="Delivery address"
-                  complete={
-                    Boolean(
-                      form.address.trim() &&
-                        form.city.trim() &&
-                        form.state.trim()
-                    )
-                  }
+                  complete={false}
+                  href="/shop/settings/addresses"
+                  actionLabel="Manage"
                 />
               </div>
             </section>
@@ -1008,9 +955,13 @@ function FormField({
 function StatusRow({
   label,
   complete,
+  href,
+  actionLabel,
 }: {
   label: string;
   complete: boolean;
+  href?: string;
+  actionLabel?: string;
 }) {
   return (
     <div className="flex items-center justify-between gap-4 border-b border-black/[0.06] pb-3 last:border-b-0 last:pb-0">
@@ -1018,20 +969,33 @@ function StatusRow({
         {label}
       </span>
 
-      <span
-        className={[
-          "rounded-full px-2 py-1 text-[7px] font-semibold",
-          complete
-            ? "bg-[#e7eee8] text-[#45604b]"
-            : "bg-[#111] text-white",
-        ].join(
-          " "
-        )}
-      >
-        {complete
-          ? "Ready"
-          : "Add"}
-      </span>
+      {href ? (
+        <Link
+          href={href}
+          className="inline-flex items-center gap-1 rounded-full bg-[#111] px-2.5 py-1 text-[7px] font-semibold text-white transition hover:bg-black/75"
+        >
+          {actionLabel || "Manage"}
+
+          <ChevronRight
+            size={8}
+          />
+        </Link>
+      ) : (
+        <span
+          className={[
+            "rounded-full px-2 py-1 text-[7px] font-semibold",
+            complete
+              ? "bg-[#e7eee8] text-[#45604b]"
+              : "bg-[#111] text-white",
+          ].join(
+            " "
+          )}
+        >
+          {complete
+            ? "Ready"
+            : "Add"}
+        </span>
+      )}
     </div>
   );
 }

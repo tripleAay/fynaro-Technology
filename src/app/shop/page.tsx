@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 import PremiumProductsShowcase from "@/components/dashboard components/hotstuffSections";
+import ProductTileGrid from "@/components/dashboard components/ProductTileGridMirror";
 
 type Capability = {
   number: string;
@@ -556,6 +557,52 @@ export default function FynaroDashboardPage() {
               <ArrowRight size={12} />
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* FEATURED PRODUCTS                                                   */}
+      {/* ------------------------------------------------------------------ */}
+
+      <section className="relative border-t border-black/[0.08] py-9 lg:py-11">
+        <div className="pointer-events-none absolute -right-20 top-2 h-44 w-44 rounded-full bg-[#d6cc6d]/[0.08] blur-3xl" />
+
+        <div className="relative mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="h-px w-7 bg-[#a59036]" />
+
+              <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35">
+                Fynaro Shop
+              </p>
+            </div>
+
+            <h2 className="mt-2 text-[27px] font-semibold tracking-[-0.04em] sm:text-[31px]">
+              Featured products.
+            </h2>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <p className="hidden max-w-[360px] text-right text-[10px] leading-5 text-black/38 md:block">
+              Selected print, branding and merchandise products ready to explore.
+            </p>
+
+            <Link
+              href="/shop/printed-products"
+              className="group inline-flex h-9 shrink-0 items-center gap-2 rounded-full border border-black/[0.09] bg-white px-4 text-[9px] font-semibold text-black/50 transition hover:border-black/20 hover:text-black"
+            >
+              Browse products
+
+              <ArrowUpRight
+                size={11}
+                className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+              />
+            </Link>
+          </div>
+        </div>
+
+        <div className="relative">
+          <ProductTileGrid />
         </div>
       </section>
 

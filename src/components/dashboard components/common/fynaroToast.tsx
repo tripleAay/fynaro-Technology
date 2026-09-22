@@ -1,159 +1,624 @@
 "use client";
 
 import {
-  ToastContainer,
-  toast,
-  ToastOptions,
+  AlertCircle,
+  Check,
+  Heart,
+  Info,
+  LoaderCircle,
+  ShoppingBag,
+  Sparkles,
+  TriangleAlert,
+} from "lucide-react";
+
+import {
+  Id,
   Slide,
+  toast,
+  ToastContainer,
+  ToastOptions,
+  TypeOptions,
 } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+
+type ToastKind =
+  | "success"
+  | "error"
+  | "warning"
+  | "info"
+  | "loading"
+  | "gold";
 
 type ProjectRequestPayload = {
   projectName?: string;
   ref?: string;
 };
 
-const baseOptions: ToastOptions = {
+type ToastContentProps = {
+  kind: ToastKind;
+  title: string;
+  message?: string;
+  detail?: string;
+};
+
+type FynaroToastOptions = {
+  id?: string;
+  autoClose?: number | false;
+};
+
+type PromiseMessages<T> = {
+  loading?: string;
+
+  success?:
+    | string
+    | ((result: T) => string);
+
+  error?:
+    | string
+    | ((error: unknown) => string);
+};
+
+const baseOptions:
+  ToastOptions = {
   position: "bottom-right",
-  autoClose: 2600,
+  autoClose: 4200,
   hideProgressBar: false,
   closeOnClick: true,
   pauseOnHover: true,
+  pauseOnFocusLoss: false,
   draggable: true,
-  theme: "dark",
-  transition: Slide, // ✨ smooth slide-in
+  theme: "light",
+  transition: Slide,
+  icon: false,
 };
 
-/**
- * Mount this once (e.g. in layout.tsx) so toasts can render.
- */
-export function FynaroToastHost() {
-  return <ToastContainer newestOnTop pauseOnFocusLoss={false} />;
+function ToastIcon({
+  kind,
+}: {
+  kind: ToastKind;
+}) {
+  const className =
+    "h-[17px] w-[17px]";
+
+  switch (kind) {
+    case "success":
+      return (
+        <Check
+          className={
+            className
+          }
+          strokeWidth={2}
+        />
+      );
+
+    case "error":
+      return (
+        <AlertCircle
+          className={
+            className
+          }
+          strokeWidth={1.8}
+        />
+      );
+
+    case "warning":
+      return (
+        <TriangleAlert
+          className={
+            className
+          }
+          strokeWidth={1.8}
+        />
+      );
+
+    case "loading":
+      return (
+        <LoaderCircle
+          className={`${className} animate-spin`}
+          strokeWidth={1.8}
+        />
+      );
+
+    case "gold":
+      return (
+        <Sparkles
+          className={
+            className
+          }
+          strokeWidth={1.8}
+        />
+      );
+
+    default:
+      return (
+        <Info
+          className={
+            className
+          }
+          strokeWidth={1.8}
+        />
+      );
+  }
 }
 
-/**
- * Hook to trigger branded toasts across the app.
- */
+function ToastContent({
+  kind,
+  title,
+  message,
+  detail,
+}: ToastContentProps) {
+  return (
+    <div className="fynaro-toast-content">
+      <div
+        className={`fynaro-toast-icon fynaro-toast-icon--${kind}`}
+      >
+        <ToastIcon
+          kind={kind}
+        />
+      </div>
+
+      <div className="fynaro-toast-copy">
+        <p className="fynaro-toast-title">
+          {title}
+        </p>
+
+        {message && (
+          <p className="fynaro-toast-message">
+            {message}
+          </p>
+        )}
+
+        {detail && (
+          <p className="fynaro-toast-detail">
+            {detail}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function typeForKind(
+  kind: ToastKind
+): TypeOptions {
+  if (
+    kind === "gold" ||
+    kind === "loading"
+  ) {
+    return "default";
+  }
+
+  return kind;
+}
+
+function showToast(
+  kind: Exclude<
+    ToastKind,
+    "loading"
+  >,
+  title: string,
+  message?: string,
+  detail?: string,
+  options?: FynaroToastOptions
+) {
+  return toast(
+    <ToastContent
+      kind={kind}
+      title={title}
+      message={message}
+      detail={detail}
+    />,
+    {
+      ...baseOptions,
+
+      toastId:
+        options?.id,
+
+      autoClose:
+        options?.autoClose ??
+        baseOptions.autoClose,
+
+      type:
+        typeForKind(
+          kind
+        ),
+
+      className:
+        `fynaro-toast fynaro-toast--${kind}`,
+    }
+  );
+}
+
+export function FynaroToastHost() {
+  return (
+    <ToastContainer
+      position="bottom-right"
+      autoClose={4200}
+      newestOnTop
+      limit={4}
+      closeOnClick
+      pauseOnHover
+      pauseOnFocusLoss={false}
+      draggable
+      hideProgressBar={false}
+      theme="light"
+      transition={Slide}
+      icon={false}
+      className="fynaro-toast-container"
+      toastClassName="fynaro-toast"
+      bodyClassName="fynaro-toast-body"
+      progressClassName="fynaro-toast-progress"
+      aria-label="Fynaro notifications"
+    />
+  );
+}
+
+export function getToastErrorMessage(
+  error: unknown,
+  fallback =
+    "Something went wrong. Please try again."
+) {
+  if (
+    error instanceof Error &&
+    error.message
+  ) {
+    return error.message;
+  }
+
+  if (
+    typeof error ===
+    "string"
+  ) {
+    return error;
+  }
+
+  if (
+    error &&
+    typeof error ===
+      "object" &&
+    "message" in error &&
+    typeof error.message ===
+      "string"
+  ) {
+    return error.message;
+  }
+
+  return fallback;
+}
+
 export function useFynaroToast() {
-  const notifyAddToCart = (productName: string) => {
+  const notifySuccess = (
+    title: string,
+    message?: string,
+    options?: FynaroToastOptions
+  ) =>
+    showToast(
+      "success",
+      title,
+      message,
+      undefined,
+      options
+    );
+
+  const notifyError = (
+    title: string,
+    message?: string,
+    options?: FynaroToastOptions
+  ) =>
+    showToast(
+      "error",
+      title,
+      message,
+      undefined,
+      {
+        autoClose: 5500,
+        ...options,
+      }
+    );
+
+  const notifyWarning = (
+    title: string,
+    message?: string,
+    options?: FynaroToastOptions
+  ) =>
+    showToast(
+      "warning",
+      title,
+      message,
+      undefined,
+      options
+    );
+
+  const notifyInfo = (
+    title: string,
+    message?: string,
+    options?: FynaroToastOptions
+  ) =>
+    showToast(
+      "info",
+      title,
+      message,
+      undefined,
+      options
+    );
+
+  const notifyGoldMoment = (
+    title: string,
+    message?: string
+  ) =>
+    showToast(
+      "gold",
+      title,
+      message,
+      "This update is now live in your Fynaro workspace."
+    );
+
+  const notifyAddToCart = (
+    productName: string
+  ) =>
     toast(
-      <div className="flex items-start gap-2">
-        <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-lg">
-          🛒
+      <div className="fynaro-toast-content">
+        <div className="fynaro-toast-icon fynaro-toast-icon--gold">
+          <ShoppingBag
+            className="h-[17px] w-[17px]"
+            strokeWidth={1.8}
+          />
         </div>
 
-        <div className="min-w-0">
-          <p className="text-xs font-semibold text-white">Added to cart</p>
-          <p className="text-[11px] text-neutral-300 truncate">
+        <div className="fynaro-toast-copy">
+          <p className="fynaro-toast-title">
+            Added to cart
+          </p>
+
+          <p className="fynaro-toast-message">
             {productName}
           </p>
-          <p className="mt-0.5 text-[10px] text-neutral-500">
-            You can adjust quantity from your Fynaro cart.
-          </p>
-        </div>
-      </div>,
-      baseOptions
-    );
-  };
 
-  const notifyProjectRequestCreated = ({
-    projectName,
-    ref,
-  }: ProjectRequestPayload = {}) => {
-    const title = projectName || "New project request";
-    const suffix = ref ? `Ref: ${ref}` : "We’ll update you on this dashboard.";
-
-    toast(
-      <div className="flex items-start gap-2">
-        <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/15 text-lg">
-          ✅
-        </div>
-
-        <div className="min-w-0">
-          <p className="text-xs font-semibold text-white">{title}</p>
-          <p className="text-[11px] text-neutral-300 mt-0.5">{suffix}</p>
-          <p className="mt-0.5 text-[10px] text-neutral-500">
-            Timeline, pricing and updates will live in your Fynaro dashboard.
-          </p>
-        </div>
-      </div>,
-      baseOptions
-    );
-  };
-
-  const notifyWishlistToggle = (productName: string, added: boolean) => {
-    toast(
-      <div className="flex items-start gap-2">
-        {/* Icon bubble — dark luxe */}
-        <div
-          className={`mt-0.5 flex h-8 w-8 items-center justify-center rounded-full text-lg ${
-            added
-              ? "bg-pink-500/20 text-pink-300"
-              : "bg-neutral-700/30 text-neutral-300"
-          }`}
-        >
-          {added ? "💖" : "💭"}
-        </div>
-
-        <div className="min-w-0">
-          <p className="text-xs font-semibold text-white">
-            {added ? "Added to wishlist" : "Removed from wishlist"}
-          </p>
-
-          <p className="text-[11px] text-neutral-300 truncate">
-            {productName}
-          </p>
-
-          <p className="mt-0.5 text-[10px] text-neutral-500">
-            {added
-              ? "Saved for later — check your Fynaro wishlist anytime."
-              : "Item removed from your wishlist."}
-          </p>
-        </div>
-      </div>,
-      baseOptions
-    );
-  };
-
-  /**
-   * 💎 Luxury gold toast – for special / premium actions
-   * e.g. upgrades, credits, milestone, VIP stuff.
-   */
-  const notifyGoldMoment = (title: string, body?: string) => {
-    toast(
-      <div className="relative flex items-start gap-3">
-        {/* Gold glow ring */}
-        <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-[#c8a96a]/15 text-[#f5e9ce] text-lg shadow-[0_0_18px_rgba(200,169,106,0.45)]">
-          ✨
-        </div>
-
-        <div className="min-w-0">
-          <p className="text-xs font-semibold text-[#f9f1d0]">
-            {title}
-          </p>
-          {body && (
-            <p className="mt-0.5 text-[11px] text-neutral-300">
-              {body}
-            </p>
-          )}
-          <p className="mt-0.5 text-[10px] text-neutral-500">
-            Enjoy the upgrade — it’s live in your Fynaro workspace.
+          <p className="fynaro-toast-detail">
+            Adjust the quantity from your Fynaro cart.
           </p>
         </div>
       </div>,
       {
         ...baseOptions,
+        type: "default",
         className:
-          "bg-[#050506] border border-[#c8a96a]/60 shadow-[0_14px_40px_rgba(0,0,0,0.9)]",
+          "fynaro-toast fynaro-toast--gold",
       }
     );
+
+  const notifyWishlistToggle = (
+    productName: string,
+    added: boolean
+  ) =>
+    toast(
+      <div className="fynaro-toast-content">
+        <div
+          className={`fynaro-toast-icon ${
+            added
+              ? "fynaro-toast-icon--success"
+              : "fynaro-toast-icon--info"
+          }`}
+        >
+          <Heart
+            className="h-[17px] w-[17px]"
+            strokeWidth={1.8}
+            fill={
+              added
+                ? "currentColor"
+                : "none"
+            }
+          />
+        </div>
+
+        <div className="fynaro-toast-copy">
+          <p className="fynaro-toast-title">
+            {added
+              ? "Added to wishlist"
+              : "Removed from wishlist"}
+          </p>
+
+          <p className="fynaro-toast-message">
+            {productName}
+          </p>
+
+          <p className="fynaro-toast-detail">
+            {added
+              ? "Saved for later in your Fynaro wishlist."
+              : "The item has been removed from your wishlist."}
+          </p>
+        </div>
+      </div>,
+      {
+        ...baseOptions,
+        type:
+          added
+            ? "success"
+            : "info",
+        className:
+          `fynaro-toast ${
+            added
+              ? "fynaro-toast--success"
+              : "fynaro-toast--info"
+          }`,
+      }
+    );
+
+  const notifyProjectRequestCreated =
+    ({
+      projectName,
+      ref,
+    }: ProjectRequestPayload = {}) =>
+      showToast(
+        "success",
+        projectName ||
+          "Project request received",
+        ref
+          ? `Reference: ${ref}`
+          : "Your project brief has been submitted.",
+        "Timeline, pricing and updates will appear in your Fynaro workspace.",
+        {
+          autoClose: 5500,
+        }
+      );
+
+  const notifyLoading = (
+    title: string,
+    message?: string
+  ): Id =>
+    toast.loading(
+      <ToastContent
+        kind="loading"
+        title={title}
+        message={message}
+      />,
+      {
+        ...baseOptions,
+        autoClose: false,
+        closeOnClick: false,
+        draggable: false,
+        className:
+          "fynaro-toast fynaro-toast--loading",
+      }
+    );
+
+  const updateSuccess = (
+    id: Id,
+    title: string,
+    message?: string
+  ) => {
+    toast.update(id, {
+      render: (
+        <ToastContent
+          kind="success"
+          title={title}
+          message={message}
+        />
+      ),
+
+      type: "success",
+      icon: false,
+      isLoading: false,
+      autoClose: 4200,
+      closeOnClick: true,
+      draggable: true,
+
+      className:
+        "fynaro-toast fynaro-toast--success",
+    });
   };
 
+  const updateError = (
+    id: Id,
+    title: string,
+    message?: string
+  ) => {
+    toast.update(id, {
+      render: (
+        <ToastContent
+          kind="error"
+          title={title}
+          message={message}
+        />
+      ),
+
+      type: "error",
+      icon: false,
+      isLoading: false,
+      autoClose: 5500,
+      closeOnClick: true,
+      draggable: true,
+
+      className:
+        "fynaro-toast fynaro-toast--error",
+    });
+  };
+
+  const notifyPromise =
+    async <T,>(
+      operation:
+        | Promise<T>
+        | (() => Promise<T>),
+
+      messages:
+        PromiseMessages<T> = {}
+    ): Promise<T> => {
+      const id =
+        notifyLoading(
+          "Processing",
+          messages.loading ||
+            "Fynaro is completing your request."
+        );
+
+      try {
+        const result =
+          typeof operation ===
+          "function"
+            ? await operation()
+            : await operation;
+
+        const successMessage =
+          typeof messages.success ===
+          "function"
+            ? messages.success(
+                result
+              )
+            : messages.success ||
+              "The action was completed successfully.";
+
+        updateSuccess(
+          id,
+          "Completed",
+          successMessage
+        );
+
+        return result;
+      } catch (error) {
+        const errorMessage =
+          typeof messages.error ===
+          "function"
+            ? messages.error(
+                error
+              )
+            : messages.error ||
+              getToastErrorMessage(
+                error
+              );
+
+        updateError(
+          id,
+          "Action failed",
+          errorMessage
+        );
+
+        throw error;
+      }
+    };
+
   return {
+    notifySuccess,
+    notifyError,
+    notifyWarning,
+    notifyInfo,
+    notifyLoading,
+    updateSuccess,
+    updateError,
+    notifyPromise,
+
     notifyAddToCart,
-    notifyProjectRequestCreated,
     notifyWishlistToggle,
+    notifyProjectRequestCreated,
     notifyGoldMoment,
-    rawToast: toast,
+
+    dismiss:
+      toast.dismiss,
+
+    clear: () =>
+      toast.dismiss(),
+
+    rawToast:
+      toast,
+
+    getErrorMessage:
+      getToastErrorMessage,
   };
 }

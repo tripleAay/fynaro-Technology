@@ -9,7 +9,6 @@ import {
 } from "react";
 
 import {
-  BadgeHelp,
   BriefcaseBusiness,
   ChevronRight,
   CircleDollarSign,
@@ -96,7 +95,7 @@ const workspaceLinks: NavItem[] = [
     icon: CircleDollarSign,
   },
   {
-    label: "Messages",
+    label: "Support & messages",
     href: "/shop/messages",
     icon: MessageSquare,
   },
@@ -112,11 +111,6 @@ const accountLinks: NavItem[] = [
     label: "Settings",
     href: "/shop/settings",
     icon: Settings,
-  },
-  {
-    label: "Support",
-    href: "/shop/support",
-    icon: BadgeHelp,
   },
 ];
 

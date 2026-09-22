@@ -6,19 +6,52 @@ import {
 export const dynamic =
   "force-dynamic";
 
+export const runtime =
+  "nodejs";
+
+type LoginRequestBody = {
+  emailOrUsername?: string;
+  password?: string;
+  rememberMe?: boolean;
+  turnstileToken?: string | null;
+};
+
+type BackendLoginResponse = {
+  success?: boolean;
+  message?: string;
+  token?: string;
+  accessToken?: string;
+  rememberMe?: boolean;
+
+  user?: {
+    id?: string;
+    fullName?: string;
+    email?: string;
+    role?: string;
+  } | null;
+};
+
+// ============================================================
+// POST /api/auth/login
+// ============================================================
+
 export async function POST(
   request: NextRequest
 ) {
   try {
-    // ============================================================
+    // ========================================================
     // ENVIRONMENT
-    // ============================================================
+    // ========================================================
 
     const apiUrl =
-      process.env.FYNARO_API_URL?.trim();
+      process.env
+        .FYNARO_API_URL
+        ?.trim();
 
     const proxySecret =
-      process.env.FYNARO_PROXY_SECRET?.trim();
+      process.env
+        .FYNARO_PROXY_SECRET
+        ?.trim();
 
     if (!apiUrl) {
       console.error(
@@ -27,11 +60,8 @@ export async function POST(
 
       return NextResponse.json(
         {
-          source:
-            "next-proxy",
-
+          source: "next-proxy",
           success: false,
-
           message:
             "Fynaro API is not configured.",
         },
@@ -41,47 +71,20 @@ export async function POST(
       );
     }
 
-    if (!proxySecret) {
-      console.error(
-        "[FYNARO LOGIN PROXY] FYNARO_PROXY_SECRET is missing."
-      );
-
-      return NextResponse.json(
-        {
-          source:
-            "next-proxy",
-
-          success: false,
-
-          message:
-            "Fynaro authentication proxy is not configured.",
-        },
-        {
-          status: 500,
-        }
-      );
-    }
-
-    // ============================================================
+    // ========================================================
     // REQUEST BODY
-    // ============================================================
+    // ========================================================
 
-    let body: Record<
-      string,
-      unknown
-    >;
+    let body: LoginRequestBody;
 
     try {
       body =
-        await request.json();
+        (await request.json()) as LoginRequestBody;
     } catch {
       return NextResponse.json(
         {
-          source:
-            "next-proxy",
-
+          source: "next-proxy",
           success: false,
-
           message:
             "Invalid login request.",
         },
@@ -91,27 +94,91 @@ export async function POST(
       );
     }
 
-    // ============================================================
-    // BACKEND URL
-    // ============================================================
+    const emailOrUsername =
+      typeof body.emailOrUsername ===
+      "string"
+        ? body.emailOrUsername.trim()
+        : "";
+
+    const password =
+      typeof body.password ===
+      "string"
+        ? body.password
+        : "";
+
+    if (
+      !emailOrUsername ||
+      !password
+    ) {
+      return NextResponse.json(
+        {
+          source: "next-proxy",
+          success: false,
+          message:
+            "Username or email and password are required.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    // ========================================================
+    // EXPRESS URL
+    // ========================================================
 
     const backendUrl =
       apiUrl.replace(
-        /\/$/,
+        /\/+$/,
         ""
       );
 
     const loginUrl =
       `${backendUrl}/api/auth/login`;
 
-    console.log(
-      "[FYNARO LOGIN PROXY] Express:",
-      loginUrl
-    );
+    // ========================================================
+    // EXPRESS HEADERS
+    // ========================================================
 
-    // ============================================================
-    // EXPRESS LOGIN
-    // ============================================================
+    const headers:
+      Record<string, string> = {
+        "Content-Type":
+          "application/json",
+        Accept:
+          "application/json",
+      };
+
+    if (proxySecret) {
+      headers[
+        "x-fynaro-proxy-secret"
+      ] = proxySecret;
+    }
+
+    const forwardedFor =
+      request.headers.get(
+        "x-forwarded-for"
+      );
+
+    const realIp =
+      request.headers.get(
+        "x-real-ip"
+      );
+
+    if (forwardedFor) {
+      headers[
+        "x-forwarded-for"
+      ] = forwardedFor;
+    }
+
+    if (realIp) {
+      headers[
+        "x-real-ip"
+      ] = realIp;
+    }
+
+    // ========================================================
+    // EXPRESS LOGIN REQUEST
+    // ========================================================
 
     let backendResponse:
       Response;
@@ -121,32 +188,18 @@ export async function POST(
         await fetch(
           loginUrl,
           {
-            method:
-              "POST",
+            method: "POST",
 
-            headers: {
-              "Content-Type":
-                "application/json",
-
-              Accept:
-                "application/json",
-
-              "x-fynaro-proxy-secret":
-                proxySecret,
-
-              "x-forwarded-for":
-                request.headers.get(
-                  "x-forwarded-for"
-                ) || "",
-            },
+            headers,
 
             body:
-              JSON.stringify(
-                body
-              ),
+              JSON.stringify({
+                ...body,
+                emailOrUsername,
+                password,
+              }),
 
-            cache:
-              "no-store",
+            cache: "no-store",
           }
         );
     } catch (error) {
@@ -157,11 +210,8 @@ export async function POST(
 
       return NextResponse.json(
         {
-          source:
-            "next-proxy",
-
+          source: "next-proxy",
           success: false,
-
           message:
             "Unable to connect to the Fynaro API.",
         },
@@ -171,27 +221,25 @@ export async function POST(
       );
     }
 
-    // ============================================================
-    // READ RESPONSE
-    // ============================================================
+    // ========================================================
+    // PARSE EXPRESS RESPONSE
+    // ========================================================
 
     const rawText =
       await backendResponse.text();
 
-    let data: Record<
-      string,
-      any
-    > = {};
+    let data:
+      BackendLoginResponse = {};
 
     if (rawText) {
       try {
         data =
           JSON.parse(
             rawText
-          );
+          ) as BackendLoginResponse;
       } catch {
         console.error(
-          "[FYNARO LOGIN PROXY] Express returned non-JSON:",
+          "[FYNARO LOGIN PROXY] Express returned invalid JSON:",
           rawText.slice(
             0,
             500
@@ -200,11 +248,8 @@ export async function POST(
 
         return NextResponse.json(
           {
-            source:
-              "next-proxy",
-
+            source: "next-proxy",
             success: false,
-
             message:
               "Fynaro API returned an invalid response.",
           },
@@ -215,51 +260,17 @@ export async function POST(
       }
     }
 
-    console.log(
-      "[FYNARO LOGIN PROXY] Express response:",
-      {
-        status:
-          backendResponse.status,
-
-        ok:
-          backendResponse.ok,
-
-        message:
-          data?.message,
-
-        hasToken:
-          typeof data?.token ===
-          "string",
-
-        tokenLength:
-          typeof data?.token ===
-          "string"
-            ? data.token.length
-            : 0,
-
-        hasUser:
-          Boolean(
-            data?.user
-          ),
-      }
-    );
-
-    // ============================================================
+    // ========================================================
     // EXPRESS REJECTED LOGIN
-    // ============================================================
+    // ========================================================
 
-    if (
-      !backendResponse.ok
-    ) {
+    if (!backendResponse.ok) {
       return NextResponse.json(
         {
-          source:
-            "next-proxy",
-
+          source: "next-proxy",
           success: false,
-
           message:
-            data?.message ||
+            data.message ||
             "Login failed.",
         },
         {
@@ -269,42 +280,39 @@ export async function POST(
       );
     }
 
-    // ============================================================
-    // VERIFY TOKEN
-    // ============================================================
+    // ========================================================
+    // GET JWT
+    // ========================================================
+
+    const rawToken =
+      data.token ||
+      data.accessToken ||
+      "";
 
     const token =
-      typeof data?.token ===
-        "string"
-        ? data.token.trim()
+      typeof rawToken ===
+      "string"
+        ? rawToken.trim()
         : "";
 
     if (!token) {
       console.error(
-        "[FYNARO LOGIN PROXY] Express authenticated user but returned no JWT.",
+        "[FYNARO LOGIN PROXY] Express authenticated the user but returned no JWT.",
         {
           status:
             backendResponse.status,
 
-          message:
-            data?.message,
-
-          keys:
-            Object.keys(
-              data
-            ),
+          responseKeys:
+            Object.keys(data),
         }
       );
 
       return NextResponse.json(
         {
-          source:
-            "next-proxy",
-
+          source: "next-proxy",
           success: false,
-
           message:
-            "Login succeeded but a session could not be created.",
+            "Login succeeded but a Fynaro session could not be created.",
         },
         {
           status: 502,
@@ -312,39 +320,42 @@ export async function POST(
       );
     }
 
-    // ============================================================
-    // RESPONSE
-    // ============================================================
+    // ========================================================
+    // CREATE NEXT RESPONSE
+    // ========================================================
 
     const response =
       NextResponse.json(
         {
-          source:
-            "next-proxy",
-
+          source: "next-proxy",
           success: true,
-
           message:
-            data?.message ||
+            data.message ||
             "Login successful.",
-
           user:
-            data?.user ||
-            null,
+            data.user || null,
         },
         {
           status: 200,
+
+          headers: {
+            "Cache-Control":
+              "no-store, no-cache, must-revalidate",
+          },
         }
       );
 
-    // ============================================================
-    // FIRST-PARTY SESSION COOKIE
-    // ============================================================
+    // ========================================================
+    // CREATE FIRST-PARTY JWT COOKIE
+    // ========================================================
 
     const shouldRemember =
-      Boolean(
-        data?.rememberMe
-      );
+      typeof body.rememberMe ===
+      "boolean"
+        ? body.rememberMe
+        : Boolean(
+            data.rememberMe
+          );
 
     response.cookies.set({
       name:
@@ -368,24 +379,26 @@ export async function POST(
 
       maxAge:
         shouldRemember
-          ? 60 *
-            60 *
-            24 *
-            7
-          : 60 *
-            60 *
-            24,
+          ? 60 * 60 * 24 * 7
+          : 60 * 60 * 24,
     });
 
     console.log(
-      "[FYNARO LOGIN PROXY] Session cookie created:",
+      "[FYNARO LOGIN PROXY] Session created:",
       {
+        hasToken:
+          true,
+
         rememberMe:
           shouldRemember,
 
         secure:
           process.env.NODE_ENV ===
           "production",
+
+        userId:
+          data.user?.id ||
+          null,
       }
     );
 
@@ -398,11 +411,8 @@ export async function POST(
 
     return NextResponse.json(
       {
-        source:
-          "next-proxy",
-
+        source: "next-proxy",
         success: false,
-
         message:
           "Authentication proxy failed.",
       },

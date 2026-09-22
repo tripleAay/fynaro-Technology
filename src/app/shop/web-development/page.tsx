@@ -10,9 +10,9 @@ import {
   Layers3,
   MonitorSmartphone,
   ShoppingBag,
-  Sparkles,
 } from "lucide-react";
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 const serviceTypes = [
   {
@@ -94,69 +94,6 @@ const packages = [
   },
 ];
 
-const comparisonRows = [
-  {
-    label: "Custom interface",
-    launch: "Included",
-    growth: "Included",
-    custom: "Included",
-  },
-  {
-    label: "Core pages",
-    launch: "Up to 5",
-    growth: "Up to 10",
-    custom: "Project based",
-  },
-  {
-    label: "Responsive experience",
-    launch: "Included",
-    growth: "Included",
-    custom: "Included",
-  },
-  {
-    label: "SEO foundations",
-    launch: "Included",
-    growth: "Included",
-    custom: "Included",
-  },
-  {
-    label: "Analytics",
-    launch: "Included",
-    growth: "Included",
-    custom: "Included",
-  },
-  {
-    label: "Ecommerce",
-    launch: "—",
-    growth: "Included",
-    custom: "Optional",
-  },
-  {
-    label: "Online payments",
-    launch: "—",
-    growth: "Included",
-    custom: "Optional",
-  },
-  {
-    label: "Customer accounts",
-    launch: "—",
-    growth: "Optional",
-    custom: "As required",
-  },
-  {
-    label: "Custom dashboards",
-    launch: "—",
-    growth: "—",
-    custom: "As required",
-  },
-  {
-    label: "API integrations",
-    launch: "Basic",
-    growth: "Standard",
-    custom: "Advanced",
-  },
-];
-
 const process = [
   {
     number: "01",
@@ -221,56 +158,55 @@ const faqs = [
 
 export default function WebDevelopmentPage() {
   return (
-    <div className="mx-auto w-full max-w-[1460px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className="mx-auto w-full max-w-[1460px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8"
+    >
       {/* HERO */}
-      <section className="border-b border-black/[0.08] pb-10 lg:pb-12">
-        <div className="flex items-center gap-2 text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35">
-          <Link href="/shop" className="transition hover:text-black">
-            Dashboard
-          </Link>
+      <section className="relative overflow-hidden border-b border-black/[0.08] pb-12 pt-5 lg:pb-16 lg:pt-8">
+        <div className="pointer-events-none absolute -right-24 top-0 h-72 w-72 rounded-full bg-[#d6cc6d]/[0.08] blur-3xl" />
 
-          <span>/</span>
-
-          <span>Web Development</span>
-        </div>
-
-        <div className="mt-7 grid gap-8 xl:grid-cols-[1.25fr_.75fr] xl:items-end">
+        <div className="relative grid gap-9 xl:grid-cols-[1.25fr_.75fr] xl:items-end">
           <div>
-            <div className="mb-5 flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full border border-black/[0.08] bg-[#f7f7f3]">
-                <Globe2 size={15} strokeWidth={1.6} />
-              </div>
+            <div className="mb-6 flex items-center gap-3">
+              <span className="h-px w-8 bg-[#a59036]" />
 
-              <p className="text-[9px] font-semibold uppercase tracking-[0.19em] text-black/35">
-                Web Development / 01
+              <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-black/38">
+                Fynaro Web Studio
               </p>
             </div>
 
-            <h1 className="max-w-[820px] text-[44px] font-semibold leading-[0.94] tracking-[-0.055em] sm:text-[58px] lg:text-[72px]">
-              Websites built
-              <br />
-              to move business.
-            </h1>
+            <h1 className="max-w-[850px] text-[46px] font-semibold leading-[0.92] tracking-[-0.06em] sm:text-[62px] lg:text-[78px]">
+  <span className="block">
+    Digital presence,
+  </span>
+
+  <span className="mt-3 block sm:mt-4">
+    built with intent.
+  </span>
+</h1>
           </div>
 
-          <div>
-            <p className="max-w-[420px] text-[13px] leading-6 text-black/48">
-              Strategy, design and development for businesses that need more
-              than a basic online presence.
+          <div className="xl:pb-1">
+            <p className="max-w-[430px] text-[12px] leading-6 text-black/48">
+              Strategy, interface and engineering shaped into one clear web
+              experience for your business.
             </p>
 
-            <div className="mt-5 flex flex-wrap gap-2">
+            <div className="mt-6 flex flex-wrap gap-2">
               <Link
                 href="/shop/requests/new?service=web-development"
-                className="inline-flex h-11 items-center gap-2.5 rounded-full bg-[#111] px-5 text-[11px] font-semibold text-white transition hover:bg-black/80"
+                className="group inline-flex h-11 items-center gap-2.5 rounded-full bg-[#111] px-5 text-[10px] font-semibold text-white transition hover:-translate-y-0.5 hover:bg-black/80"
               >
-                Start Web Project
-                <ArrowUpRight size={13} />
+                Start a project
+                <ArrowUpRight size={13} className="transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </Link>
 
               <a
                 href="#packages"
-                className="inline-flex h-11 items-center gap-2 rounded-full border border-black/[0.09] bg-white px-4 text-[11px] font-semibold text-black/50 transition hover:border-black/20 hover:text-black"
+                className="inline-flex h-11 items-center gap-2 rounded-full border border-black/[0.09] bg-white px-4 text-[10px] font-semibold text-black/50 transition hover:border-black/20 hover:text-black"
               >
                 View packages
                 <ChevronDown size={13} />
@@ -281,49 +217,44 @@ export default function WebDevelopmentPage() {
       </section>
 
       {/* SERVICE TYPES */}
-      <section className="py-10 lg:py-12">
+      <section className="py-10 lg:py-14">
         <SectionHeading
           eyebrow="What we build"
           title="Choose the kind of web experience you need."
           description="Different businesses require different levels of functionality, complexity and commercial focus."
         />
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-7 grid overflow-hidden rounded-[18px] border border-black/[0.08] bg-white sm:grid-cols-2 xl:grid-cols-4">
           {serviceTypes.map((service) => {
             const Icon = service.icon;
 
             return (
               <article
                 key={service.title}
-                className="group relative flex min-h-[245px] cursor-default flex-col overflow-hidden rounded-[18px] border border-black/[0.08] bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:border-black/20 hover:bg-[#111] hover:text-white hover:shadow-[0_18px_50px_rgba(0,0,0,0.08)]"
+                className="group relative flex min-h-[190px] cursor-default flex-col border-b border-black/[0.07] p-5 transition-colors duration-300 hover:bg-[#f6f4e8] sm:border-r xl:border-b-0 last:border-b-0 xl:last:border-r-0"
               >
                 <div className="flex items-start justify-between">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black/[0.035] transition-all duration-300 group-hover:bg-white/10">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f2f2ed] text-black/55 transition-all duration-300 group-hover:bg-[#111] group-hover:text-white">
                     <Icon
                       size={14}
                       strokeWidth={1.6}
-                      className="transition-colors group-hover:text-white"
                     />
                   </div>
 
-                  <span className="text-[9px] font-semibold text-black/25 transition-colors group-hover:text-white/25">
+                  <span className="text-[8px] font-semibold text-black/22">
                     {service.number}
                   </span>
                 </div>
 
-                <div className="mt-auto pt-10">
-                  <h3 className="text-[19px] font-semibold tracking-[-0.03em]">
+                <div className="mt-auto pt-8">
+                  <h3 className="text-[16px] font-semibold tracking-[-0.025em]">
                     {service.title}
                   </h3>
 
-                  <p className="mt-3 text-[11px] leading-5 text-black/45 transition-colors group-hover:text-white/50">
+                  <p className="mt-2 text-[9.5px] leading-5 text-black/42">
                     {service.description}
                   </p>
 
-                  <div className="mt-5 flex items-center gap-2 text-[9px] font-semibold uppercase tracking-[0.14em] text-black/25 opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:text-white/45 group-hover:opacity-100">
-                    Explore direction
-                    <ArrowUpRight size={11} />
-                  </div>
                 </div>
               </article>
             );
@@ -448,58 +379,6 @@ export default function WebDevelopmentPage() {
         </p>
       </section>
 
-      {/* COMPARISON */}
-      <section className="border-t border-black/[0.08] py-10 lg:py-12">
-        <SectionHeading
-          eyebrow="Compare"
-          title="Understand the difference quickly."
-          description="A simple view of how the three starting scopes compare."
-        />
-
-        <div className="mt-6 overflow-x-auto rounded-[18px] border border-black/[0.08] bg-white">
-          <div className="min-w-[760px]">
-            <div className="grid grid-cols-[1.35fr_1fr_1fr_1fr] border-b border-black/[0.08]">
-              <div className="p-4" />
-
-              <div className="p-4 text-[10px] font-semibold">
-                Launch
-              </div>
-
-              <div className="bg-[#111] p-4 text-[10px] font-semibold text-white">
-                Growth
-              </div>
-
-              <div className="p-4 text-[10px] font-semibold">
-                Custom
-              </div>
-            </div>
-
-            {comparisonRows.map((row) => (
-              <div
-                key={row.label}
-                className="grid grid-cols-[1.35fr_1fr_1fr_1fr] border-b border-black/[0.06] last:border-b-0"
-              >
-                <div className="p-4 text-[10px] font-medium text-black/55">
-                  {row.label}
-                </div>
-
-                <div className="p-4 text-[10px] text-black/40">
-                  {row.launch}
-                </div>
-
-                <div className="bg-[#111] p-4 text-[10px] text-white/60">
-                  {row.growth}
-                </div>
-
-                <div className="p-4 text-[10px] text-black/40">
-                  {row.custom}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* PROCESS */}
       <section className="border-t border-black/[0.08] py-10 lg:py-12">
         <SectionHeading
@@ -532,7 +411,7 @@ export default function WebDevelopmentPage() {
 
       {/* WHY FYNARO */}
       <section className="border-t border-black/[0.08] py-10 lg:py-12">
-        <div className="grid overflow-hidden rounded-[20px] bg-[#111] text-white lg:grid-cols-[1.05fr_.95fr]">
+        <div className="grid overflow-hidden rounded-[20px] bg-[#111] text-white lg:grid-cols-[1.15fr_.85fr]">
           <div className="p-7 sm:p-9 lg:p-10">
             <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-white/35">
               Why Fynaro
@@ -548,30 +427,15 @@ export default function WebDevelopmentPage() {
             </p>
           </div>
 
-          <div className="grid border-t border-white/10 sm:grid-cols-2 lg:border-l lg:border-t-0">
+          <div className="border-t border-white/10 px-7 py-5 lg:border-l lg:border-t-0 lg:px-8 lg:py-8">
             {[
-              "Business-led structure",
-              "Custom interface design",
-              "Responsive engineering",
-              "Scalable foundations",
-              "Analytics readiness",
-              "Post-launch clarity",
-            ].map((item) => (
-              <div
-                key={item}
-                className="group flex min-h-[115px] items-end border-b border-r border-white/10 p-5 transition hover:bg-white/[0.04]"
-              >
-                <div>
-                  <Sparkles
-                    size={13}
-                    strokeWidth={1.5}
-                    className="mb-3 text-white/30 transition group-hover:text-white/60"
-                  />
-
-                  <p className="text-[10px] font-medium text-white/65">
-                    {item}
-                  </p>
-                </div>
+              ["01", "Business-led structure"],
+              ["02", "Custom design, never templates"],
+              ["03", "Engineering ready to scale"],
+            ].map(([number, item]) => (
+              <div key={number} className="flex items-center gap-5 border-b border-white/10 py-5 last:border-b-0">
+                <span className="text-[8px] font-semibold text-[#d6cc6d]/70">{number}</span>
+                <p className="text-[10px] font-medium text-white/60">{item}</p>
               </div>
             ))}
           </div>
@@ -605,8 +469,9 @@ export default function WebDevelopmentPage() {
 
       {/* FINAL CTA */}
       <section className="pb-5 pt-2">
-        <div className="rounded-[20px] bg-[#e9e9e3] p-7 sm:p-9 lg:p-10">
-          <div className="grid gap-7 lg:grid-cols-[1.2fr_.8fr] lg:items-end">
+        <div className="relative overflow-hidden rounded-[20px] border border-black/[0.08] bg-white p-7 sm:p-9 lg:p-10">
+          <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-[#d6cc6d]/10 blur-3xl" />
+          <div className="relative grid gap-7 lg:grid-cols-[1.2fr_.8fr] lg:items-end">
             <div>
               <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35">
                 Start a web project
@@ -634,7 +499,7 @@ export default function WebDevelopmentPage() {
           </div>
         </div>
       </section>
-    </div>
+    </motion.div>
   );
 }
 

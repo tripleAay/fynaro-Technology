@@ -1,29 +1,47 @@
-import type { Metadata } from "next";
+import type {
+  Metadata,
+} from "next";
 
+import "react-toastify/dist/ReactToastify.css";
+import "@/styles/fynaro-toast.css";
 import "./globals.css";
 
-import { CartProvider } from "@/contexts/cartContext";
-import { WishlistProvider } from "@/contexts/wishlistContext";
+import {
+  CartProvider,
+} from "@/contexts/cartContext";
 
-import { FynaroToastHost } from "@/components/dashboard components/common/fynaroToast";
+import {
+  WishlistProvider,
+} from "@/contexts/wishlistContext";
 
-export const metadata: Metadata = {
+import {
+  FynaroToastHost,
+} from "@/components/dashboard components/common/fynaroToast";
+
+export const metadata:
+  Metadata = {
   title: {
-    default: "Fynaro Tech",
-    template: "%s | Fynaro Tech",
+    default:
+      "Fynaro Tech",
+
+    template:
+      "%s | Fynaro Tech",
   },
 
   description:
     "Fynaro Tech builds premium digital experiences through design, technology, and strategy.",
 
   icons: {
-    icon: "/icon.png",
+    icon:
+      "/icon.png",
   },
 };
 
-type RootLayoutProps = Readonly<{
-  children: React.ReactNode;
-}>;
+type RootLayoutProps =
+  Readonly<{
+    children:
+      React.ReactNode;
+  }>;
 
 export default function RootLayout({
   children,
